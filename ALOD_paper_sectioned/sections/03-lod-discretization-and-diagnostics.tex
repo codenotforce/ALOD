@@ -1,0 +1,526 @@
+\section{LOD discretization and local diagnostics}
+\label{sec:lod-framework}
+%======================================================================
+
+The LOD construction separates coarse information from the kernel of the
+projective interpolation.  We use both the continuous kernel, needed for
+exact-solution certification, and its finite-dimensional counterpart on
+$V_h$.  The corrector equations are coercive on these kernels once the
+coarse mesh resolves the wavelength; compare
+\cite{Peterseim2017,MalqvistPeterseim2020}.
+
+%----------------------------------------------------------------------
+\subsection{Fine-scale kernels and coercivity}
+\label{sec:fine-scale-kernel}
+%----------------------------------------------------------------------
+
+For $X\in\{V,V_h\}$ define
+\begin{equation}
+\label{eq:kernels}
+  W_X:=\ker(I_H|_X),
+  \qquad
+  \mathcal P_X:=I_X-I_H|_X.
+\end{equation}
+We write
+\begin{equation}
+\label{eq:continuous-discrete-kernels}
+  W:=W_V,
+  \qquad
+  W_h:=W_{V_h}=W\cap V_h.
+\end{equation}
+Projectivity gives $X=V_H\oplus W_X$ and
+$\operatorname{Im}\mathcal P_X=W_X$.
+
+Introduce the resolution number
+\begin{equation}
+\label{eq:mu}
+  \mu
+  :=C_{\mathrm{app}}C_{\mathrm{ol}}(1)^{1/2}
+    \norm{\kappa H}_{L^\infty(\Omega)}.
+\end{equation}
+
+\begin{theorem}[Kernel coercivity]
+\label{thm:kernel-coercivity}
+If $\mu<1$, then for $X\in\{V,V_h\}$ and $w\in W_X$,
+\begin{equation}
+\label{eq:kernel-coercivity}
+  \operatorname{Re}a(w,w)
+  \geq c_W\norm w_\kappa^2,
+  \qquad
+  c_W:=\frac{1-\mu^2}{1+\mu^2}>0.
+\end{equation}
+If $\mu\leq\mu_0<1$, then
+\begin{equation}
+\label{eq:uniform-kernel-coercivity}
+  c_W\geq c_{W,0}
+  :=\frac{1-\mu_0^2}{1+\mu_0^2}>0.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+For $w\in W_X$, the local approximation property of $I_H$ yields
+\[
+  \norm w_{L^2(T)}
+  \leq C_{\mathrm{app}}H_T
+       \norm{\nabla w}_{L^2(N(T))}.
+\]
+After summation and use of \eqref{eq:patch-overlap},
+\[
+  \kappa^2\norm w_{L^2(\Omega)}^2
+  \leq\mu^2\norm{\nabla w}_{L^2(\Omega)}^2.
+\]
+Writing $A=\norm{\nabla w}^2$ and
+$B=\kappa^2\norm w^2$, one has $B\leq\mu^2A$ and hence
+\[
+  \operatorname{Re}a(w,w)=A-B
+  \geq\frac{1-\mu^2}{1+\mu^2}(A+B).
+\]
+\end{proof}
+
+Summing the local stability and approximation estimates for $I_H$ gives
+\begin{equation}
+\label{eq:projection-stability}
+  \norm{I_Hv}_\kappa\leq C_I\norm v_\kappa,
+  \qquad
+  \norm{\mathcal P_Xv}_\kappa\leq(1+C_I)\norm v_\kappa.
+\end{equation}
+The constant depends on $\mu_0$, shape regularity, and fixed overlap
+constants, but not on $H$, $h$, or the refinement depth.
+
+%----------------------------------------------------------------------
+\subsection{Stable local decomposition of the fine-scale kernels}
+\label{sec:stable-decomposition}
+%----------------------------------------------------------------------
+
+Localization of correctors and residual functionals requires global
+fine-scale functions to be decomposed into components supported on
+uniformly bounded coarse patches. We therefore establish a stable local
+decomposition of $W_h$.
+
+For $X=V_h$, let
+\[
+  \mathcal I_X:C^0(\overline\Omega)\to X
+\]
+denote the standard nodal interpolation operator on the mesh associated
+with $X$. It is used below only for products $\lambda_z w$ with
+$w\in X$. Such products are continuous and piecewise quadratic on the
+fine mesh and therefore admit the uniformly stable finite-dimensional
+nodal interpolation required in the following construction. The
+interpolation is inserted because $\lambda_z w$ is generally not an
+element of the piecewise affine space $X$.
+
+For a coarse vertex $z\in\mathcal N_H$, define
+\begin{equation}
+\label{eq:local-kernel-space}
+  W_{X,z}
+  :=
+  \bigl\{
+    w\in W_X:
+    \operatorname{supp}w
+    \subseteq
+    \overline{N^2(z)}
+  \bigr\}.
+\end{equation}
+These local kernel spaces will serve both in the localization analysis
+and, later, in the local Riesz representations used for certification.
+
+\begin{theorem}[Stable local kernel decomposition]
+\label{thm:stable-decomposition}
+Let $X=V_h$. For every $w\in W_X$, there exist
+$w_z\in W_{X,z}$ such that
+\begin{equation}
+\label{eq:stable-decomposition}
+  w
+  =
+  \sum_{z\in\mathcal N_H}w_z,
+  \qquad
+  \sum_{z\in\mathcal N_H}
+  \norm{w_z}_\kappa^2
+  \leq
+  C_{\rm sd}^2\norm{w}_\kappa^2.
+\end{equation}
+Conversely, for arbitrary $w_z\in W_{X,z}$,
+\begin{equation}
+\label{eq:stable-synthesis}
+  \norm{
+    \sum_{z\in\mathcal N_H}w_z
+  }_\kappa^2
+  \leq
+  C_{\rm ov}^2
+  \sum_{z\in\mathcal N_H}\norm{w_z}_\kappa^2.
+\end{equation}
+The constant $C_{\rm sd}$ depends only on $\mu_0$, the coarse-mesh
+shape regularity, and the overlap of fixed-order coarse patches, whereas
+$C_{\rm ov}$ depends only on the latter geometric overlap quantities.
+In particular, both constants are independent of the refinement depths
+of $V_h$.
+\end{theorem}
+
+\begin{proof}
+For $w\in W_X$, define
+\begin{equation}
+\label{eq:wz-construction}
+  w_z
+  :=
+  \mathcal P_X\mathcal I_X(\lambda_z w).
+\end{equation}
+Since $\mathcal P_X$ maps $X$ onto $W_X$, we have $w_z\in W_X$.
+Moreover, $\mathcal I_X(\lambda_z w)$ is supported in the coarse vertex
+patch $N(z)$. By the quasi-locality of $I_H$, applying $\mathcal P_X$
+enlarges this support by at most one coarse layer. Hence
+\[
+  \operatorname{supp}w_z
+  \subseteq
+  \overline{N^2(z)},
+\]
+and therefore $w_z\in W_{X,z}$.
+
+Using the partition of unity
+\eqref{eq:geometric-partition-unity}, the linearity of $\mathcal I_X$,
+and the fact that $\mathcal I_Xw=w$ for $w\in X$, we obtain
+\[
+\begin{aligned}
+  \sum_{z\in\mathcal N_H}w_z
+  &=
+  \mathcal P_X
+  \sum_{z\in\mathcal N_H}
+  \mathcal I_X(\lambda_z w)
+\\
+  &=
+  \mathcal P_X
+  \mathcal I_X
+  \left(
+    \sum_{z\in\mathcal N_H}\lambda_z w
+  \right)
+\\
+  &=
+  \mathcal P_Xw
+  =
+  w,
+\end{aligned}
+\]
+because $w\in W_X$.
+
+It remains to prove stability. By
+\eqref{eq:projection-stability},
+\[
+  \norm{w_z}_\kappa
+  \leq
+  (1+C_I)
+  \norm{\mathcal I_X(\lambda_z w)}_\kappa.
+\]
+On each fine element, $\lambda_z w$ is a polynomial of degree at most
+two. Finite-dimensional scaling for $\mathcal I_X$, the product rule,
+and
+\[
+  \norm{\nabla\lambda_z}_{L^\infty(T)}
+  \lesssim
+  H_T^{-1}
+\]
+give
+\[
+  \norm{\mathcal I_X(\lambda_z w)}_{\kappa,T}^2
+  \lesssim
+  \norm{\nabla w}_{L^2(T)}^2
+  +
+  H_T^{-2}\norm{w}_{L^2(T)}^2
+  +
+  \kappa^2\norm{w}_{L^2(T)}^2.
+\]
+Since $w\in W_X$, \eqref{eq:IH-approx} yields
+\[
+  H_T^{-1}\norm{w}_{L^2(T)}
+  \leq
+  C_{\rm app}
+  \norm{\nabla w}_{L^2(N(T))}.
+\]
+After summing over the coarse elements contained in $N(z)$, we obtain
+\[
+  \norm{\mathcal I_X(\lambda_z w)}_\kappa^2
+  \lesssim
+  \norm{w}_{\kappa,N^2(z)}^2.
+\]
+Consequently,
+\[
+  \norm{w_z}_\kappa^2
+  \lesssim
+  \norm{w}_{\kappa,N^2(z)}^2.
+\]
+Summation over $z$, followed by the bounded overlap of the fixed-order
+patches, proves
+\[
+  \sum_{z\in\mathcal N_H}\norm{w_z}_\kappa^2
+  \leq
+  C_{\rm sd}^2\norm{w}_\kappa^2.
+\]
+
+For the converse estimate, the supports
+$\operatorname{supp}w_z\subseteq\overline{N^2(z)}$ have uniformly
+bounded overlap. Pointwise Cauchy--Schwarz therefore gives
+\[
+  \left|\sum_z w_z\right|^2
+  \lesssim
+  \sum_z|w_z|^2,
+  \qquad
+  \left|\sum_z\nabla w_z\right|^2
+  \lesssim
+  \sum_z|\nabla w_z|^2.
+\]
+Integration over $\Omega$ yields
+\[
+  \norm{\sum_z w_z}_\kappa^2
+  \leq
+  C_{\rm ov}^2
+  \sum_z\norm{w_z}_\kappa^2,
+\]
+which proves \eqref{eq:stable-synthesis}.
+\end{proof}
+
+%----------------------------------------------------------------------
+\subsection{Continuous, discrete, and localized correctors}
+\label{sec:correctors}
+%----------------------------------------------------------------------
+
+For $v\in V$, the continuous ideal primal and adjoint correctors
+$\Qinf v,\Qinfs v\in W$ are defined by
+\begin{align}
+  a(\Qinf v,w)&=a(v,w) &&(w\in W),
+  \label{eq:continuous-ideal-primal}\\
+  a(w,\Qinfs v)&=a(w,v) &&(w\in W).
+  \label{eq:continuous-ideal-adjoint}
+\end{align}
+Theorem~\ref{thm:kernel-coercivity} and the complex Lax--Milgram theorem
+ensure well posedness.  The maps are the identity on $W$.  Their discrete
+counterparts $\Qih,\Qihs:V_h\to W_h$ satisfy
+\begin{align}
+  a(\Qih v_h,w_h)&=a(v_h,w_h) &&(w_h\in W_h),
+  \label{eq:discrete-ideal-primal}\\
+  a(w_h,\Qihs v_h)&=a(w_h,v_h) &&(w_h\in W_h).
+  \label{eq:discrete-ideal-adjoint}
+\end{align}
+
+For a union $D$ of coarse elements, let
+\begin{equation}
+\label{eq:local-form}
+  a_D(v,w)
+  :=(\nabla v,\nabla w)_D-\kappa^2(v,w)_D
+    -\ii\kappa(v,w)_{\Gamma_R\cap\overline D}.
+\end{equation}
+For $T\in\mathcal T_H$ and $\ell\geq0$, define
+\begin{equation}
+\label{eq:local-kernel-corrector-space}
+  W_h(N^\ell(T))
+  :=\{w_h\in W_h:\supp w_h\subseteq\overline{N^\ell(T)}\}.
+\end{equation}
+The localized element correctors
+$q_{T,\ell,h}v_H,q_{T,\ell,h}^*v_H\in W_h(N^\ell(T))$ solve
+\begin{align}
+  a_{N^\ell(T)}(q_{T,\ell,h}v_H,w_h)
+  &=a_T(v_H,w_h),
+  \label{eq:local-primal}\\
+  a_{N^\ell(T)}(w_h,q_{T,\ell,h}^*v_H)
+  &=a_T(w_h,v_H)
+  \label{eq:local-adjoint}
+\end{align}
+for all $w_h\in W_h(N^\ell(T))$.  They are well posed by kernel
+coercivity.  Set
+\begin{equation}
+\label{eq:assembled-local-correctors}
+  \Qlr v_H:=\sum_{T\in\mathcal T_H}q_{T,\ell,h}v_H,
+  \qquad
+  \Qlrs v_H:=\sum_{T\in\mathcal T_H}q_{T,\ell,h}^*v_H.
+\end{equation}
+
+The computed trial and test spaces are
+\begin{equation}
+\label{eq:computed-spaces}
+  X_{H,\ell}:=(I-\Qlr)V_H,
+  \qquad
+  Y_{H,\ell}:=(I-\Qlrs)V_H.
+\end{equation}
+The Petrov--Galerkin LOD solution $U\in X_{H,\ell}$ is defined by
+\begin{equation}
+\label{eq:PG}
+  a\bigl(U,(I-\Qlrs)v_H\bigr)
+  =F\bigl((I-\Qlrs)v_H\bigr)
+  \qquad(v_H\in V_H).
+\end{equation}
+The use of different primal and adjoint corrections reflects the
+non-Hermitian impedance term.  The classical a priori analysis proves
+stability and quasi-optimality when $\kappa H$ is sufficiently small and
+$\ell$ grows logarithmically with the wavenumber
+\cite{Peterseim2017}; the purpose below is to replace the noncomputable
+localization and fine-scale assumptions by posterior checks.
+
+The discrete ideal and localized correctors satisfy the standard
+exponential localization estimate.  We record it only to motivate the
+oversampling controller.
+
+\begin{theorem}[Discrete corrector localization]
+\label{thm:localization}
+Assume $\mu\leq\mu_0<1$.  There are constants
+$C_{\mathrm{loc}}>0$ and $0<\beta<1$, depending only on the quantities
+controlled by $\mu_0$, shape regularity, fixed interpolation patches, and
+boundary trace constants, such that
+\begin{equation}
+\label{eq:localization}
+ \begin{aligned}
+  \norm{\Qih-\Qlr}_{\mathcal L(V_H,V_h)}
+  +\norm{\Qihs-\Qlrs}_{\mathcal L(V_H,V_h)}
+  \leq
+  C_{\mathrm{loc}}C_{\mathrm{ol}}(\ell+1)^{1/2}\beta^\ell.
+ \end{aligned}
+\end{equation}
+The constants are independent of the fine-mesh refinement depth.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+A kernel-preserving coarse cut-off is obtained by multiplying a discrete
+corrector with a coarse piecewise affine cut-off, interpolating the product
+on $V_h$, and applying $I-I_H$.  Kernel coercivity and a Caccioppoli-type
+annulus argument yield geometric decay of each ideal element corrector.
+Galerkin orthogonality on $W_h(N^\ell(T))$ gives the truncation estimate,
+and bounded overlap completes the summation.  The argument applies to the
+primal and adjoint equations and is the impedance analogue of the standard
+LOD proof; see \cite{MalqvistPeterseim2014,Peterseim2017,
+MalqvistPeterseim2020}.
+\end{proof}
+
+
+%----------------------------------------------------------------------
+\subsection{Local residual indicator and localization diagnostic}
+\label{sec:local-diagnostics}
+%----------------------------------------------------------------------
+
+Define the full residual
+\begin{equation}
+\label{eq:full-residual}
+  R_U(v):=F(v)-a(U,v)=a(u-U,v),
+  \qquad v\in V.
+\end{equation}
+For a coarse vertex $z$, set
+\begin{equation}
+\label{eq:Whz}
+  W_{h,z}:=\{w_h\in W_h:\supp w_h\subseteq\overline{N^2(z)}\}.
+\end{equation}
+Let $\xi_z\in W_{h,z}$ be the $b_\kappa$-Riesz representative
+\begin{equation}
+\label{eq:local-residual-riesz}
+  b_\kappa(\xi_z,w_h)=R_U(w_h)
+  \qquad(w_h\in W_{h,z}),
+\end{equation}
+and define
+\begin{equation}
+\label{eq:etaH}
+  \eta_{H,z}:=\norm{\xi_z}_\kappa,
+  \qquad
+  \eta_H^2:=\sum_z\eta_{H,z}^2.
+\end{equation}
+
+\begin{theorem}[Residual localization and local efficiency]
+\label{thm:residual-localization}
+The estimator satisfies
+\begin{equation}
+\label{eq:residual-equivalence}
+  C_{\mathrm{ov}}^{-1}\eta_H
+  \leq\norm{R_U}_{W_h^\star}
+  \leq C_{\mathrm{sd}}\eta_H,
+\end{equation}
+and, for every coarse vertex $z$,
+\begin{equation}
+\label{eq:local-efficiency}
+  \eta_{H,z}
+  \leq C_a\norm{u-U}_{\kappa,N^2(z)}.
+\end{equation}
+Consequently,
+\begin{equation}
+\label{eq:exact-lower-bound}
+  \frac{\eta_H}{C_aC_{\mathrm{ov}}}
+  \leq\norm{u-U}_\kappa.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+For $w_h\in W_h$, use the stable decomposition
+$w_h=\sum_zw_z$ from \cref{thm:stable-decomposition}.  Then
+\[
+  |R_U(w_h)|
+  =\left|\sum_zb_\kappa(\xi_z,w_z)\right|
+  \leq C_{\mathrm{sd}}\eta_H\norm{w_h}_\kappa.
+\]
+Conversely,
+\[
+  \eta_H^2
+  =R_U\!\left(\sum_z\xi_z\right)
+  \leq\norm{R_U}_{W_h^\star}
+       \norm{\sum_z\xi_z}_\kappa
+  \leq C_{\mathrm{ov}}\norm{R_U}_{W_h^\star}\eta_H.
+\]
+The Riesz characterization and \eqref{eq:full-residual} give
+\[
+  \eta_{H,z}
+  =\sup_{0\neq w_h\in W_{h,z}}
+   \frac{|a(u-U,w_h)|}{\norm{w_h}_\kappa}
+  \leq C_a\norm{u-U}_{\kappa,N^2(z)}.
+\]
+The lower bound follows from
+$\norm{R_U}_{W_h^\star}\leq C_a\norm{u-U}_\kappa$.
+\end{proof}
+
+For elementwise marking, distribute the nodal masses by
+\begin{equation}
+\label{eq:etaHT}
+  \eta_{H,T}^2
+  :=\sum_{z\in\mathcal N_H\cap\overline T}
+    \frac{\eta_{H,z}^2}{m_z},
+  \qquad
+  m_z:=\#\{K\in\mathcal T_H:z\in\overline K\}.
+\end{equation}
+Then $\sum_T\eta_{H,T}^2=\eta_H^2$.  A D\"orfler set
+$\mathcal M_H$ satisfies
+\begin{equation}
+\label{eq:coarse-dorfler}
+  \sum_{T\in\mathcal M_H}\eta_{H,T}^2
+  \geq\theta_H\eta_H^2,
+  \qquad0<\theta_H\leq1
+\end{equation}
+\cite{Doerfler1996}.
+
+To decide whether a failed exact certificate is caused mainly by
+localization, one may also certify the discrete localization defects.  For
+$s\in\{\mathrm p,\mathrm a\}$, apply the same local Riesz construction to
+\begin{align}
+  D_{\mathrm{loc},\mathrm p}(v_H)(w_h)
+  &:=a((I-\Qlr)v_H,w_h),
+  \label{eq:loc-functional-p}\\
+  D_{\mathrm{loc},\mathrm a}(v_H)(w_h)
+  &:=a(w_h,(I-\Qlrs)v_H).
+  \label{eq:loc-functional-a}
+\end{align}
+Discrete ideal orthogonality identifies these functionals with
+$\Qih-\Qlr$ and $\Qihs-\Qlrs$, respectively.  If
+$\Theta_{\mathrm{loc},s}$ denotes the corresponding operator norm of the
+assembled local Riesz representatives, then
+\begin{align}
+\label{eq:localization-certificate}
+  \norm{\Qih-\Qlr}_{\mathcal L(V_H,V_h)}
+  &\leq\frac{C_{\mathrm{sd}}}{c_W}\Theta_{\mathrm{loc},\mathrm p},
+  \\
+  \norm{\Qihs-\Qlrs}_{\mathcal L(V_H,V_h)}
+  &\leq\frac{C_{\mathrm{sd}}}{c_W}\Theta_{\mathrm{loc},\mathrm a}.
+\end{align}
+Define the scalar localization diagnostic
+\begin{equation}
+\label{eq:delta-loc-diagnostic}
+  \deltaLocHat
+  :=\max\left\{
+      \frac{C_{\mathrm{sd}}}{c_W}\Theta_{\mathrm{loc},\mathrm p},
+      \frac{C_{\mathrm{sd}}}{c_W}\Theta_{\mathrm{loc},\mathrm a}
+    \right\}.
+\end{equation}
+The proof repeats that of \cref{thm:residual-localization}, followed by
+kernel coercivity.  This quantity is diagnostic only; the exact-error upper
+bound below uses the stronger total defects relative to $W$.
+
+
+%======================================================================

@@ -1,0 +1,28 @@
+\documentclass[11pt]{amsart}
+
+% Partial PDFs cannot contain hyperlink destinations from omitted sections.
+% Draft mode keeps reference text while suppressing those dead-link warnings.
+\ifdefined\ALODIncludeOnly
+  \PassOptionsToPackage{draft}{hyperref}
+\fi
+
+\input{preamble}
+
+% Section drivers define this macro before loading section-master.tex.
+\ifdefined\ALODIncludeOnly
+  \expandafter\includeonly\expandafter{\ALODIncludeOnly}
+\fi
+
+\begin{document}
+
+\include{frontmatter}
+\include{sections/01-introduction}
+\include{sections/02-model-and-two-level-setting}
+\include{sections/03-lod-discretization-and-diagnostics}
+\include{sections/04-exact-solution-certification}
+\include{sections/05-adaptive-algorithm-and-cost}
+\include{sections/06-numerical-experiments}
+\include{sections/07-conclusions}
+\include{backmatter/references}
+
+\end{document}

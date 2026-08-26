@@ -1,0 +1,485 @@
+\section{Numerical experiments}
+\label{sec:numerics}
+%======================================================================
+
+The numerical study retains two complementary manufactured benchmarks.
+The first combines high oscillation with spatial localization on a square;
+the second combines a reentrant-corner singularity with a separated
+oscillatory packet on an L-shaped domain.  The exact solution is used only
+for validation and never for marking, certification, or stopping.
+
+At every exact checkpoint we report
+\begin{equation}
+\label{eq:numerical-certificate-components}
+  \etaEq,
+  \quad\underline\beta_\ell,
+  \quad\rhoP,
+  \quad\rhoA,
+  \quad\epsP,
+  \quad\epsA,
+  \quad\betaInf,
+  \quad\Uex,
+\end{equation}
+together with the true energy error and effectivity index
+\begin{equation}
+\label{eq:effectivity}
+  E_{\mathrm{true}}:=\norm{u-U}_\kappa,
+  \qquad
+  I_{\mathrm{eff}}:=\frac{\Uex}{\norm{u-U}_\kappa}.
+\end{equation}
+A result is labelled \emph{certified} only when the geometric constants,
+local algebraic solves, singular-value lower bound, and generalized
+eigenvalue upper bounds are enclosed.  Otherwise the notation
+$U_{\mathrm{ex}}^{\mathrm{pr}}$ is used.  Work measures include coarse and
+fine degrees of freedom, oversampling level, number of cache batches,
+number of refactorized patches, number of exact checkpoints, total flux
+sweeps, and wall-clock time.
+
+\subsection{Localized smooth oscillatory benchmark}
+\label{sec:num-smooth}
+%----------------------------------------------------------------------
+
+Let
+\[
+  \Omega=(0,1)^2
+\]
+and choose the boundary decomposition
+\begin{equation}
+\label{eq:smooth-boundary-partition}
+  \Gamma_D
+  :=
+  \{(x,0):0<x<1\}
+  \cup
+  \{(x,1):0<x<1\},
+\end{equation}
+\[
+  \Gamma_N
+  :=
+  \{(0,y):0<y<1\},
+  \qquad
+  \Gamma_R
+  :=
+  \{(1,y):0<y<1\}.
+\]
+This is the same type of mixed homogeneous boundary condition as in
+\eqref{eq:strong-problem}.
+
+To generate a smooth but spatially localized oscillatory solution, set
+\begin{equation}
+\label{eq:smooth-manufactured}
+  u(x,y)
+  :=
+  x^2(1-x)^2
+  \sin(\pi y)
+  \exp\!\left(
+    -\alpha_{\mathrm{loc}}
+    \bigl((x-x_\star)^2+(y-y_\star)^2\bigr)
+  \right)
+  e^{\ii\kappa x},
+\end{equation}
+where, for example,
+\[
+  (x_\star,y_\star)
+  =
+  \left(\frac34,\frac12\right),
+  \qquad
+  \alpha_{\mathrm{loc}}=80.
+\]
+The Gaussian factor localizes the dominant gradients near
+$(x_\star,y_\star)$, while the factor $e^{\ii\kappa x}$ introduces the
+oscillatory scale. This choice is intended to test whether the adaptive
+procedure concentrates degrees of freedom in the region where they are
+needed rather than refining the domain essentially uniformly.
+
+The manufactured solution satisfies the homogeneous boundary conditions
+of \eqref{eq:strong-problem}. Indeed,
+\[
+  u=0
+  \qquad\text{on }\Gamma_D,
+\]
+and the factor $x^2(1-x)^2$ gives
+\[
+  \partial_xu=0
+  \qquad\text{at }x=0,
+\]
+so that $\partial_\nu u=0$ on $\Gamma_N$. At $x=1$,
+\[
+  u=0,
+  \qquad
+  \partial_xu=0,
+\]
+and hence
+\[
+  \partial_\nu u-\ii\kappa u=0
+  \qquad\text{on }\Gamma_R.
+\]
+The forcing is therefore defined solely by
+\begin{equation}
+\label{eq:smooth-forcing}
+  f
+  :=
+  -\Delta u-\kappa^2u,
+\end{equation}
+with no additional boundary forcing.
+
+
+We compare
+\begin{enumerate}
+\item the exact-certified adaptive LOD method of
+      \cref{alg:exact-adaptive};
+\item a fixed-$h$, fixed-oversampling LOD baseline;
+\item uniform conforming $P_1$ finite elements;
+\item adaptive conforming $P_1$ finite elements.
+\end{enumerate}
+For several wavenumbers, the initial coarse meshes are chosen so that the
+same prescribed upper bound on $\kappa H$ is satisfied.  The experiment
+reports error versus coarse and total local work, the effectivity index,
+$\epsP$, $\epsA$, $\betaInf$, and the number of exact checkpoints.  The
+coarse and fine meshes are plotted separately to show whether the local
+Riesz marker concentrates coarse degrees of freedom near
+$(x_\star,y_\star)$ and whether the total-defect marker refines only the
+fine patches needed for certification.
+
+The wavenumber study keeps $\alpha_{\mathrm{loc}}$ and the localization
+center fixed and varies only the factor $e^{\ii\kappa x}$.  The main
+robustness diagnostic is the certified prefactor
+\begin{equation}
+\label{eq:numerical-certified-prefactor}
+  C_{\mathrm{cert}}
+  :=c_W^{-1}
+    +\frac{\epsA}{(1-\epsA)\betaInf}.
+\end{equation}
+Bounded behavior of $C_{\mathrm{cert}}$ over the tested range supports the
+wavenumber-robust reliability theorem; it is not interpreted as a claim
+that the total computational work is independent of $\kappa$.
+
+
+\subsection{Low-regularity L-shaped benchmark}
+
+\label{sec:num-lshape}
+
+%----------------------------------------------------------------------
+
+Let
+
+\begin{equation}
+\label{eq:lshape-domain}
+  \Omega
+  :=
+  (-1,1)^2
+  \setminus
+  \bigl([0,1]\times[-1,0]\bigr),
+\end{equation}
+
+whose reentrant corner is located at the origin. Introduce polar
+coordinates $(r,\theta)$ centered at the origin such that
+
+\[
+  0<\theta<\frac{3\pi}{2}
+\]
+
+locally inside $\Omega$.
+
+The two boundary segments adjacent to the reentrant corner are assigned
+Dirichlet conditions,
+
+\begin{equation}
+\label{eq:lshape-GammaD}
+  \Gamma_D
+  :=
+  \{(x,0):0<x<1\}
+  \cup
+  \{(0,y):-1<y<0\}.
+\end{equation}
+
+We take
+
+\begin{equation}
+\label{eq:lshape-boundary-partition}
+  \Gamma_N=\varnothing,
+  \qquad
+  \Gamma_R
+  :=
+  \partial\Omega\setminus\overline{\Gamma_D}.
+\end{equation}
+
+In particular, $|\Gamma_R|>0$, consistently with the standing assumption
+of the model problem.
+
+To retain the reentrant-corner singularity without introducing an
+artificial radial transition layer, define the smooth boundary weight
+
+\begin{equation}
+\label{eq:lshape-boundary-weight}
+  b_{\partial}(x,y)
+  :=
+  (1-x^2)^2(1-y^2)^2.
+\end{equation}
+
+The singular component is then chosen as
+
+\begin{equation}
+\label{eq:lshape-singularity}
+  u_{\mathrm{sing}}(r,\theta)
+  :=
+  b_{\partial}(x,y)\,
+  r^{2/3}
+  \sin\!\left(\frac{2\theta}{3}\right).
+\end{equation}
+
+The factor
+
+\[
+  r^{2/3}\sin(2\theta/3)
+\]
+
+is the standard corner singularity associated with an interior angle
+$3\pi/2$; see, e.g., \cite{BrennerScott2008}. It vanishes on the two rays
+forming $\Gamma_D$ and has reduced regularity at the reentrant corner.
+Since
+
+\[
+  b_{\partial}(x,y)=1+O(r^2)
+  \qquad\text{as }r\to0,
+\]
+
+the multiplication by $b_{\partial}$ does not alter the leading-order
+corner singularity. In contrast to a radial cut-off, the polynomial
+weight does not introduce a distinguished transition annulus around the
+origin. On the outer boundary it satisfies
+
+\[
+  b_{\partial}=0,
+  \qquad
+  \partial_\nu b_{\partial}=0
+  \qquad\text{on }\Gamma_R.
+\]
+
+To introduce a spatially separated oscillatory feature, choose the
+oscillation center
+
+\begin{equation}
+\label{eq:lshape-oscillation-center}
+  (x_{\mathrm{osc}},y_{\mathrm{osc}})
+  :=
+  \left(-\frac12,\frac12\right)
+\end{equation}
+
+and define the Gaussian envelope
+
+\begin{equation}
+\label{eq:lshape-oscillation-envelope}
+  G_{\mathrm{osc}}(x,y)
+  :=
+  \exp\!\left(
+    -\alpha_{\mathrm{osc}}
+    \bigl(
+      (x-x_{\mathrm{osc}})^2
+      +(y-y_{\mathrm{osc}})^2
+    \bigr)
+  \right).
+\end{equation}
+
+To enforce the homogeneous boundary conditions exactly, set
+
+\begin{equation}
+\label{eq:lshape-oscillation-amplitude}
+  A_{\mathrm{osc}}(x,y)
+  :=
+  C_{\mathrm{osc}}\,
+  xy\,
+  b_{\partial}(x,y)\,
+  G_{\mathrm{osc}}(x,y),
+\end{equation}
+
+where
+
+\begin{equation}
+\label{eq:lshape-oscillation-normalization}
+  C_{\mathrm{osc}}
+  :=
+  \frac{1}{
+    x_{\mathrm{osc}}y_{\mathrm{osc}}\,
+    b_{\partial}(x_{\mathrm{osc}},y_{\mathrm{osc}})
+  }.
+\end{equation}
+
+Thus
+
+\[
+  A_{\mathrm{osc}}
+  (x_{\mathrm{osc}},y_{\mathrm{osc}})
+  =1.
+\]
+
+The oscillatory component is
+
+\begin{equation}
+\label{eq:lshape-oscillation}
+  u_{\mathrm{osc}}(x,y)
+  :=
+  \varepsilon_{\mathrm{osc}}\,
+  A_{\mathrm{osc}}(x,y)
+  e^{\ii\kappa(x-x_{\mathrm{osc}})}.
+\end{equation}
+
+Unless stated otherwise, we take
+
+\begin{equation}
+\label{eq:lshape-oscillation-parameters}
+  \alpha_{\mathrm{osc}}=25,
+  \qquad
+  \varepsilon_{\mathrm{osc}}=0.25.
+\end{equation}
+
+The Gaussian envelope localizes the oscillatory scale around
+$(x_{\mathrm{osc}},y_{\mathrm{osc}})$, which is separated from both the
+reentrant corner and the outer boundary. The factor $xy$ makes
+$u_{\mathrm{osc}}$ vanish on the two Dirichlet segments, while the
+double zeros of $b_{\partial}$ imply
+
+\[
+  u_{\mathrm{osc}}=0,
+  \qquad
+  \partial_\nu u_{\mathrm{osc}}=0
+  \qquad\text{on }\Gamma_R.
+\]
+
+The manufactured exact solution is
+
+\begin{equation}
+\label{eq:lshape-exact-solution}
+  u
+  :=
+  u_{\mathrm{sing}}
+  +
+  u_{\mathrm{osc}}.
+\end{equation}
+
+For the singular component,
+$r^{2/3}\sin(2\theta/3)$ vanishes on $\Gamma_D$, whereas
+$u_{\mathrm{osc}}$ vanishes there because of the factor $xy$. Hence
+
+\[
+  u=0
+  \qquad\text{on }\Gamma_D.
+\]
+
+Moreover, the properties of $b_{\partial}$ give
+
+\[
+  u=0,
+  \qquad
+  \partial_\nu u=0
+  \qquad\text{on }\Gamma_R,
+\]
+
+and consequently
+
+\[
+  \partial_\nu u-\ii\kappa u=0
+  \qquad\text{on }\Gamma_R.
+\]
+
+The volume forcing is generated by
+
+\begin{equation}
+\label{eq:lshape-forcing}
+  f
+  :=
+  -\Delta u-\kappa^2u.
+\end{equation}
+
+For implementation, the forcing can be evaluated without differentiating
+the corner singularity twice. Set
+
+\[
+  s(r,\theta)
+  :=
+  r^{2/3}\sin\!\left(\frac{2\theta}{3}\right).
+\]
+
+Since
+
+\[
+  \Delta s=0
+  \qquad\text{for }r>0,
+\]
+
+the singular contribution to the forcing is
+
+\begin{equation}
+\label{eq:lshape-singular-forcing}
+  f_{\mathrm{sing}}
+  =
+  -s\,\Delta b_{\partial}
+  -2\nabla b_{\partial}\cdot\nabla s
+  -\kappa^2 b_{\partial}s.
+\end{equation}
+
+Because
+$\nabla b_{\partial}=O(r)$ near the origin and
+$\nabla s=O(r^{-1/3})$, the right-hand side in
+\eqref{eq:lshape-singular-forcing} is $O(r^{2/3})$ as $r\to0$ and admits
+an $L^2$ extension through the corner. In particular, no forcing layer is
+created at a prescribed positive distance from the singular point.
+
+Similarly, using
+\eqref{eq:lshape-oscillation}, the oscillatory contribution is
+
+\begin{equation}
+\label{eq:lshape-oscillatory-forcing}
+  f_{\mathrm{osc}}
+  =
+  \varepsilon_{\mathrm{osc}}\,
+  e^{\ii\kappa(x-x_{\mathrm{osc}})}
+  \left(
+    -\Delta A_{\mathrm{osc}}
+    -2\ii\kappa\,
+    \partial_x A_{\mathrm{osc}}
+  \right),
+\end{equation}
+
+so that
+
+\begin{equation}
+\label{eq:lshape-forcing-split}
+  f
+  =
+  f_{\mathrm{sing}}
+  +
+  f_{\mathrm{osc}}.
+\end{equation}
+
+No Neumann or Robin boundary forcing is introduced.
+
+
+This benchmark tests whether the two-level adaptive mechanism separates
+three tasks without a prescribed matching region: coarse approximation of
+the corner singularity, coarse approximation of the localized oscillatory
+packet, and fine-scale certification of the corrector space.  We compare
+\begin{enumerate}
+\item the exact-certified adaptive LOD method;
+\item the same LOD method with fixed oversampling and a uniformly refined
+      fine mesh;
+\item adaptive conforming $P_1$ finite elements;
+\item where useful, a uniform finite element baseline.
+\end{enumerate}
+The marked coarse elements should grade toward the reentrant corner and
+also concentrate around $(x_{\mathrm{osc}},y_{\mathrm{osc}})$.  The
+fine-defect indicator \eqref{eq:fine-defect-indicator} is inspected
+separately; it need not reproduce the coarse mesh because its role is to
+certify the continuous corrector defects rather than the primal
+approximation error.
+
+The reported histories include the exact error, $\Uex$, the effectivity
+index, the localization diagnostic, the primal and adjoint dominant-mode
+contributions, the distribution of coarse and fine cells, and the fraction
+of local matrices reused within each cache batch.  Runs with different
+$\ell$ and fine-mesh tolerances distinguish localization error from
+fine-corrector discretization error.  No optimal-complexity conclusion is
+drawn from the meshes alone.
+
+
+
+%======================================================================

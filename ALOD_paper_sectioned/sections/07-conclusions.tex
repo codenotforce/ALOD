@@ -1,0 +1,32 @@
+\section{Conclusions}\label{sec:conclusions}
+%======================================================================
+
+We presented a two-level adaptive LOD framework that certifies the error to
+the exact Helmholtz solution.  The fine finite element space is used only
+for local correctors and post-processing; it is not a reference problem.
+The exact upper bound combines a compatibility-corrected equilibrated
+majorant of the full residual with computable continuous-kernel defects.
+The orthogonality of the continuous ideal trial and test spaces reduces the
+stability perturbation to a product of the primal and adjoint defects, and
+the required ideal inf--sup constant is bounded from the localized coarse
+matrix.  Under the checked acceptance condition, the reliability constant
+is independent of the wavenumber and all discretization parameters.
+
+The adaptive realization separates inexpensive coarse marking from costly
+exact certification.  Cache batches retain local factorizations while the
+fine mesh and oversampling depth are fixed, but they do not alter the
+mathematical target.  A failed certificate triggers either additional
+oversampling or fine-mesh refinement, according to a discrete localization
+diagnostic.  The construction is fully parallel at patch level and can
+reuse the same mixed factors for the full residual and both total-defect
+operators.
+
+Several questions remain open.  In particular, local efficiency of the
+fine-defect majorants, estimator reduction under fine refinement, and a
+contraction or optimal-complexity theorem for the coupled adaptive loop are
+not established here.  Sharper quotient minimization, certified iterative
+eigenvalue solvers, and extensions to heterogeneous coefficients, higher
+order elements, and scattering truncations are natural directions for
+future work.  The multiresolution and super-localized Helmholtz variants in
+\cite{HauckPeterseim2022,FreeseHauckPeterseim2024} provide further
+opportunities to reduce the cost of the defect certification.

@@ -1,0 +1,84 @@
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,mathtools,mathrsfs}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+
+\hypersetup{
+  pdftitle={A Certified Adaptive Localized Orthogonal Decomposition
+  Method for the Helmholtz Equation},
+  pdfauthor={Chuxin Que}
+}
+
+\numberwithin{equation}{section}
+\allowdisplaybreaks
+\raggedbottom
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\newtheorem{algorithm}[theorem]{Algorithm}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\crefname{assumption}{Assumption}{Assumptions}
+\crefname{algorithm}{Algorithm}{Algorithms}
+
+\newcommand{\Om}{\Omega}
+\newcommand{\Gd}{\Gamma_D}
+\newcommand{\Gn}{\Gamma_N}
+\newcommand{\Gr}{\Gamma_R}
+\newcommand{\VH}{V_H}
+\newcommand{\Vh}{V_h}
+\newcommand{\Wh}{W_h}
+\newcommand{\THc}{\mathcal T_H}
+\newcommand{\Th}{\mathcal T_h}
+\newcommand{\Qinf}{\mathcal Q_\infty}
+\newcommand{\Qinfs}{\mathcal Q_\infty^*}
+\newcommand{\Qih}{\mathcal Q_{\infty,h}}
+\newcommand{\Qihs}{\mathcal Q_{\infty,h}^*}
+\newcommand{\Qlr}{\mathcal Q_{\ell,h}}
+\newcommand{\Qlrs}{\mathcal Q_{\ell,h}^*}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+\newcommand{\abs}[1]{\left\lvert #1\right\rvert}
+\newcommand{\set}[1]{\left\{ #1\right\}}
+\newcommand{\ii}{\mathrm i}
+\newcommand{\supp}{\operatorname{supp}}
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Ca}{C_a}
+\newcommand{\cw}{c_W}
+\newcommand{\etaH}{\eta_H}
+\newcommand{\etaEq}{\eta_{\mathrm{eq}}}
+\newcommand{\ThetaLoc}{\Theta_{\mathrm{loc}}}
+\newcommand{\deltaLocHat}{\widehat\delta_{\mathrm{loc}}}
+\newcommand{\rhoP}{\widehat\rho_{\mathrm p}}
+\newcommand{\rhoA}{\widehat\rho_{\mathrm a}}
+\newcommand{\epsP}{\widehat\varepsilon_{\mathrm p}}
+\newcommand{\epsA}{\widehat\varepsilon_{\mathrm a}}
+\newcommand{\betaInf}{\underline\beta_\infty}
+\newcommand{\Uex}{U_{\mathrm{ex}}}
+\newcommand{\tolex}{\mathrm{tol}_{\mathrm{ex}}}
+\newcommand{\dd}{\,\mathrm d}
+\newcommand{\pos}[1]{\left[#1\right]_+}
+
+\title[Certified adaptive Helmholtz LOD]{A Certified Adaptive Localized
+Orthogonal Decomposition Method for the Helmholtz Equation}
+\author{Chuxin Que}
+% \address{Department, University, Postal address}
+% \email{author@example.edu}
+% \thanks{Funding information.}
+
+\subjclass[2020]{65N15, 65N30, 65N50}
+\keywords{Helmholtz equation, localized orthogonal decomposition,
+a posteriori error estimation, equilibrated flux, adaptive multiscale
+method, wavenumber-robust certification}

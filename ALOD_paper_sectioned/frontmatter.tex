@@ -1,0 +1,23 @@
+\begin{abstract}
+We develop an a posteriori certification framework for a Petrov--Galerkin
+localized orthogonal decomposition method for the Helmholtz equation.  In
+contrast to reference-solution estimates, the proposed estimator controls
+the error with respect to the exact variational solution.  The construction
+combines a compatibility-corrected equilibrated-flux majorant for the full
+residual with computable primal and adjoint defects measuring the distance
+between the localized discrete correctors and their continuous ideal
+counterparts.  A finite-dimensional stability transfer converts the
+computed Petrov--Galerkin inf--sup constant into a certified lower bound for
+the continuous ideal LOD pairing.  Under a directly checkable defect
+condition, the reliability constant is independent of the wavenumber, the
+coarse and fine mesh sizes, and the oversampling depth.  The resulting
+adaptive method uses inexpensive local Riesz indicators for coarse marking
+and evaluates the more costly exact-solution certificate only at selected
+checkpoints.  Fine-scale matrices are retained over cache batches and are
+rebuilt only on affected patches.  Two manufactured benchmarks, a localized
+highly oscillatory solution and a low-regularity L-shaped problem, are
+specified to assess reliability, effectivity, refinement patterns, and
+computational cost.
+\end{abstract}
+
+\maketitle

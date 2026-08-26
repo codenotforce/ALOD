@@ -1,0 +1,91 @@
+\section{Introduction}\label{sec:introduction}
+
+The numerical approximation of high-frequency Helmholtz problems is
+challenging because stability and approximation are coupled through the
+wavenumber.  Standard low-order finite elements may exhibit a pollution
+error that is not explained by best approximation alone, and purely local
+residual estimators can substantially underestimate this component before
+the asymptotic regime is reached
+\cite{BabuskaIhlenburgStrouboulisGangaraj1997a,
+BabuskaIhlenburgStrouboulisGangaraj1997b,MelenkSauter2011}.  This has
+motivated wavenumber-explicit analyses, enriched and discontinuous
+formulations, and adaptive estimators that account for global stability
+information; see, among others,
+\cite{SauterZech2015,CongreveGedickePerugia2019,
+ChaumontFreletErnVohralik2021}.
+
+The localized orthogonal decomposition (LOD) constructs problem-adapted
+coarse trial and test functions by correcting standard finite element
+functions with fine-scale responses on local patches.  It was introduced
+for elliptic multiscale problems in \cite{MalqvistPeterseim2014} and has
+since been developed into a flexible numerical homogenization framework
+\cite{MalqvistPeterseim2020,EngwerHenningMalqvistPeterseim2019}.  For the
+Helmholtz equation, the Petrov--Galerkin LOD eliminates the classical
+pollution mechanism under a wavelength-resolution condition and logarithmic
+oversampling \cite{Peterseim2017}.  Related developments include two-scale,
+multiresolution, and super-localized Helmholtz constructions
+\cite{OhlbergerVerfurth2017,HauckPeterseim2022,
+FreeseHauckPeterseim2024}.
+
+A posteriori certification of an LOD solution raises a specific difficulty.
+The correctors are computed in a finite-dimensional fine space and are then
+localized.  An estimator that only tests the residual on that discrete
+kernel controls the error to a discrete reference problem, but it does not
+see the remaining error between the reference problem and the exact
+solution.  Multiplication by a continuous Helmholtz inf--sup constant would
+restore reliability, but such a constant is generally unavailable and may
+obscure the desired wavenumber robustness.
+
+The present paper avoids both limitations.  Its main contributions are as
+follows.
+
+First, we retain a local dual-Riesz estimator on the discrete fine-scale
+kernel.  It is locally efficient with respect to the exact error and is
+therefore used for inexpensive coarse marking.  Second, we construct a
+compatibility-corrected equilibrated flux for the full residual.  The
+correction is essential because the LOD solution is not a Galerkin solution
+in the fine finite element space.  Third, we introduce total primal and
+adjoint corrector defects relative to the continuous kernel.  Their dual
+norms are bounded by quotient residual majorants obtained with the same
+patchwise mixed technology as the full-residual reconstruction.  Finally,
+a computable perturbation argument transfers the inf--sup constant of the
+localized Petrov--Galerkin matrix to the continuous ideal LOD spaces.  The
+resulting guaranteed upper bound has the form
+\[
+  \norm{u-U}_\kappa
+  \leq
+  \left(
+    c_W^{-1}
+    +
+    \frac{\epsA}{(1-\epsA)\betaInf}
+  \right)\etaEq.
+\]
+All quantities on the right are computable.  If the second term is bounded
+by a fixed tolerance and the coarse wavelength-resolution condition is
+satisfied uniformly, the reliability constant is independent of the
+wavenumber.
+
+The exact certificate is more expensive than the local marking indicator.
+We therefore evaluate it lazily.  Between certification checkpoints, the
+fine mesh and oversampling level are kept fixed and local factorizations are
+reused; such an interval is called a cache batch.  This is only an
+implementation device and does not introduce a changing reference problem.
+When the certificate detects an unresolved corrector defect, a separate
+localization diagnostic decides whether to increase the oversampling depth
+or to refine the fine mesh.  The analysis establishes guaranteed
+reliability and certified termination, but it does not claim estimator
+reduction, contraction, or optimal complexity for the complete adaptive
+loop.
+
+The paper is organized as follows.  \Cref{sec:model-spaces} introduces the
+model problem, the two nested meshes, and the projective quasi-interpolation.
+\Cref{sec:lod-framework} develops the continuous and discrete correctors,
+the localized Petrov--Galerkin method, and the local marking indicator.
+\Cref{sec:exact-certification} constructs the full-residual and total-defect
+majorants and proves the exact-solution certificate.
+\Cref{sec:adaptive} presents the adaptive algorithm, cache reuse, and cost
+model.  The two numerical benchmarks are described in
+\cref{sec:numerics}, and \cref{sec:conclusions} concludes the paper.
+
+
+%======================================================================

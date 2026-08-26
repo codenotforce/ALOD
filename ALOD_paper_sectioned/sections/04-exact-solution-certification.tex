@@ -1,0 +1,607 @@
+\section{Exact-solution certification}
+\label{sec:exact-certification}
+%======================================================================
+
+This section combines three computable ingredients: a full-residual
+majorant in $V^\star$, total corrector-defect majorants in $W^\star$, and
+a finite-dimensional inf--sup calculation.  The resulting estimator does
+not involve a global fine-grid Helmholtz solution or the continuous
+Helmholtz inf--sup constant.
+
+%----------------------------------------------------------------------
+\subsection{A compatibility-corrected equilibrated majorant}
+\label{sec:generic-equilibrated}
+%----------------------------------------------------------------------
+
+We first formulate a patchwise construction that will be reused for the
+full residual and for the total corrector defects.  Let $G\in V^\star$ be
+an antilinear functional and suppose that a polynomially represented
+functional $G_h$ is available in the form
+\begin{equation}
+\label{eq:generic-functional-data}
+  G_h(v)
+  =(g_h,v)_\Omega-(q_h,\nabla v)_\Omega
+   +(g_{R,h},v)_{\Gamma_R},
+\end{equation}
+with a computable oscillation bound
+\begin{equation}
+\label{eq:generic-oscillation}
+  \norm{G-G_h}_{V^\star}\leq\operatorname{osc}_h(G).
+\end{equation}
+The present boundary conditions require no data on $\Gamma_N$; a
+nonzero Neumann datum can be included in the same way.
+
+Let $\mathcal N_h$ be the geometric vertices of $\mathcal T_h$, including
+Dirichlet vertices, let $\psi_a$ be the geometric nodal hats, and set
+$P_a:=\supp\psi_a$.  Define
+\begin{align}
+  d_a&:=\psi_a g_h-\nabla\psi_a\cdot q_h
+       &&\text{in }P_a,
+  \label{eq:generic-patch-source}\\
+  j_a&:=0
+       &&\text{on }\Gamma_N\cap\partial P_a,
+  \label{eq:generic-patch-N}\\
+  j_a&:=-\psi_a g_{R,h}
+       &&\text{on }\Gamma_R\cap\partial P_a,
+  \label{eq:generic-patch-R}
+\end{align}
+and impose zero normal trace on the artificial patch boundary.  If
+$P_a\cap\Gamma_D=\varnothing$, then $\psi_a\in V$ and
+\begin{equation}
+\label{eq:generic-compatibility-defect}
+  \int_{P_a}d_a\,\dd x
+  -\int_{\partial P_a\cap(\Gamma_N\cup\Gamma_R)}j_a\,\dd s
+  =G_h(\psi_a)=:\chi_a.
+\end{equation}
+The local pure-Neumann problem is made compatible by
+\begin{equation}
+\label{eq:generic-compatibility-correction}
+  \bar c_a
+  :=\begin{cases}
+      \chi_a/|P_a|,&P_a\cap\Gamma_D=\varnothing,\\
+      0,&P_a\cap\Gamma_D\neq\varnothing,
+    \end{cases}
+  \qquad
+  \widetilde d_a:=d_a-\bar c_a.
+\end{equation}
+On a patch meeting $\Gamma_D$, the normal trace on the physical Dirichlet
+boundary is left free.
+
+Choose a divergence-compatible patch space and construct
+$\sigma_a\in H(\operatorname{div},P_a)$ satisfying
+\begin{equation}
+\label{eq:generic-local-flux}
+  \nabla\!\cdot\sigma_a=\widetilde d_a,
+  \qquad
+  \sigma_a\cdot n=j_a
+\end{equation}
+on the constrained boundary parts, with minimal
+$\norm{\sigma_a+\psi_aq_h}_{L^2(P_a)}$.  For the piecewise affine LOD
+functions and a piecewise affine projection of the volume data,
+$\widetilde d_a|_K\in P_2(K)$ and $j_a|_E\in P_2(E)$.  We therefore use
+$\operatorname{RT}_2/P_2$, or equivalently a divergence-compatible space
+such as $\operatorname{BDM}_3/P_2$.  Solvability follows from standard
+mixed finite element surjectivity
+\cite{BoffiBrezziFortin2013,ErnVohralik2015}.  The polynomial matching is
+important: a lower-order reconstruction is still possible, but its
+projection remainder must be included in \eqref{eq:generic-oscillation}.
+
+Set
+\begin{equation}
+\label{eq:generic-assembled-flux}
+  \sigma_G:=\sum_{a\in\mathcal N_h}\sigma_a,
+  \qquad
+  \delta_G:=\sum_{a\in\mathcal N_h}\bar c_a\mathbf1_{P_a}.
+\end{equation}
+The partition-of-unity identities imply
+\begin{equation}
+\label{eq:generic-residual-representation}
+  G(v)
+  =-(\sigma_G+q_h,\nabla v)_\Omega
+    +(\delta_G,v)_\Omega
+    +(G-G_h)(v).
+\end{equation}
+Define
+\begin{equation}
+\label{eq:generic-majorant}
+  \mathscr M_h(G)
+  :=\left(
+      \norm{\sigma_G+q_h}_{L^2(\Omega)}^2
+      +\norm{\kappa^{-1}\delta_G}_{L^2(\Omega)}^2
+    \right)^{1/2}
+    +\operatorname{osc}_h(G).
+\end{equation}
+
+\begin{theorem}[Generic equilibrated reliability]
+\label{thm:generic-equilibrated}
+The reconstruction satisfies
+\begin{equation}
+\label{eq:generic-majorant-reliability}
+  \norm G_{V^\star}\leq\mathscr M_h(G).
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Apply Cauchy--Schwarz to \eqref{eq:generic-residual-representation} and use
+\[
+  \norm{\nabla v}_{L^2}^2+\kappa^2\norm v_{L^2}^2
+  =\norm v_\kappa^2.
+\]
+Then add \eqref{eq:generic-oscillation} and take the supremum over
+$v\neq0$.
+\end{proof}
+
+The construction is a compatibility-corrected variant of equilibrated
+flux estimators used for conforming Helmholtz discretizations
+\cite{ChaumontFreletErnVohralik2021} and of the general patchwise
+reconstructions in \cite{ErnVohralik2015}.  Here the compatibility defect
+need not vanish because the functional is not Galerkin orthogonal to the
+fine finite element space.
+
+%----------------------------------------------------------------------
+\subsection{Full-residual majorant}
+\label{sec:full-residual-majorant}
+%----------------------------------------------------------------------
+
+Let $f_h$ be the elementwise $L^2$ projection of $f$ onto
+$P_1(\mathcal T_h)$.  For $G=R_U$, use
+\begin{equation}
+\label{eq:full-residual-data}
+  g_h=f_h+\kappa^2U,
+  \qquad q_h=\nabla U,
+  \qquad g_{R,h}=\ii\kappa U.
+\end{equation}
+The oscillation contains $f-f_h$ and any explicitly retained mixed-space
+projection remainder.  Define
+\begin{equation}
+\label{eq:eta-eq}
+  \eta_{\mathrm{eq}}:=\mathscr M_h(R_U).
+\end{equation}
+For marking and diagnostics, we also retain the element contributions
+\begin{equation}
+\label{eq:eta-eq-element}
+  \eta_{\mathrm{eq},K}^2
+  :=\norm{\sigma_{R_U}+\nabla U}_{L^2(K)}^2
+    +\norm{\kappa^{-1}\delta_{R_U}}_{L^2(K)}^2
+    +\operatorname{osc}_K^2.
+\end{equation}
+
+\begin{corollary}[Full-residual reliability]
+\label{cor:full-residual-reliability}
+The computable quantity $\eta_{\mathrm{eq}}$ satisfies
+\begin{equation}
+\label{eq:full-residual-reliability}
+  \norm{R_U}_{V^\star}\leq\eta_{\mathrm{eq}}.
+\end{equation}
+\end{corollary}
+
+Unlike a coercive elliptic problem, \eqref{eq:full-residual-reliability}
+does not by itself control $\norm{u-U}_\kappa$.  The missing stability
+information is supplied by the continuous-kernel defects below.
+
+%----------------------------------------------------------------------
+\subsection{Total corrector-defect majorants}
+\label{sec:total-defects}
+%----------------------------------------------------------------------
+
+For $v_H,w_H\in V_H$, abbreviate
+\begin{align}
+  x_\ell(v_H)&:=(I-\Qlr)v_H,
+  &x_\infty(v_H)&:=(I-\Qinf)v_H,
+  \label{eq:trial-parametrizations}\\
+  y_\ell(w_H)&:=(I-\Qlrs)w_H,
+  &y_\infty(w_H)&:=(I-\Qinfs)w_H.
+  \label{eq:test-parametrizations}
+\end{align}
+The total corrector defects are
+\begin{equation}
+\label{eq:total-defect-functions}
+  d_{\mathrm p}(v_H):=x_\ell(v_H)-x_\infty(v_H)
+  =(\Qinf-\Qlr)v_H\in W,
+\end{equation}
+\begin{equation}
+\label{eq:total-defect-functions-adjoint}
+  d_{\mathrm a}(w_H):=y_\ell(w_H)-y_\infty(w_H)
+  =(\Qinfs-\Qlrs)w_H\in W.
+\end{equation}
+They contain both the fine-mesh discretization error of the correctors and
+their localization error.
+
+Define the primal antilinear functional
+\begin{equation}
+\label{eq:total-primal-functional}
+  \mathfrak D_{\mathrm p}(v_H)(v)
+  :=a(x_\ell(v_H),v),
+  \qquad v\in V,
+\end{equation}
+and, to use the same antilinear convention for the adjoint defect,
+\begin{equation}
+\label{eq:total-adjoint-functional}
+  \widetilde{\mathfrak D}_{\mathrm a}(w_H)(v)
+  :=\overline{a(v,y_\ell(w_H))}.
+\end{equation}
+For $v\in W$, continuous ideal orthogonality gives
+\begin{align}
+  \mathfrak D_{\mathrm p}(v_H)(v)
+  &=a(d_{\mathrm p}(v_H),v),
+  \label{eq:total-primal-identity}\\
+  \widetilde{\mathfrak D}_{\mathrm a}(w_H)(v)
+  &=\overline{a(v,d_{\mathrm a}(w_H))}.
+  \label{eq:total-adjoint-identity}
+\end{align}
+
+A direct $V^\star$ majorant can be unnecessarily large because only the
+restriction to $W$ is relevant.  We therefore remove the coarse component.
+Let
+\begin{align}
+  \Lambda_{\mathrm p,v_H}
+  &:=\mathfrak D_{\mathrm p}(v_H)|_{V_H},
+  \label{eq:canonical-annihilator-p}\\
+  \Lambda_{\mathrm a,w_H}
+  &:=\widetilde{\mathfrak D}_{\mathrm a}(w_H)|_{V_H}
+  \label{eq:canonical-annihilator-a}
+\end{align}
+and define
+\begin{align}
+  G_{\mathrm p,v_H}
+  &:=\mathfrak D_{\mathrm p}(v_H)
+     -\Lambda_{\mathrm p,v_H}\circ I_H,
+  \label{eq:quotient-functional-p}\\
+  G_{\mathrm a,w_H}
+  &:=\widetilde{\mathfrak D}_{\mathrm a}(w_H)
+     -\Lambda_{\mathrm a,w_H}\circ I_H.
+  \label{eq:quotient-functional-a}
+\end{align}
+Since $I_Hv=0$ for $v\in W$, these functionals have the same restrictions
+to $W$ as the original defect functionals.  Moreover, the dual
+representation \eqref{eq:IH-dual-representation} gives
+\begin{equation}
+\label{eq:annihilator-volume-source}
+  \Lambda(I_Hv)
+  =\sum_{z\in\mathcal N_H\setminus\mathcal N_{H,D}}
+    \Lambda(\lambda_z)(\rho_z,v)_\Omega.
+\end{equation}
+Thus the annihilator is an explicit piecewise affine volume source.  The
+primal quotient functional has data
+\begin{equation}
+\label{eq:primal-defect-data}
+  q_h=-\nabla x_\ell(v_H),
+  \quad
+  g_h=-\kappa^2x_\ell(v_H)-g_{\Lambda_{\mathrm p,v_H}},
+  \quad
+  g_{R,h}=-\ii\kappa x_\ell(v_H),
+\end{equation}
+whereas the conjugated adjoint functional uses
+\begin{equation}
+\label{eq:adjoint-defect-data}
+  q_h=-\nabla y_\ell(w_H),
+  \quad
+  g_h=-\kappa^2y_\ell(w_H)-g_{\Lambda_{\mathrm a,w_H}},
+  \quad
+  g_{R,h}=+\ii\kappa y_\ell(w_H).
+\end{equation}
+All these data are represented exactly by the $\operatorname{RT}_2/P_2$
+choice, so no defect oscillation is needed.  Set
+\begin{equation}
+\label{eq:defect-majorants}
+  \widehat r_{\mathrm p}(v_H)
+  :=\mathscr M_h(G_{\mathrm p,v_H}),
+  \qquad
+  \widehat r_{\mathrm a}(w_H)
+  :=\mathscr M_h(G_{\mathrm a,w_H}).
+\end{equation}
+
+\begin{proposition}[Certified total defects]
+\label{prop:certified-total-defects}
+For all $v_H,w_H\in V_H$,
+\begin{equation}
+\label{eq:pointwise-total-defect-bounds}
+  \norm{d_{\mathrm p}(v_H)}_\kappa
+  \leq c_W^{-1}\widehat r_{\mathrm p}(v_H),
+  \qquad
+  \norm{d_{\mathrm a}(w_H)}_\kappa
+  \leq c_W^{-1}\widehat r_{\mathrm a}(w_H).
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+For $d=d_{\mathrm p}(v_H)$, use \eqref{eq:total-primal-identity}, the
+fact that the quotient functional agrees on $W$, and kernel coercivity:
+\[
+  c_W\norm d_\kappa^2
+  \leq|a(d,d)|
+  =|G_{\mathrm p,v_H}(d)|
+  \leq\widehat r_{\mathrm p}(v_H)\norm d_\kappa.
+\]
+The adjoint estimate follows in the same way from
+\eqref{eq:total-adjoint-identity}; conjugation does not change the
+absolute value or the dual norm.
+\end{proof}
+
+\begin{remark}[Optimized quotient]
+\label{rem:optimized-quotient}
+The canonical choice \eqref{eq:canonical-annihilator-p}--
+\eqref{eq:canonical-annihilator-a} avoids an additional coarse solve.  It
+may be replaced by
+\[
+  \inf_{\Lambda_H\in V_H^\star}
+  \mathscr M_h(\mathfrak D_s-\Lambda_H\circ I_H),
+\]
+which is a finite-dimensional quadratic minimization and can only reduce
+the majorant.  The reliability proof is unchanged.
+\end{remark}
+
+Normalize the defects by the actual computed trial and test norms:
+\begin{equation}
+\label{eq:rho-total}
+  \rhoP
+  :=\sup_{0\neq v_H\in V_H}
+    \frac{\widehat r_{\mathrm p}(v_H)}
+         {\norm{x_\ell(v_H)}_\kappa},
+  \qquad
+  \rhoA
+  :=\sup_{0\neq w_H\in V_H}
+    \frac{\widehat r_{\mathrm a}(w_H)}
+         {\norm{y_\ell(w_H)}_\kappa},
+\end{equation}
+and set
+\begin{equation}
+\label{eq:epsilon-total}
+  \epsP:=c_W^{-1}\rhoP,
+  \qquad
+  \epsA:=c_W^{-1}\rhoA.
+\end{equation}
+Then
+\begin{equation}
+\label{eq:normalized-total-defects}
+  \norm{d_{\mathrm p}(v_H)}_\kappa
+  \leq\epsP\norm{x_\ell(v_H)}_\kappa,
+  \qquad
+  \norm{d_{\mathrm a}(w_H)}_\kappa
+  \leq\epsA\norm{y_\ell(w_H)}_\kappa.
+\end{equation}
+
+%----------------------------------------------------------------------
+\subsection{Stability transfer and exact-error upper bound}
+\label{sec:stability-transfer}
+%----------------------------------------------------------------------
+
+Define the localized and continuous ideal inf--sup constants
+\begin{align}
+  \beta_\ell
+  &:=%
+  \inf_{0\neq v_H\in V_H}
+  \sup_{0\neq w_H\in V_H}
+  \frac{|a(x_\ell(v_H),y_\ell(w_H))|}
+       {\norm{x_\ell(v_H)}_\kappa
+        \norm{y_\ell(w_H)}_\kappa},
+  \label{eq:beta-localized}\\
+  \beta_\infty
+  &:=%
+  \inf_{0\neq v_H\in V_H}
+  \sup_{0\neq w_H\in V_H}
+  \frac{|a(x_\infty(v_H),y_\infty(w_H))|}
+       {\norm{x_\infty(v_H)}_\kappa
+        \norm{y_\infty(w_H)}_\kappa}.
+  \label{eq:beta-continuous-ideal}
+\end{align}
+A verified lower bound $\underline\beta_\ell\leq\beta_\ell$ is computed
+from the coarse Petrov--Galerkin matrix.
+
+\begin{proposition}[Certified continuous ideal stability]
+\label{prop:continuous-ideal-stability}
+The continuous ideal inf--sup constant satisfies
+\begin{equation}
+\label{eq:beta-infinity-certified}
+  \beta_\infty\geq\betaInf
+  :=\frac{
+      \pos{\underline\beta_\ell
+      -c_W^{-1}\rhoP\rhoA}
+    }{(1+\epsP)(1+\epsA)}.
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+For $v_H,w_H\in V_H$, write
+$x_\ell=x_\infty+d_{\mathrm p}$ and
+$y_\ell=y_\infty+d_{\mathrm a}$.  Continuous ideal orthogonality gives
+\[
+  a(x_\infty,d_{\mathrm a})=0,
+  \qquad
+  a(d_{\mathrm p},y_\infty)=0,
+\]
+so that the perturbation contains only the product of the two defects:
+\begin{equation}
+\label{eq:orthogonal-cross-term}
+  a(x_\ell,y_\ell)-a(x_\infty,y_\infty)
+  =a(d_{\mathrm p},d_{\mathrm a}).
+\end{equation}
+Using the primal defect functional and
+\cref{prop:certified-total-defects},
+\[
+  |a(d_{\mathrm p},d_{\mathrm a})|
+  \leq c_W^{-1}\widehat r_{\mathrm p}(v_H)
+                     \widehat r_{\mathrm a}(w_H)
+  \leq c_W^{-1}\rhoP\rhoA
+       \norm{x_\ell}_\kappa\norm{y_\ell}_\kappa.
+\]
+Furthermore,
+\[
+  \norm{x_\infty}_\kappa
+  \leq(1+\epsP)\norm{x_\ell}_\kappa,
+  \qquad
+  \norm{y_\infty}_\kappa
+  \leq(1+\epsA)\norm{y_\ell}_\kappa.
+\]
+Insert a test function realizing the localized inf--sup inequality up to
+an arbitrary factor, use \eqref{eq:orthogonal-cross-term}, and then take
+the supremum and infimum.
+\end{proof}
+
+\begin{theorem}[Guaranteed exact-solution estimator]
+\label{thm:exact-solution-upper}
+Assume $\mu<1$, $\epsA<1$, and $\betaInf>0$.  Then
+\begin{equation}
+\label{eq:exact-solution-upper}
+  \norm{u-U}_\kappa
+  \leq\Uex
+  :=\left(
+      c_W^{-1}
+      +\frac{\epsA}{(1-\epsA)\betaInf}
+    \right)\etaEq.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Let $e:=u-U$ and split it with the continuous primal corrector,
+\begin{align*}
+  e&=e_W+e_H,
+  \\
+  e_W&:=\Qinf e\in W,
+  \\
+  e_H&:=(I-\Qinf)e\in X_{H,\infty}:=(I-\Qinf)V_H.
+\end{align*}
+The last inclusion follows because $e-I_He\in W$ and $\Qinf$ is the
+identity on $W$.  For $w\in W$, primal ideal orthogonality gives
+$a(e_W,w)=R_U(w)$, whence
+\begin{equation}
+\label{eq:exact-fine-part}
+  \norm{e_W}_\kappa
+  \leq c_W^{-1}\norm{R_U}_{W^\star}.
+\end{equation}
+
+For $w_H\in V_H$, set $y_\infty=y_\infty(w_H)$ and
+$y_\ell=y_\ell(w_H)$.  Adjoint ideal orthogonality gives
+$a(e_W,y_\infty)=0$, while Petrov--Galerkin orthogonality gives
+$R_U(y_\ell)=0$.  Therefore
+\[
+  a(e_H,y_\infty)
+  =R_U(y_\infty-y_\ell)
+  =-R_U(d_{\mathrm a}(w_H)).
+\]
+By \eqref{eq:normalized-total-defects},
+\[
+  |a(e_H,y_\infty)|
+  \leq\epsA\norm{R_U}_{W^\star}\norm{y_\ell}_\kappa.
+\]
+Since $y_\ell=y_\infty+d_{\mathrm a}$,
+\[
+  (1-\epsA)\norm{y_\ell}_\kappa
+  \leq\norm{y_\infty}_\kappa.
+\]
+The continuous ideal inf--sup bound then yields
+\begin{equation}
+\label{eq:exact-coarse-part}
+  \norm{e_H}_\kappa
+  \leq
+  \frac{\epsA}{(1-\epsA)\betaInf}
+  \norm{R_U}_{W^\star}.
+\end{equation}
+Finally,
+$\norm{R_U}_{W^\star}\leq\norm{R_U}_{V^\star}\leq\etaEq$ by
+\cref{cor:full-residual-reliability}.  Combining
+\eqref{eq:exact-fine-part} and \eqref{eq:exact-coarse-part} proves the
+claim.
+\end{proof}
+
+\begin{corollary}[Wavenumber-robust reliability]
+\label{cor:k-robust-reliability}
+Assume $\mu\leq\mu_0<1$ and impose the computable acceptance condition
+\begin{equation}
+\label{eq:k-robust-acceptance}
+  \frac{\epsA}{(1-\epsA)\betaInf}
+  \leq\tau_{\mathrm{tot}}
+\end{equation}
+with a fixed $\tau_{\mathrm{tot}}>0$.  Then
+\begin{equation}
+\label{eq:k-robust-bound}
+  \norm{u-U}_\kappa
+  \leq
+  \bigl(c_{W,0}^{-1}+\tau_{\mathrm{tot}}\bigr)\etaEq.
+\end{equation}
+The reliability constant is independent of $\kappa$, $H$, $h$, and
+$\ell$.
+\end{corollary}
+
+The statement concerns the reliability constant, not the number of
+unknowns required to resolve increasing frequencies.  The latter must
+still grow with the physical oscillation scale; see the discussions of
+pollution and resolution in
+\cite{BabuskaIhlenburgStrouboulisGangaraj1997a,MelenkSauter2011,
+Peterseim2017}.
+
+%----------------------------------------------------------------------
+\subsection{Finite-dimensional evaluation and verified constants}
+\label{sec:algebraic-certificate}
+%----------------------------------------------------------------------
+
+Let $\{\phi_i\}_{i=1}^{N_H}$ be a basis of $V_H$ and define the energy
+Gram matrices
+\begin{align}
+  (M_X)_{ij}
+  &:=b_\kappa(x_\ell(\phi_j),x_\ell(\phi_i)),
+  \label{eq:MX}\\
+  (M_Y)_{ij}
+  &:=b_\kappa(y_\ell(\phi_j),y_\ell(\phi_i)),
+  \label{eq:MY}
+\end{align}
+and the Petrov--Galerkin matrix
+\begin{equation}
+\label{eq:lod-matrix}
+  A_{ij}:=a(x_\ell(\phi_j),y_\ell(\phi_i)).
+\end{equation}
+Then
+\begin{equation}
+\label{eq:beta-matrix}
+  \beta_\ell
+  =\sigma_{\min}(M_Y^{-1/2}AM_X^{-1/2}).
+\end{equation}
+For moderate $N_H$, a dense generalized singular-value calculation is
+usually negligible compared with fine-scale patch work.  For larger
+systems, a smallest-eigenvalue iteration can be used.  Rigorous
+certification requires a verified lower enclosure
+$\underline\beta_\ell$ rather than an unconverged numerical singular
+value.
+
+Because the quotient data depend linearly on the coarse coefficient
+vector and each local mixed reconstruction is a linear minimum-norm solve,
+there are Hermitian positive semidefinite matrices $B_{\mathrm p}$ and
+$B_{\mathrm a}$ such that
+\begin{equation}
+\label{eq:defect-quadratic-forms}
+  \widehat r_{\mathrm p}(v_H)^2=\mathbf v^*B_{\mathrm p}\mathbf v,
+  \qquad
+  \widehat r_{\mathrm a}(w_H)^2=\mathbf w^*B_{\mathrm a}\mathbf w.
+\end{equation}
+Consequently,
+\begin{equation}
+\label{eq:defect-eigenproblems}
+  \rhoP^2=\lambda_{\max}(B_{\mathrm p},M_X),
+  \qquad
+  \rhoA^2=\lambda_{\max}(B_{\mathrm a},M_Y).
+\end{equation}
+The matrices need not be formed.  Their actions are obtained by patchwise
+back-solves with cached mixed factorizations, and matrix-free Lanczos or
+LOBPCG iterations can be used \cite{Knyazev2001}.  For a guaranteed upper
+bound, the algebraic eigenvalue error must be enclosed; a Ritz value alone
+is a lower bound for the largest eigenvalue.
+
+The exact estimator \eqref{eq:exact-solution-upper} therefore uses only:
+\begin{enumerate}
+\item the kernel constant $c_W$, obtained from the checked resolution
+      number $\mu$;
+\item the coarse lower bound $\underline\beta_\ell$;
+\item the two generalized-eigenvalue upper bounds $\rhoP$ and $\rhoA$;
+\item the full-residual majorant $\etaEq$.
+\end{enumerate}
+It does not require the continuous Helmholtz inf--sup constant, a fine-grid
+Helmholtz solve, or the constants $C_I$, $C_{\mathrm{sd}}$, and
+$C_{\mathrm{ov}}$ in the final upper bound.  The latter appear only in the
+cheap local diagnostics.  If the geometric constant entering $\mu$, the
+mixed solves, or the algebraic eigenvalue enclosures are calibrated rather
+than rigorously bounded, the resulting quantity is denoted by
+$U_{\mathrm{ex}}^{\mathrm{pr}}$ and is reported as a practical estimator,
+not as a certificate.
+
+
+%======================================================================
