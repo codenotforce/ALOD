@@ -1,6 +1,6 @@
 # 精简 ALOD 数值实验项目开发计划书
 
-版本：v0.1  
+版本：v0.2  
 日期：2026-08-26  
 项目目录：`D:\code\femcode\ALOD\ALOD_minimal`  
 论文基线：`../ALOD_paper_sectioned/`  
@@ -111,8 +111,7 @@ candidate 流程与本论文“细网格不是参考解、误差直接控制到�
 - 小矩阵上将矩阵自由谱界与显式 dense 结果比较；
 - full-rebuild 与 cache 路径逐迭代比较。
 
-E0 通过后冻结 `theta_H, theta_h, mu_0, tau_loc, tau_tot, q_cert, m_cert`，正式运行期间不得
-按图形效果单独调参。
+E0 通过后暂时冻结 `theta_H, theta_h, mu_0, tau_loc, tau_tot, q_cert, m_cert`，正式运行期间可根据实际情况调参.
 
 ### 4.2 E1：方形局部光滑振荡解
 
@@ -136,7 +135,7 @@ Robin，局部中心 `(3/4,1/2)`，`alpha_loc=80`，相位 `exp(i*kappa*x)`。
 
 比较：
 
-1. exact-certified adaptive LOD；
+1. exact-certified adaptive LOD；(暂时不测)
 2. 固定超采样、均匀细网格的 LOD；
 3. adaptive P1 FEM；
 4. 成本允许时增加 uniform P1 FEM。
@@ -145,7 +144,7 @@ Robin，局部中心 `(3/4,1/2)`，`alpha_loc=80`，相位 `exp(i*kappa*x)`。
 
 ### 4.4 E3：波数稳健性
 
-v0.1 建议使用 `kappa in {8,16,32}`；最终数值在 E0 后冻结。固定制造解空间位置参数和统一
+v0.2 建议使用 `kappa in {8,16,32}`；最终数值在 E0 后冻结。固定制造解空间位置参数和统一
 的 `kappa*H` 初始分辨率上限，报告证书前因子
 `C_cert = 1/c_W + eps_a/((1-eps_a)*beta_inf)`。只论证可靠性常数的波数稳健性，不声称
 总计算量与波数无关。
@@ -199,20 +198,17 @@ ALOD_minimal/
 
 ## 7. 工作包与里程碑
 
-| 工作包 | 主要交付 | 退出条件 | 估算 |
-|---|---|---|---:|
-| WP0 工程与合同 | CMake、配置 schema、状态/结果等级、输出目录 | clean build；未知配置字段拒绝 | 2--3 人日 |
-| WP1 网格/FEM/算例 | NVB、P1 装配、混合边界、R1/S 制造解 | G0--G2 通过；FEM 收敛正确 | 5--7 人日 |
-| WP2 Petrov--Galerkin LOD | `I_H`、patch、原/伴随校正子、PG 解 | manufactured LOD 与全局校正子回归通过 | 7--10 人日 |
-| WP3 廉价指标 | 局部核 Riesz、`eta_H`、Dörfler、localization diagnostic | 残量恒等式和局部效率回归通过 | 5--7 人日 |
-| WP4 平衡通量 | RT2/P2、compatibility correction、`eta_eq` | patch 与全局残量审计通过 | 8--12 人日 |
-| WP5 total defect/稳定性 | quotient residual、`rho_p/a`、`beta_l/beta_inf`、`U_ex^pr` | dense 小问题交叉验证；无假证书 | 8--12 人日 |
-| WP6 自适应与缓存 | Algorithm 1、`H-h-ell` 修复、cache batch | full-rebuild 等价；结构化退出 | 7--10 人日 |
-| WP7 比较方法与实验 | fixed LOD、UFEM、AFEM、E1/E2/E3 runner 与绘图 | 一条命令复现 practical 矩阵 | 6--8 人日 |
-| WP8 严格数值验证 | 验证谱界、向外舍入、证书证据链 | 正式结果可标记 `certified` | 10--20 人日 |
-
-单人开发的 practical 版本约 8--11 周；严格 certified 版本预计再增加 2--4 周。估算不含大型
-服务器主实验排队时间。
+| 工作包 | 主要交付 | 退出条件 |
+|---|---|--- |
+| WP0 工程与合同 | CMake、配置 schema、状态/结果等级、输出目录 | clean build；未知配置字段拒绝|
+| WP1 网格/FEM/算例 | NVB、P1 装配、混合边界、R1/S 制造解 | G0--G2 通过；FEM 收敛正确| 
+| WP2 Petrov--Galerkin LOD | `I_H`、patch、原/伴随校正子、PG 解 | manufactured LOD 与全局校正子回归通过| 
+| WP3 廉价指标 | 局部核 Riesz、`eta_H`、Dörfler、localization diagnostic | 残量恒等式和局部效率回归通过| 
+| WP4 平衡通量 | RT2/P2、compatibility correction、`eta_eq` | patch 与全局残量审计通过| 
+| WP5 total defect/稳定性 | quotient residual、`rho_p/a`、`beta_l/beta_inf`、`U_ex^pr` | dense 小问题交叉验证；无假证书| 
+| WP6 自适应与缓存 | Algorithm 1、`H-h-ell` 修复、cache batch | full-rebuild 等价；结构化退出| 
+| WP7 比较方法与实验 | fixed LOD、UFEM、AFEM、E1/E2/E3 runner 与绘图 | 一条命令复现 practical 矩阵| 
+| WP8 严格数值验证 | 验证谱界、向外舍入、证书证据链 | 正式结果可标记 `certified`| 
 
 ## 8. 验收门禁
 
@@ -268,5 +264,12 @@ evaluation time 和 artifact time；精确解不得出现在算法对象接口�
 4. 迁移 `I_H`、patch、DirectSaddle/DirectSchur 校正子与双侧 PG LOD；
 5. 以小波数、小网格生成第一个端到端 `practical` LOD 解；
 6. 产出“迁移源码清单 + 删除模块清单 + 基准测试报告”，评审通过后再进入证书实现。
+
+## 关于测试
+
+1. 测试使用服务器, 通过 `ssh shuihan`登入服务器
+2. 项目位于服务器 `sutai@sutai-Super-Server:~/code/ALOD$`
+3. 服务器LOD-CPP项目 `sutai@sutai-Super-Server:~/code/LOD2d-CPP$`
+4. 本地LOD-CPP项目可进行小规模测试 `\\wsl.localhost\Ubuntu-22.04\home\qcxubuntu\learning\LOD2d-C++`
 
 首轮不接入 reference-epoch、自适应 candidate、hp-FEM、Schwarz、服务器脚本或历史结果。
