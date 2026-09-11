@@ -25,11 +25,17 @@ struct LodSpace::Impl {
     std::vector<int> coarse_nodes;
     std::string reference_identity, identity;
     LodLimits limits;
+    InterpolationPolicy policy;
     double patch_residual = 0, constraint_residual = 0;
 };
 
 LodSpace::LodSpace(TriMesh coarse, RefineOutput reference, double k, int ell,
-                   InterpolationPolicy policy, LodLimits limits) : impl_(std::make_unique<Impl>()) {
+                   InterpolationPolicy policy, LodLimits limits)
+    :LodSpace(std::move(coarse),std::move(reference),k,ell,policy,limits,nullptr){}
+LodSpace::LodSpace(const LodSpace& previous,int ell)
+    :LodSpace(previous.coarse(),previous.impl_->reference,previous.operators().wavenumber,ell,previous.impl_->policy,previous.limits(),&previous){}
+LodSpace::LodSpace(TriMesh coarse,RefineOutput reference,double k,int ell,
+                   InterpolationPolicy policy,LodLimits limits,const LodSpace* reused) : impl_(std::make_unique<Impl>()) {
     auto& p = *impl_;
     const int nh = reference.mesh.nodes.size(), nH = coarse.nodes.size();
     if (!std::isfinite(k) || k <= 0 || ell < 1 || ell > 16 || limits.threads < 1
@@ -40,10 +46,17 @@ LodSpace::LodSpace(TriMesh coarse, RefineOutput reference, double k, int ell,
         || reference.P_elem.cols() != static_cast<int>(coarse.elems.size())
         || (policy != InterpolationPolicy::ArchivedArithmetic && policy != InterpolationPolicy::ManuscriptAreaWeighted))
         throw std::invalid_argument("invalid LOD hierarchy, policy, parameters or reference resource limit");
-    p.coarse = std::move(coarse); p.reference = std::move(reference); p.limits = limits;
+    p.coarse = std::move(coarse); p.reference = std::move(reference); p.limits = limits;p.policy=policy;
     validate_boundary_tags(p.coarse);validate_boundary_tags(p.reference.mesh);
     if(static_cast<std::size_t>(nh)*nH>limits.maximum_patch_entries)
         throw std::runtime_error("LOD constraint workspace bound exceeds resource limit");
+    int column=0;
+    if(reused){
+        const auto& old=*reused->impl_;
+        p.interpolation=old.interpolation;p.coarse_basis=old.coarse_basis;
+        p.coarse_nodes=old.coarse_nodes;p.operators=old.operators;p.energy=old.energy;
+        p.reference_identity=old.reference_identity;column=p.coarse_nodes.size();
+    }else {
     std::vector<Eigen::Triplet<double>> entries;
     for (int e=0; e<static_cast<int>(p.reference.mesh.elems.size()); ++e)
         for (int j=0; j<3; ++j) entries.emplace_back(3*e+j,p.reference.mesh.elems[e][j],1);
@@ -53,7 +66,7 @@ LodSpace::LodSpace(TriMesh coarse, RefineOutput reference, double k, int ell,
     for (int i:dirichlet_nodes(p.coarse)) boundary[i]=true;
     entries.clear();
     std::vector<Eigen::Triplet<double>> expected_entries;
-    int column=0;
+    column=0;
     for (int i=0;i<nH;++i) if (!boundary[i]) {
         p.coarse_nodes.push_back(i); expected_entries.emplace_back(i,i,1);
         for (Sparse::InnerIterator it(p.reference.P_node,i);it;++it) entries.emplace_back(it.row(),column,it.value());
@@ -68,6 +81,17 @@ LodSpace::LodSpace(TriMesh coarse, RefineOutput reference, double k, int ell,
     p.energy=p.operators.stiffness+k*k*p.operators.mass;
     if (ComplexSparseMatrix(p.operators.system-ComplexSparseMatrix(p.operators.system.transpose())).norm()>1e-12*p.operators.system.norm())
         throw std::runtime_error("conjugate two-sided LOD requires complex symmetry");
+    // Immutable generated embeddings and boundary/operator parameters define the state.
+    FingerprintBuilder embeddings;
+    for(const Sparse* matrix:{&p.reference.P_node,&p.reference.P_elem,&p.reference.P_dg,&p.interpolation}) {
+        embeddings.add_i64(matrix->rows());embeddings.add_i64(matrix->cols());
+        for(int col=0;col<matrix->outerSize();++col)for(Sparse::InnerIterator it(*matrix,col);it;++it) {
+            embeddings.add_i64(it.row());embeddings.add_i64(it.col());embeddings.add_double(it.value());
+        }
+    }
+    p.reference_identity=mesh_fingerprint(p.coarse)+":"+mesh_fingerprint(p.reference.mesh)+":"+embeddings.finish()
+        +":"+std::to_string(std::bit_cast<std::uint64_t>(k))+":"+std::to_string(static_cast<int>(policy));
+    }
     auto patches=build_patches(p.coarse,ell);
     const std::vector<TriMesh> no_meshes;
     const std::vector<Sparse> no_prolongations;
@@ -107,16 +131,6 @@ LodSpace::LodSpace(TriMesh coarse, RefineOutput reference, double k, int ell,
     p.reduced=p.test.adjoint()*p.operators.system*p.trial;
     p.reduced.prune(Complex(0,0),1e-14);p.reduced.makeCompressed();p.solver.compute(p.reduced);
     if(p.solver.info()!=Eigen::Success)throw std::runtime_error("LOD coarse factorization failed");
-    // Immutable generated embeddings and boundary/operator parameters define the state.
-    FingerprintBuilder embeddings;
-    for(const Sparse* matrix:{&p.reference.P_node,&p.reference.P_elem,&p.reference.P_dg,&p.interpolation}) {
-        embeddings.add_i64(matrix->rows());embeddings.add_i64(matrix->cols());
-        for(int col=0;col<matrix->outerSize();++col)for(Sparse::InnerIterator it(*matrix,col);it;++it) {
-            embeddings.add_i64(it.row());embeddings.add_i64(it.col());embeddings.add_double(it.value());
-        }
-    }
-    p.reference_identity=mesh_fingerprint(p.coarse)+":"+mesh_fingerprint(p.reference.mesh)+":"+embeddings.finish()
-        +":"+std::to_string(std::bit_cast<std::uint64_t>(k))+":"+std::to_string(static_cast<int>(policy));
     p.identity=p.reference_identity+":ell="+std::to_string(ell);
 }
 LodSpace::~LodSpace()=default;

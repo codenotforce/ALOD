@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "scope": "P0-P4 provenance; original source hashes retained, committed-content hashes normalized to LF.",
+  "scope": "P0-P6 provenance; original source hashes retained, committed-content hashes normalized to LF.",
   "roots": {
     "legacy": "External legacy source supplied by the operator",
     "paper": "External manuscript supplied by the operator",
@@ -152,9 +152,9 @@
       "origin_scope": "initial_project_input",
       "origin": "ALOD_SUBPROJECT_AGENT_PLAN_20260909.md",
       "origin_sha256": "5e4544f14cf014a4732477283ec5ea64cb28e2506d8cb13162c768597c3c9ae2",
-      "sha256": "8099a5719fc4eaecceef021d5b33574da9fd3703bb8dd16a0b2686577501b63e",
+      "sha256": "e05f2c214dd4f386430ed4689cc573ef98050faa5c51fea44108084a5e75c346",
       "snapshot": "initial-user-plan",
-      "modification": "Plan retained in Chinese at user request; portable paths and P0/P1/P2 completion status recorded, including both verified manuscript/archive definition differences. P3/P4 phase status, user-selected E2 lazy timing, discovered source differences and explicit deferred campaigns updated.",
+      "modification": "Plan retained in Chinese at user request; portable paths and P0/P1/P2 completion status recorded, including both verified manuscript/archive definition differences. P3/P4 phase status, user-selected E2 lazy timing, discovered source differences and explicit deferred campaigns updated. P5/P6 completion, bounded validation and explicit P7/P8 follow-up scope recorded; plan remains in Chinese.",
       "copyright": "Inherited; no repository license found. See NOTICE.md."
     },
     {
@@ -542,9 +542,9 @@
       "origin_scope": "legacy",
       "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/model.cpp",
       "origin_sha256": "4da71e4c9b289d4939acffa750fb727a5f8829bd061febd168bbbfe6ef8e30bf",
-      "sha256": "a369d84ce010a613f09bf2e2699742c84e56ce15cc7ce5666509c3b3a5fa43e7",
+      "sha256": "ecca0076cf3760faf33896085f9ccca538924d854892f9865b04dc9135c897ec",
       "snapshot": "E2-production",
-      "modification": "Fixed-state two-sided direct-Schur assembly, shared batch PG factor and immutable identities; excludes controller and audit machinery.",
+      "modification": "Fixed-state two-sided direct-Schur assembly, shared batch PG factor and immutable identities; excludes controller and audit machinery. P6 adds ell-only reconstruction from validated reference operators/interpolation.",
       "copyright": "Inherited; no repository license found. See NOTICE.md."
     },
     {
@@ -618,9 +618,9 @@
       "origin_scope": "legacy",
       "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/adaptive/hierarchy.cpp",
       "origin_sha256": "34fc7588390ba2827d0514a0dbe6aef36f4352458ebca54e33bc70f7a9cad702",
-      "sha256": "732346d321d431f5d6ac9ebcb8bb2affdd9fcdce8b9a4270fb2f30bed20bf074",
+      "sha256": "0741cbfec62ec16aaf43c0e70a1c67708923351ca1041d0927169f613d1e4207",
       "snapshot": "E2-production",
-      "modification": "Minimal paired NVB transactions and closure; preserves E1 proposed-coarse closure before reference-only discard.",
+      "modification": "Minimal paired NVB transactions and closure; preserves E1 proposed-coarse closure before reference-only discard. P5/P6 expose exact coarse/reference NVB parent and nodal maps for lineage and warm-start transport.",
       "copyright": "Inherited; no repository license found. See NOTICE.md."
     },
     {
@@ -628,9 +628,9 @@
       "origin_scope": "legacy",
       "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/benchmarks/reference_epoch_paper_runner.cpp",
       "origin_sha256": "2e7317978ebe3673431b35e13c129d437466150d044751de42c4a3844ff440d2",
-      "sha256": "4cc5ea7e346128ea05cdf97068a635ad2bdb8085950013a280a30de83202f26f",
+      "sha256": "c2830f6454d253d0a7d886e652dbaa229cc605034eb647e3d62bf2727e12f978",
       "snapshot": "E2-production",
-      "modification": "Regional training extracted into typed API; follows required normalized phi recurrence and empty/inherited-first budget evaluation, tracks raw representatives through projection/POD, keeps actual coupled blocks. Extraction used the P0 resource-only replay copy; its separate hash is retained.",
+      "modification": "Regional training extracted into typed API; follows required normalized phi recurrence and empty/inherited-first budget evaluation, tracks raw representatives through projection/POD, keeps actual coupled blocks. Extraction used the P0 resource-only replay copy; its separate hash is retained. P6 caches base solves, growing products/AOT responses, explicit POD combinations and prepared projected PG factors; free-DOF adjoint residual gates remain active.",
       "copyright": "Inherited; no repository license found. See NOTICE.md.",
       "extraction_source_sha256": "8aefc2f5c6236ca36511a33f17683404fe585594e1c4ea531d321f1c47802d32"
     },
@@ -644,6 +644,16 @@
       "modification": "Extracted global reference adjoint solve using UMFPACK; single-entry actual-operator/free-DOF cache and checked residuals. Extraction used the P0 resource-only replay copy; its separate hash is retained.",
       "copyright": "Inherited; no repository license found. See NOTICE.md.",
       "extraction_source_sha256": "8aefc2f5c6236ca36511a33f17683404fe585594e1c4ea531d321f1c47802d32"
+    },
+    {
+      "path": "src/fem/batch.cpp",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/operators.cpp",
+      "origin_sha256": "35c4f1ba9dc60b248be7e04a219f5a630e954718d8dab1be63583f8d115d296f",
+      "sha256": "7d9dd63f43a9d9596379130341677700b7bda100b9316b9a18efc18925005fdd",
+      "snapshot": "E2-production",
+      "modification": "Derived fused audit integrator retains triangle geometry, quadrature and per-member element reduction from the imported operators; adds bounded RHS batching and one reusable reference FEM factor.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
     }
   ]
 }

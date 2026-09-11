@@ -27,6 +27,7 @@ struct MeshTransition {
     lod2d::RefineOutput reference;
     Sparse injection; // Old reference values to the new reference.
     int closure_rounds=0;
+    Sparse coarse_injection,coarse_parent,reference_parent;
 };
 // Both sets of marks must come from the same accepted solution and frozen scales.
 MeshTransition refine_pair(const lod2d::TriMesh&,const lod2d::RefineOutput&,

@@ -21,6 +21,17 @@ struct RegionalEvaluation {
     Eigen::VectorXd eta;
     double pg_residual=0, aot_residual=0, raw_base_block=0, raw_dictionary_block=0;
 };
+class RegionalEvaluator {
+public:
+    RegionalEvaluator(const LodSpace&,AdditiveKernelRieszContext&,AdjointTestCache&,bool reuse=true);
+    ~RegionalEvaluator();
+    RegionalEvaluation evaluate(const ComplexMatrix& loads,const ComplexMatrix& phi,const std::vector<int>& mask);
+    // Accounted persistent dense Eigen buffers; excludes solver internals,
+    // sparse storage and temporary expression allocations.
+    std::size_t dense_cache_bytes() const;
+private:
+    struct Impl;std::unique_ptr<Impl> impl_;
+};
 struct RegionalResult {
     ComplexMatrix raw_kernel, phi, full_phi, full_values;
     Eigen::VectorXd targets, full_eta;

@@ -35,6 +35,8 @@ add_library(alod_core STATIC
     src/adaptive/refine.cpp
     src/enrichment/aot.cpp
     src/enrichment/regional.cpp
+    src/io/checkpoint.cpp
+    src/fem/batch.cpp
     src/helmholtz/patch_system.cpp
     src/helmholtz/patch_solver.cpp
     src/helmholtz/corrector.cpp)
@@ -48,6 +50,10 @@ add_executable(alod_run apps/alod_run.cpp apps/adaptive_run.cpp)
 target_link_libraries(alod_run PRIVATE alod_core)
 add_executable(alod_fixed apps/alod_fixed.cpp)
 target_link_libraries(alod_fixed PRIVATE alod_core)
+add_executable(alod_audit apps/alod_audit.cpp)
+target_link_libraries(alod_audit PRIVATE alod_core)
+add_executable(alod_profile apps/alod_profile.cpp)
+target_link_libraries(alod_profile PRIVATE alod_core)
 
 if(ALOD_BUILD_TESTS)
     enable_testing()
@@ -61,6 +67,8 @@ if(ALOD_BUILD_TESTS)
     add_test(NAME p2_mathematics COMMAND test_p2)
     set_tests_properties(p2_mathematics PROPERTIES ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1" TIMEOUT 180)
     find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter)
+    add_test(NAME p56_checkpoint_audit COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_checkpoint_cli.py $<TARGET_FILE:alod_run>)
+    set_tests_properties(p56_checkpoint_audit PROPERTIES TIMEOUT 360 ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1")
     foreach(fixture e1_prefix e2_initial)
         add_test(NAME p34_${fixture} COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/compare_adaptive.py
             --executable $<TARGET_FILE:alod_run> --fixture ${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/p34/${fixture}.json)

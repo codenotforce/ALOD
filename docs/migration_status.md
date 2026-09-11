@@ -1,6 +1,6 @@
 # Migration status
 
-Updated: 2026-09-11. **P0-P4 implementation and bounded acceptance are complete.** Full production experiments are explicitly deferred to P8; P5-P9 remain open. Historical full campaigns remain imported evidence; this repository has not generated new 51-state E1 or 33-state E2 production trajectories.
+Updated: 2026-09-12. **P0-P6 implementation and bounded acceptance are complete.** Full production experiments remain deferred to P8; P7-P9 remain open. Historical full campaigns remain imported evidence; this repository has not generated new 51-state E1 or 33-state E2 production trajectories.
 
 ## P0: source discovery and old replay
 
@@ -45,11 +45,43 @@ Native vectorization changes the ordering of nearly equal indicators on an E1 sy
 
 The archived quasi-interpolator averages incident elements arithmetically, while the manuscript uses area weighting. Both reproduce coarse P1 functions and coincide on the uniform meshes allowed by P1 SLOD. The graded counterexample has operator difference 0.15023130314433289. P2 also verified that the archived interpolation-support rule can produce N³ vertex patches where the manuscript specifies N². P2 exposes both policies; future trajectory comparisons must select them explicitly. Old archive equality does not imply manuscript-mode trajectory equality.
 
+## P5: checkpoints and independent audits
+
+Accepted and transitional snapshots persist both meshes/lineage, embeddings,
+raw kernel/phi, solutions, state counters, lazy checks and Ritz warm blocks.
+Atomic commit precedes journal publication; recovery checks the committed
+prefix and never repeats an accepted sweep. Three pause positions match an
+uninterrupted E2 trajectory. An isolated accepted state-16 snapshot successfully
+runs fresh RHS audit without earlier states. Mathematical overrides and altered
+frozen members are rejected; new mathematical runs have distinct experiment IDs.
+
+Independent audits provide 48-member e/f/g and E/E_ref/G, AFEM not-applicable
+semantics, optional rank-zero, fresh and pure E2 diagnostics. Batch sizes 1/8
+agree; audit switches leave production unchanged. Long fields are imported with
+an explicit 64 MiB bound and marking sets are external hashed files. Solver,
+validation, audit and paper-data completion are separate; injected audit/export
+failures preserve the numerical result. See [P5/P6](p5_p6.md).
+
+## P6: measured performance work
+
+Production computes only training plus nominal RHS. Fused quadrature, prepared
+regional PG/AOT products, POD linear combinations, accepted training solutions,
+ell-only reference/Riesz reuse and direct NVB warm injection reduce repeated
+work. The existing factor-cache identity and residual checks remain active.
+
+An isolated PowerShell/SSH/tmux server profile uses H6/h10 E2, ell=2, 16 RHS,
+16 physical cores, BLAS one thread and three repetitions per comparison. It
+records raw times, medians/ranges, equivalence, live worker activity, RSS/swap
+and named dense-buffer allocations. Raw triangular PG and unified symmetric
+forward/adjoint factor variants remain measured candidates. No complete
+trajectory speedup or 32-thread gain is inferred. Evidence and numerical limits
+are in `provenance/p56_validation.json`.
+
 ## Next phases
 
 | Phase | Remaining work |
 |---|---|
-| P5-P7 | Checkpoint/resume, independent audit, resource protection, measured optimization and integration |
+| P7 | Broader integration, resource-failure supervision, portable result packages, optional diagnostic coverage and late-state allocation/timing attribution |
 | P8 | E1 main and all four controls; E2 every/lazy and inherit/reset campaigns; complete audits and reproducible paper figures/tables |
 | P9 | Final release documentation and full publication acceptance |
 

@@ -21,11 +21,19 @@
 #include <omp.h>
 #ifndef ALOD_LEGACY_ORACLE
 #include "adaptive_run.hpp"
+#include "alod/checkpoint.hpp"
 #endif
 
 int main(int argc,char** argv) {
 #ifndef ALOD_LEGACY_ORACLE
+ if(argc==2&&std::string(argv[1])=="build-info"){
+    std::cout<<"{\"compiler\":"<<alod::json_string(__VERSION__)<<",\"eigen\":\""<<EIGEN_WORLD_VERSION<<'.'<<EIGEN_MAJOR_VERSION<<'.'<<EIGEN_MINOR_VERSION<<"\",\"openmp\":"<<_OPENMP<<",\"sparse_backend\":\"SuiteSparse UMFPACK and Eigen SparseLU\",\"checkpoint_schema\":1}\n";return 0;
+ }
  if(argc>1&&std::string(argv[1])=="adaptive")return adaptive_main(argc-1,argv+1);
+ if(argc==3&&std::string(argv[1])=="inspect-checkpoint"){
+    try{std::cout<<alod::checkpoint_metadata(alod::load_checkpoint(argv[2]))<<'\n';return 0;}
+    catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}
+ }
 #endif
  try {
     if(argc==2 && std::string(argv[1])=="--help") {

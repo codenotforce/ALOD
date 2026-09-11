@@ -60,7 +60,7 @@ inline Input parse(int argc,char** argv) {
             :benchmarks::make_parameterized_boundary_gaussian_s_paper_case(16,c,a,phase,80,{x,y});
         in.members.push_back({id,role,std::move(p)});
     }
-    if(in.members.empty()||in.members.size()>48)throw std::invalid_argument("member count outside 1..48");
+    if(in.members.empty()||in.members.size()>50)throw std::invalid_argument("member count outside 1..50");
     std::set<int> member_ids,training_ids;
     for(const auto& m:in.members)if(m.id<0||!member_ids.insert(m.id).second)throw std::invalid_argument("duplicate or negative member ID");
     for(int id:in.ids){

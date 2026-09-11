@@ -29,6 +29,8 @@ public:
     LodSpace(lod2d::TriMesh coarse, lod2d::RefineOutput reference, double wavenumber,
              int ell, InterpolationPolicy policy = InterpolationPolicy::ManuscriptAreaWeighted,
              LodLimits limits = {});
+    // Rebuild only ell-dependent correctors; reuse validated hierarchy operators.
+    LodSpace(const LodSpace& reference_space, int ell);
     ~LodSpace();
     LodSpace(const LodSpace&) = delete;
     LodSpace& operator=(const LodSpace&) = delete;
@@ -52,6 +54,7 @@ public:
     // individual RHS columns are solved as a block, never concurrently on one LU.
     LodSolution solve(const ComplexMatrix& loads);
 private:
+    LodSpace(lod2d::TriMesh, lod2d::RefineOutput, double, int, InterpolationPolicy, LodLimits, const LodSpace*);
     struct Impl;
     std::unique_ptr<Impl> impl_;
 };

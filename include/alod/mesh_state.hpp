@@ -22,6 +22,9 @@ struct MeshState {
     }
     void refine(const std::vector<int>& marks) {
         auto out=lod2d::bisect_newest_vertex(mesh,marks);
+        adopt(std::move(out));
+    }
+    void adopt(lod2d::RefineOutput out) {
         auto before=lod2d::compute_area(mesh), after=lod2d::compute_area(out.mesh);
         std::vector<int> parents(out.mesh.elems.size(),-1);
         for(int c=0;c<out.P_elem.outerSize();++c)

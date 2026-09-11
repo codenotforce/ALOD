@@ -44,13 +44,17 @@ def validate(config):
     return [table[i] for i in config["member_ids"]]
 
 
-def write_members(path, rows):
+def member_text(rows):
     lines = []
     for r in rows:
         fields = [r["sample"], r["split"], r["wave_x"], r["wave_y"],
                   r.get("singular_coefficient", 1), r.get("wave_amplitude", 1), r.get("wave_phase", 0)]
         lines.append(" ".join(str(x) for x in fields))
-    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return "\n".join(lines) + "\n"
+
+
+def write_members(path, rows):
+    path.write_text(member_text(rows), encoding="utf-8")
 
 
 def arguments(config, table):

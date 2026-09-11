@@ -35,3 +35,13 @@ P2 preserves the complete archived support-expansion algorithm as an explicit co
 P4 adds an explicit E2 lazy policy with E1's initial/terminal/2^ell cadence and E2's unchanged 0.1 ratio threshold. The every-state policy remains available. The new E2 cold start also follows the manuscript's deflated normalized phi recurrence; the archived nominal raw-kernel bootstrap is a documented discrepancy, not silently carried into manuscript runs. See [P3/P4](p3_p4.md).
 
 For real interpolation and complex-symmetric A, the adjoint defect `A* B_test` is the conjugate of the primal defect `A B_trial`. Real energy constraints imply equal spectra, checked on uniform and graded E1/E2 states. Taking their maximum is redundant in this setting; adding their energies is incorrect. P2 uses one explicitly labelled side and the uncorrected coarse energy denominator. It retains the actual archived small-space iteration and matrix-free four-vector Ritz core, with strict state identities and failure on nonconvergence. Ritz values and residuals are implementation-study evidence, not rigorous upper bounds. Details are in `p2.md`.
+
+## Checkpoint and performance mapping
+
+P5 snapshots preserve the accepted numerical state and pending controller phase.
+Offline reference/fresh/rank-zero/pure audits read those snapshots without
+modifying production. P6 caches repeated linear products and factors while
+retaining the actual coupled PG block and checking adjoint residuals. These
+changes preserve the documented mathematical policies. Their bounded acceptance
+and measured scope are recorded in [P5/P6](p5_p6.md); full scientific campaigns
+and the remaining optional diagnostic menu are still P7/P8.

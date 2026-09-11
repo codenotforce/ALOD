@@ -12,33 +12,66 @@ struct Coupled {
     const LodSpace& s;AdditiveKernelRieszContext& riesz;AdjointTestCache& aot;
     ComplexSparseMatrix E,B,C,A;
     Eigen::SparseLU<ComplexSparseMatrix> coarse,trial_energy,test_energy;
-    Coupled(const LodSpace& space,AdditiveKernelRieszContext& r,AdjointTestCache& cache)
-        :s(space),riesz(r),aot(cache),E(s.energy().cast<Complex>()),B(s.trial()),C(s.test()),A(s.operators().system){
+    bool reuse;
+    ComplexMatrix last_loads,last_f0,last_base,root_phi,root_ephi,root_aphi,root_raw;
+    ComplexMatrix prepared_phi,prepared_raw,prepared_tests,prepared_response,prepared_as0;
+    Eigen::FullPivLU<ComplexMatrix> prepared_lu;
+    double prepared_residual=0;
+    static bool same(const ComplexMatrix& a,const ComplexMatrix& b){return a.rows()==b.rows()&&a.cols()==b.cols()&&(a.array()==b.array()).all();}
+    Coupled(const LodSpace& space,AdditiveKernelRieszContext& r,AdjointTestCache& cache,bool reuse_=true)
+        :s(space),riesz(r),aot(cache),E(s.energy().cast<Complex>()),B(s.trial()),C(s.test()),A(s.operators().system),reuse(reuse_){
         ComplexSparseMatrix a=C.adjoint()*A*B,b=B.adjoint()*E*B,c=C.adjoint()*E*C;
         coarse.compute(a);trial_energy.compute(b);test_energy.compute(c);
         if(coarse.info()!=Eigen::Success||trial_energy.info()!=Eigen::Success||test_energy.info()!=Eigen::Success)
             throw std::runtime_error("regional base factorization failed");
     }
-    RegionalEvaluation evaluate(const ComplexMatrix& loads,const ComplexMatrix& phi,const std::vector<int>& mask){
+    RegionalEvaluation evaluate(const ComplexMatrix& loads,const ComplexMatrix& phi,const std::vector<int>& mask,const ComplexMatrix& transform={}){
         if(loads.rows()!=A.rows()||loads.cols()<1||!loads.allFinite()
             ||(phi.cols()&&(phi.rows()!=A.rows()||!phi.allFinite())))
             throw std::invalid_argument("regional evaluation dimensions or values invalid");
         RegionalEvaluation out;
-        ComplexMatrix f0=C.adjoint()*loads,base=coarse.solve(f0);
+        ComplexMatrix f0,base;
+        if(reuse&&same(loads,last_loads)){f0=last_f0;base=last_base;}
+        else {f0=C.adjoint()*loads;base=coarse.solve(f0);if(reuse){last_loads=loads;last_f0=f0;last_base=base;}}
         if(phi.cols()==0){out.values=B*base;out.tests.resize(B.rows(),0);out.raw_tests=out.tests;}
         else {
-            out.raw_tests=aot.solve(s.operators(),E*phi);out.aot_residual=aot.relative_residual();
+            if(!(reuse&&same(phi,prepared_phi))){
+                ComplexMatrix ephi,aphi,raw;
+                if(reuse&&transform.size()&&root_phi.cols()==transform.rows()
+                    &&(root_phi*transform-phi).norm()<1e-13*std::max(1.,phi.norm())){
+                    ephi=root_ephi*transform;aphi=root_aphi*transform;raw=root_raw*transform;
+                }else {
+                    int prefix=0;
+                    if(reuse&&root_phi.rows()==phi.rows()&&root_phi.cols()<=phi.cols()
+                        &&same(root_phi,phi.leftCols(root_phi.cols())))prefix=root_phi.cols();
+                    int extra=phi.cols()-prefix;
+                    ephi.resize(phi.rows(),phi.cols());aphi=ephi;raw=ephi;
+                    if(prefix){ephi.leftCols(prefix)=root_ephi;aphi.leftCols(prefix)=root_aphi;raw.leftCols(prefix)=root_raw;}
+                    if(extra){ephi.rightCols(extra)=E*phi.rightCols(extra);aphi.rightCols(extra)=A*phi.rightCols(extra);
+                        raw.rightCols(extra)=aot.solve(s.operators(),ephi.rightCols(extra));}
+                    if(reuse){root_phi=phi;root_ephi=ephi;root_aphi=aphi;root_raw=raw;}
+                }
+                // Every reused linear combination is checked against the actual
+                // free-DOF adjoint equation, not just a cache label.
+                ComplexMatrix defect=A.adjoint()*raw-ephi,rhs=ephi;
+                for(int node:s.operators().dirichlet_nodes){defect.row(node).setZero();rhs.row(node).setZero();}
+                prepared_residual=defect.norm()/std::max(1e-30,rhs.norm());
+                if(prepared_residual>1e-10)throw std::runtime_error("cached AOT residual gate failed");
+                prepared_raw=raw;
+                prepared_tests=raw-C*test_energy.solve(C.adjoint()*E*raw);
+                ComplexMatrix a0s=C.adjoint()*aphi;
+                prepared_as0=prepared_tests.adjoint()*A*B;
+                prepared_response=coarse.solve(a0s);
+                prepared_lu.compute(prepared_tests.adjoint()*aphi-prepared_as0*prepared_response);
+                if(!prepared_lu.isInvertible())throw std::runtime_error("regional coupled Schur block is singular");
+                prepared_phi=phi;
+            }
+            out.raw_tests=prepared_raw;out.tests=prepared_tests;out.aot_residual=prepared_residual;
             out.raw_base_block=(out.raw_tests.adjoint()*A*B).norm()/std::max(1.,B.norm());
             out.raw_dictionary_block=(out.raw_tests.adjoint()*A*phi-ComplexMatrix::Identity(phi.cols(),phi.cols())).norm();
-            out.tests=out.raw_tests-C*test_energy.solve(C.adjoint()*E*out.raw_tests);
-            // Keep the projected lower-left block: projection generally makes
-            // it nonzero, even though the RAW optimal-test block vanishes.
-            ComplexMatrix a0s=C.adjoint()*A*phi,as0=out.tests.adjoint()*A*B;
-            ComplexMatrix response=coarse.solve(a0s),schur=out.tests.adjoint()*A*phi-as0*response;
-            Eigen::FullPivLU<ComplexMatrix> lu(schur);
-            if(!lu.isInvertible())throw std::runtime_error("regional coupled Schur block is singular");
-            ComplexMatrix d=lu.solve(out.tests.adjoint()*loads-as0*base);
-            out.values=B*(base-response*d)+phi*d;
+            // The projected lower-left block remains in the actual PG solve.
+            ComplexMatrix d=prepared_lu.solve(out.tests.adjoint()*loads-prepared_as0*base);
+            out.values=B*(base-prepared_response*d)+phi*d;
         }
         ComplexMatrix residual=loads-A*out.values;
         for(int j=0;j<loads.cols();++j){
@@ -62,6 +95,16 @@ struct Coupled {
     }
 };
 }
+struct RegionalEvaluator::Impl { Coupled model;Impl(const LodSpace& s,AdditiveKernelRieszContext& r,AdjointTestCache& a,bool reuse):model(s,r,a,reuse){} };
+RegionalEvaluator::RegionalEvaluator(const LodSpace& s,AdditiveKernelRieszContext& r,AdjointTestCache& a,bool reuse):impl_(std::make_unique<Impl>(s,r,a,reuse)){}
+RegionalEvaluator::~RegionalEvaluator()=default;
+std::size_t RegionalEvaluator::dense_cache_bytes()const{
+    const auto& m=impl_->model;std::size_t entries=0;
+    for(const auto* matrix:{&m.last_loads,&m.last_f0,&m.last_base,&m.root_phi,&m.root_ephi,&m.root_aphi,&m.root_raw,
+        &m.prepared_phi,&m.prepared_raw,&m.prepared_tests,&m.prepared_response,&m.prepared_as0})entries+=matrix->size();
+    return sizeof(Complex)*(entries+(m.prepared_phi.cols()?m.prepared_lu.matrixLU().size():0));
+}
+RegionalEvaluation RegionalEvaluator::evaluate(const ComplexMatrix& loads,const ComplexMatrix& phi,const std::vector<int>& mask){return impl_->model.evaluate(loads,phi,mask);}
 RegionalEvaluation evaluate_regional(const LodSpace& s,AdditiveKernelRieszContext& r,AdjointTestCache& aot,
     const ComplexMatrix& loads,const ComplexMatrix& phi,const std::vector<int>& mask){
     return Coupled(s,r,aot).evaluate(loads,phi,mask);
@@ -113,7 +156,7 @@ RegionalResult train_regional(LodSpace& s,AdditiveKernelRieszContext& r,AdjointT
         for(int rank=1;rank<=svd.matrixU().cols();++rank){
             ++out.compression_trials;ComplexMatrix transform=svd.matrixU().leftCols(rank);
             ComplexMatrix candidate=phi*transform;
-            auto evaluated=model.evaluate(loads,candidate,mask);bool pass=true;
+            auto evaluated=model.evaluate(loads,candidate,mask,transform);bool pass=true;
             for(int j=0;j<loads.cols();++j)
                 if(norm(s.energy(),(full.values.col(j)-evaluated.values.col(j)).eval())>.2*out.targets[j]
                     ||evaluated.eta[j]>std::max(1.1*out.targets[j],1.03*full.eta[j]))pass=false;

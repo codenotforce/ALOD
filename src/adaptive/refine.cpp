@@ -11,6 +11,7 @@ MeshTransition refine_pair(const TriMesh& H,const RefineOutput& h,
     auto check=[&]{if(fine.mesh.nodes.size()>static_cast<std::size_t>(cap))throw std::runtime_error("reference node limit exceeded");};
     check();
     Sparse injection=fine.P_node;
+    Sparse reference_parent=fine.P_elem;
     Sparse old_parent=fine.P_elem*h.P_elem;
     auto parent=fine_element_parents(coarse.P_elem,coarse.mesh.elems.size(),H.elems.size());
     std::vector<int> count(H.elems.size());for(int p:parent)++count[p];
@@ -28,6 +29,7 @@ MeshTransition refine_pair(const TriMesh& H,const RefineOutput& h,
         if(fine.mesh.nodes.size()+marks.size()/2>static_cast<std::size_t>(cap))throw std::runtime_error("reference refinement budget exceeded");
         auto next=bisect_newest_vertex(fine.mesh,marks);
         injection=next.P_node*injection;old_parent=next.P_elem*old_parent;
+        reference_parent=next.P_elem*reference_parent;
         fine=std::move(next);check();
     };
     RefineOutput embedding;int rounds=0;
@@ -61,8 +63,10 @@ MeshTransition refine_pair(const TriMesh& H,const RefineOutput& h,
         embedding.P_node=embedding.P_node*coarse.P_node;
         embedding.P_elem=embedding.P_elem*coarse.P_elem;
         embedding.P_dg=embedding.P_dg*coarse.P_dg;
-        return {H,std::move(embedding),std::move(injection),rounds};
+        Sparse identity_nodes(H.nodes.size(),H.nodes.size()),identity_elements(H.elems.size(),H.elems.size());
+        identity_nodes.setIdentity();identity_elements.setIdentity();
+        return {H,std::move(embedding),std::move(injection),rounds,std::move(identity_nodes),std::move(identity_elements),std::move(reference_parent)};
     }
-    return {std::move(coarse.mesh),std::move(embedding),std::move(injection),rounds};
+    return {std::move(coarse.mesh),std::move(embedding),std::move(injection),rounds,std::move(coarse.P_node),std::move(coarse.P_elem),std::move(reference_parent)};
 }
 }

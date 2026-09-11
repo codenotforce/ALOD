@@ -56,4 +56,6 @@ with tempfile.TemporaryDirectory() as temp:
             assert len(states) == 1+config["m_ref"]
             assert all(s["training_ids"] == config["training_ids"] and len(s["audit"]) == 48 for s in states)
             assert all([a["sample"] for a in s["audit"]] == list(range(48)) for s in states)
+            if method == 'AFEM':
+                assert all(a['ell'] is None and all(a[key] is None for key in ('f','g','F','G','E_ref')) for s in states for a in s['audit'])
 print("P3/P4 CLI trajectories and four E1 control contracts passed")
