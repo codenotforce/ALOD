@@ -152,9 +152,9 @@
       "origin_scope": "initial_project_input",
       "origin": "ALOD_SUBPROJECT_AGENT_PLAN_20260909.md",
       "origin_sha256": "5e4544f14cf014a4732477283ec5ea64cb28e2506d8cb13162c768597c3c9ae2",
-      "sha256": "2038515f186caa02204d0aed873912a76672f3de5ecdc30ffe15914ce363906d",
+      "sha256": "799dc756e900326cc90b6ea734684a7dac4a5aebbe34b6d5b1536a1a571c8466",
       "snapshot": "initial-user-plan",
-      "modification": "English translation of the complete plan; portable symbolic roots and explicit P0 averaging-discrepancy finding.",
+      "modification": "Restored the Chinese plan from the initial migration commit at the user's request; retained portable symbolic roots and added the current P0/P1 status, language exception and P0 averaging-discrepancy finding. Original source hash retained.",
       "copyright": "Inherited; no repository license found. See NOTICE.md."
     },
     {

@@ -44,7 +44,7 @@ python3 tools/check_repository.py
 python3 tools/check_repository.py --staged
 ```
 
-The staged check inspects exact Git blobs. Committed documents use English and contain no local absolute paths. Use relative paths or symbolic environment roots in documentation. Original source hashes remain in the provenance manifest even when an imported file is deliberately edited.
+The staged check inspects exact Git blobs. Documentation uses English, except for `ALOD_SUBPROJECT_AGENT_PLAN_20260909.md`, which remains in Chinese at the user's request. All committed files, including the plan, must contain no local absolute paths. Use relative paths or symbolic environment roots in documentation. Original source hashes remain in the provenance manifest even when an imported file is deliberately edited.
 
 Rebuilding old-source references is an explicit developer action, never part of normal builds. See `tools/replay_legacy.py`, `tools/build_legacy_oracle.py` and `tools/build_baseline_oracles.py`. Historical fixtures must not be regenerated to hide a failed comparison. Source ownership and dependency licensing are described in [NOTICE](NOTICE.md).
 

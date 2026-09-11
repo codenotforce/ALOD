@@ -12,6 +12,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CSV_FIELD_LIMIT = 64 * 1024 * 1024
+# The user keeps this planning document in Chinese; all other documents use English.
+CHINESE_PLAN = 'ALOD_SUBPROJECT_AGENT_PLAN_20260909.md'
 PATH_PATTERNS = [
     re.compile(r'(?i)(?<![a-z0-9])[a-z]:[\\/]'),
     re.compile(r'(?<!\\)\\\\[a-zA-Z0-9_.-]+\\'),
@@ -94,7 +96,7 @@ def verify(staged=False):
                 decoded = json.dumps(json.loads(content), ensure_ascii=False)
             except ValueError as error:
                 errors.append(f'{name}: invalid JSON ({error})')
-        if name.endswith(('.md', '.json')) and re.search(r'[\u4e00-\u9fff]', decoded):
+        if name != CHINESE_PLAN and name.endswith(('.md', '.json')) and re.search(r'[\u4e00-\u9fff]', decoded):
             errors.append(f'{name}: documentation must be written in English')
     manifest = json.loads(read('docs/provenance/source_manifest.json'))
     for entry in manifest['files']:
