@@ -1,0 +1,102 @@
+{
+  "date": "2026-09-11",
+  "scope": "P1 local numerical and clean-build validation; not a new production campaign or remote CI result",
+  "toolchain": {
+    "compiler": "GCC 11.4.0",
+    "CMake": "3.22.1",
+    "Eigen": "3.4.0",
+    "SuiteSparse": "5.10.1",
+    "architecture": "portable default, no -march=native",
+    "build_jobs": 2,
+    "BLAS_threads": 1,
+    "OpenMP_specification": "4.5",
+    "Python": "3.10.12"
+  },
+  "baseline_comparisons": [
+    {
+      "fixture": "E1_AFEM.json",
+      "states": 3,
+      "maximum_absolute_difference": 0,
+      "passed": true
+    },
+    {
+      "fixture": "E1_SLOD.json",
+      "states": 3,
+      "maximum_absolute_difference": 0,
+      "passed": true
+    },
+    {
+      "fixture": "E1_UFEM.json",
+      "states": 3,
+      "maximum_absolute_difference": 0,
+      "passed": true
+    },
+    {
+      "fixture": "E2_AFEM.json",
+      "states": 3,
+      "maximum_absolute_difference": 0,
+      "passed": true
+    },
+    {
+      "fixture": "E2_SLOD.json",
+      "states": 3,
+      "maximum_absolute_difference": 0,
+      "passed": true
+    },
+    {
+      "fixture": "E2_UFEM.json",
+      "states": 3,
+      "maximum_absolute_difference": 0,
+      "passed": true
+    }
+  ],
+  "tolerance": "Integers/identities exact; floating 1e-12 + 1e-8*abs(expected)",
+  "old_portable_rebuild": {
+    "source": "E2 production snapshot",
+    "change": "Removed -march=native from an isolated copy of its CMakeLists.txt. Numerical library sources are unchanged. Resource-only runner patches are unused by the core target.",
+    "commands": [
+      "cmake -S <LEGACY_PORTABLE_SOURCE> -B <LEGACY_PORTABLE_BUILD> -DCMAKE_BUILD_TYPE=Release -DLOD2D_BUILD_TESTS=OFF -DLOD2D_BUILD_BENCHMARKS=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+      "cmake --build <LEGACY_PORTABLE_BUILD> --target lod2d_core -j2",
+      "python3 tools/build_baseline_oracles.py --source <LEGACY_PORTABLE_SOURCE> --legacy-build <LEGACY_PORTABLE_BUILD>"
+    ]
+  },
+  "mathematical_tests": {
+    "E1_gradient_relative_error": 3.83096e-09,
+    "E1_laplacian_relative_error": 1.38143e-08,
+    "E1_max_boundary_residual": 4.3341e-27,
+    "E2_gradient_relative_error": 1.12587e-08,
+    "E2_laplacian_relative_error": 1.38751e-08,
+    "E2_max_boundary_residual": 4.70184e-17,
+    "quadrature_relative_tolerance": 1e-06,
+    "status": "passed"
+  },
+  "commands": [
+    "cmake --preset release",
+    "cmake --build --preset release",
+    "ctest --preset release",
+    "python3 tools/check_repository.py",
+    "python3 tools/check_repository.py --staged"
+  ],
+  "clean_build": {
+    "status": "passed",
+    "tests_passed": 14,
+    "tests_failed": 0,
+    "full_build_test_seconds": 6.33,
+    "final_test_seconds": 6.35,
+    "environment": "New standalone repository exported from staged Git blobs; no legacy source/library or existing build cache.",
+    "final_followup": "After the full clean build, preserved the original E2 enum value 3, rebuilt affected objects and reran all 14 tests.",
+    "build_log_sha256": "9993049689b66b3d071587025edcbce7f493e9caef8ab11a2c22bdc844736288",
+    "final_log_sha256": "c1a13039c350a1ec9bf21000effbf85339b7c5cfb7f35d0906e7fc3f24d34536"
+  },
+  "staged_scan": {
+    "status": "passed",
+    "text_files": 142,
+    "imported_hashes": 53,
+    "E1_audit_rows": 14208,
+    "E2_audit_rows": 1650,
+    "local_absolute_paths": 0,
+    "non_English_documents": 0,
+    "whitespace_errors": 0
+  },
+  "implementation_snapshot_sha256": "6589fbda86b8613e0643fc254e40194d2ef99a0709efa7045a91e47220b872ad"
+}

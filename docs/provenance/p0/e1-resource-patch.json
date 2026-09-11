@@ -1,0 +1,14 @@
+{
+  "runner_original_sha256": "5b4867a4f1a0e7dd6b88bda92e597c56a9645ed6581baa37c62684b6bb26e807",
+  "resource_only_changes": [
+    [
+      "160.0 * 1024.0",
+      "4.0 * 1024.0"
+    ],
+    [
+      "96.0 * 1024.0 * 1024.0",
+      "2.0 * 1024.0 * 1024.0"
+    ]
+  ],
+  "runner_replay_sha256": "1a97d9ff81e6353b046e088e53e3c4797231196a992aaf2866043f30cdaaf82d"
+}

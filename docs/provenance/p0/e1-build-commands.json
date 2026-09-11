@@ -1,0 +1,317 @@
+{
+  "compilation": [
+    {
+      "file": "src/mesh/refine.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/mesh/refine.cpp.o -c <e1_SOURCE>/src/mesh/refine.cpp"
+    },
+    {
+      "file": "src/mesh/edges.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/mesh/edges.cpp.o -c <e1_SOURCE>/src/mesh/edges.cpp"
+    },
+    {
+      "file": "src/fem/assemble_dg.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/fem/assemble_dg.cpp.o -c <e1_SOURCE>/src/fem/assemble_dg.cpp"
+    },
+    {
+      "file": "src/fem/hp_triangle.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/fem/hp_triangle.cpp.o -c <e1_SOURCE>/src/fem/hp_triangle.cpp"
+    },
+    {
+      "file": "src/lod/quasi_interp.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/lod/quasi_interp.cpp.o -c <e1_SOURCE>/src/lod/quasi_interp.cpp"
+    },
+    {
+      "file": "src/helmholtz/manufactured.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/manufactured.cpp.o -c <e1_SOURCE>/src/helmholtz/manufactured.cpp"
+    },
+    {
+      "file": "src/helmholtz/boundary.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/boundary.cpp.o -c <e1_SOURCE>/src/helmholtz/boundary.cpp"
+    },
+    {
+      "file": "src/helmholtz/quadrature.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/quadrature.cpp.o -c <e1_SOURCE>/src/helmholtz/quadrature.cpp"
+    },
+    {
+      "file": "src/lod/patches.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/lod/patches.cpp.o -c <e1_SOURCE>/src/lod/patches.cpp"
+    },
+    {
+      "file": "src/lod/corrector.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/lod/corrector.cpp.o -c <e1_SOURCE>/src/lod/corrector.cpp"
+    },
+    {
+      "file": "src/lod/lod_model.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/lod/lod_model.cpp.o -c <e1_SOURCE>/src/lod/lod_model.cpp"
+    },
+    {
+      "file": "src/helmholtz/patch_system.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/patch_system.cpp.o -c <e1_SOURCE>/src/helmholtz/patch_system.cpp"
+    },
+    {
+      "file": "src/helmholtz/patch_solver.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/patch_solver.cpp.o -c <e1_SOURCE>/src/helmholtz/patch_solver.cpp"
+    },
+    {
+      "file": "src/helmholtz/corrector_pipeline.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/corrector_pipeline.cpp.o -c <e1_SOURCE>/src/helmholtz/corrector_pipeline.cpp"
+    },
+    {
+      "file": "src/helmholtz/coarse_schwarz.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/coarse_schwarz.cpp.o -c <e1_SOURCE>/src/helmholtz/coarse_schwarz.cpp"
+    },
+    {
+      "file": "src/helmholtz/schwarz_patch.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/schwarz_patch.cpp.o -c <e1_SOURCE>/src/helmholtz/schwarz_patch.cpp"
+    },
+    {
+      "file": "src/helmholtz/patch_hierarchy.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/patch_hierarchy.cpp.o -c <e1_SOURCE>/src/helmholtz/patch_hierarchy.cpp"
+    },
+    {
+      "file": "src/helmholtz/schwarz_local_solver.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/schwarz_local_solver.cpp.o -c <e1_SOURCE>/src/helmholtz/schwarz_local_solver.cpp"
+    },
+    {
+      "file": "src/helmholtz/two_level_schwarz.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/two_level_schwarz.cpp.o -c <e1_SOURCE>/src/helmholtz/two_level_schwarz.cpp"
+    },
+    {
+      "file": "src/helmholtz/shifted_laplacian.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/shifted_laplacian.cpp.o -c <e1_SOURCE>/src/helmholtz/shifted_laplacian.cpp"
+    },
+    {
+      "file": "src/helmholtz/patch_multigrid.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/patch_multigrid.cpp.o -c <e1_SOURCE>/src/helmholtz/patch_multigrid.cpp"
+    },
+    {
+      "file": "src/helmholtz/operators.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/operators.cpp.o -c <e1_SOURCE>/src/helmholtz/operators.cpp"
+    },
+    {
+      "file": "src/helmholtz/hp_operators.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/hp_operators.cpp.o -c <e1_SOURCE>/src/helmholtz/hp_operators.cpp"
+    },
+    {
+      "file": "src/helmholtz/hp_fem.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/hp_fem.cpp.o -c <e1_SOURCE>/src/helmholtz/hp_fem.cpp"
+    },
+    {
+      "file": "src/helmholtz/hp_interpolation.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/hp_interpolation.cpp.o -c <e1_SOURCE>/src/helmholtz/hp_interpolation.cpp"
+    },
+    {
+      "file": "src/helmholtz/hp_patch.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/hp_patch.cpp.o -c <e1_SOURCE>/src/helmholtz/hp_patch.cpp"
+    },
+    {
+      "file": "src/helmholtz/hp_model.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/hp_model.cpp.o -c <e1_SOURCE>/src/helmholtz/hp_model.cpp"
+    },
+    {
+      "file": "src/helmholtz/corrector.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/corrector.cpp.o -c <e1_SOURCE>/src/helmholtz/corrector.cpp"
+    },
+    {
+      "file": "src/helmholtz/model.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/model.cpp.o -c <e1_SOURCE>/src/helmholtz/model.cpp"
+    },
+    {
+      "file": "src/helmholtz/adaptive/hierarchy.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/adaptive/hierarchy.cpp.o -c <e1_SOURCE>/src/helmholtz/adaptive/hierarchy.cpp"
+    },
+    {
+      "file": "src/helmholtz/adaptive/error_control.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/adaptive/error_control.cpp.o -c <e1_SOURCE>/src/helmholtz/adaptive/error_control.cpp"
+    },
+    {
+      "file": "src/helmholtz/adaptive/kernel_residual.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/adaptive/kernel_residual.cpp.o -c <e1_SOURCE>/src/helmholtz/adaptive/kernel_residual.cpp"
+    },
+    {
+      "file": "src/helmholtz/adaptive/candidate_flux.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/adaptive/candidate_flux.cpp.o -c <e1_SOURCE>/src/helmholtz/adaptive/candidate_flux.cpp"
+    },
+    {
+      "file": "src/helmholtz/adaptive/candidate_dual.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/adaptive/candidate_dual.cpp.o -c <e1_SOURCE>/src/helmholtz/adaptive/candidate_dual.cpp"
+    },
+    {
+      "file": "src/helmholtz/adaptive/reference_epoch_driver.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/adaptive/reference_epoch_driver.cpp.o -c <e1_SOURCE>/src/helmholtz/adaptive/reference_epoch_driver.cpp"
+    },
+    {
+      "file": "src/helmholtz/adaptive/singularity_hybrid.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/adaptive/singularity_hybrid.cpp.o -c <e1_SOURCE>/src/helmholtz/adaptive/singularity_hybrid.cpp"
+    },
+    {
+      "file": "src/helmholtz/adaptive/reference_retraction.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/adaptive/reference_retraction.cpp.o -c <e1_SOURCE>/src/helmholtz/adaptive/reference_retraction.cpp"
+    },
+    {
+      "file": "src/helmholtz/adaptive/practical_driver.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/adaptive/practical_driver.cpp.o -c <e1_SOURCE>/src/helmholtz/adaptive/practical_driver.cpp"
+    },
+    {
+      "file": "src/helmholtz/adaptive/verified_spectrum.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/adaptive/verified_spectrum.cpp.o -c <e1_SOURCE>/src/helmholtz/adaptive/verified_spectrum.cpp"
+    },
+    {
+      "file": "src/helmholtz/adaptive/certificates.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/adaptive/certificates.cpp.o -c <e1_SOURCE>/src/helmholtz/adaptive/certificates.cpp"
+    },
+    {
+      "file": "src/helmholtz/adaptive/certified_driver.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/adaptive/certified_driver.cpp.o -c <e1_SOURCE>/src/helmholtz/adaptive/certified_driver.cpp"
+    },
+    {
+      "file": "src/helmholtz/adaptive/numerical_backend.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/adaptive/numerical_backend.cpp.o -c <e1_SOURCE>/src/helmholtz/adaptive/numerical_backend.cpp"
+    },
+    {
+      "file": "src/helmholtz/adaptive/estimator.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/adaptive/estimator.cpp.o -c <e1_SOURCE>/src/helmholtz/adaptive/estimator.cpp"
+    },
+    {
+      "file": "src/helmholtz/adaptive/reliability.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/adaptive/reliability.cpp.o -c <e1_SOURCE>/src/helmholtz/adaptive/reliability.cpp"
+    },
+    {
+      "file": "src/helmholtz/adaptive/driver.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/adaptive/driver.cpp.o -c <e1_SOURCE>/src/helmholtz/adaptive/driver.cpp"
+    },
+    {
+      "file": "src/helmholtz/experiments/paper_config.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/experiments/paper_config.cpp.o -c <e1_SOURCE>/src/helmholtz/experiments/paper_config.cpp"
+    },
+    {
+      "file": "src/helmholtz/experiments/reference_solution_cache.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/experiments/reference_solution_cache.cpp.o -c <e1_SOURCE>/src/helmholtz/experiments/reference_solution_cache.cpp"
+    },
+    {
+      "file": "src/helmholtz/benchmarks/paper_cases.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/helmholtz/benchmarks/paper_cases.cpp.o -c <e1_SOURCE>/src/helmholtz/benchmarks/paper_cases.cpp"
+    },
+    {
+      "file": "src/solver/coarse_solve.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/solver/coarse_solve.cpp.o -c <e1_SOURCE>/src/solver/coarse_solve.cpp"
+    },
+    {
+      "file": "src/solver/right_gmres.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/solver/right_gmres.cpp.o -c <e1_SOURCE>/src/solver/right_gmres.cpp"
+    },
+    {
+      "file": "src/solver/lod_reuse.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_core.dir/src/solver/lod_reuse.cpp.o -c <e1_SOURCE>/src/solver/lod_reuse.cpp"
+    },
+    {
+      "file": "src/io/vtk_writer.cpp",
+      "command": "<CXX>  -I<e1_SOURCE>/include -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d_visualization_io.dir/src/io/vtk_writer.cpp.o -c <e1_SOURCE>/src/io/vtk_writer.cpp"
+    },
+    {
+      "file": "src/main.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/lod2d.dir/src/main.cpp.o -c <e1_SOURCE>/src/main.cpp"
+    },
+    {
+      "file": "benchmarks/bench_refine.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/bench_refine.dir/bench_refine.cpp.o -c <e1_SOURCE>/benchmarks/bench_refine.cpp"
+    },
+    {
+      "file": "benchmarks/bench_H4h8.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/bench_H4h8.dir/bench_H4h8.cpp.o -c <e1_SOURCE>/benchmarks/bench_H4h8.cpp"
+    },
+    {
+      "file": "benchmarks/bench_profile.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/bench_profile.dir/bench_profile.cpp.o -c <e1_SOURCE>/benchmarks/bench_profile.cpp"
+    },
+    {
+      "file": "benchmarks/bench_H4h9.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/bench_H4h9.dir/bench_H4h9.cpp.o -c <e1_SOURCE>/benchmarks/bench_H4h9.cpp"
+    },
+    {
+      "file": "benchmarks/bench_reuse_rhs.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/bench_reuse_rhs.dir/bench_reuse_rhs.cpp.o -c <e1_SOURCE>/benchmarks/bench_reuse_rhs.cpp"
+    },
+    {
+      "file": "benchmarks/bench_inverse_inequality.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/bench_inverse_inequality.dir/bench_inverse_inequality.cpp.o -c <e1_SOURCE>/benchmarks/bench_inverse_inequality.cpp"
+    },
+    {
+      "file": "benchmarks/bench_saddle_h3h10.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/bench_saddle_h3h10.dir/bench_saddle_h3h10.cpp.o -c <e1_SOURCE>/benchmarks/bench_saddle_h3h10.cpp"
+    },
+    {
+      "file": "benchmarks/bench_helmholtz_k.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/bench_helmholtz_k.dir/bench_helmholtz_k.cpp.o -c <e1_SOURCE>/benchmarks/bench_helmholtz_k.cpp"
+    },
+    {
+      "file": "benchmarks/bench_helmholtz_manufactured.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/bench_helmholtz_manufactured.dir/bench_helmholtz_manufactured.cpp.o -c <e1_SOURCE>/benchmarks/bench_helmholtz_manufactured.cpp"
+    },
+    {
+      "file": "benchmarks/bench_helmholtz_repeated_rhs.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/bench_helmholtz_repeated_rhs.dir/bench_helmholtz_repeated_rhs.cpp.o -c <e1_SOURCE>/benchmarks/bench_helmholtz_repeated_rhs.cpp"
+    },
+    {
+      "file": "benchmarks/bench_helmholtz_reference_floor.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/bench_helmholtz_reference_floor.dir/bench_helmholtz_reference_floor.cpp.o -c <e1_SOURCE>/benchmarks/bench_helmholtz_reference_floor.cpp"
+    },
+    {
+      "file": "benchmarks/bench_helmholtz_visualization.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/bench_helmholtz_visualization.dir/bench_helmholtz_visualization.cpp.o -c <e1_SOURCE>/benchmarks/bench_helmholtz_visualization.cpp"
+    },
+    {
+      "file": "benchmarks/bench_helmholtz_H_convergence.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/bench_helmholtz_H_convergence.dir/bench_helmholtz_H_convergence.cpp.o -c <e1_SOURCE>/benchmarks/bench_helmholtz_H_convergence.cpp"
+    },
+    {
+      "file": "benchmarks/bench_helmholtz_hp_convergence.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/bench_helmholtz_hp_convergence.dir/bench_helmholtz_hp_convergence.cpp.o -c <e1_SOURCE>/benchmarks/bench_helmholtz_hp_convergence.cpp"
+    },
+    {
+      "file": "benchmarks/bench_helmholtz_local_inverse.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/bench_helmholtz_local_inverse.dir/bench_helmholtz_local_inverse.cpp.o -c <e1_SOURCE>/benchmarks/bench_helmholtz_local_inverse.cpp"
+    },
+    {
+      "file": "benchmarks/bench_helmholtz_adaptive.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/bench_helmholtz_adaptive.dir/bench_helmholtz_adaptive.cpp.o -c <e1_SOURCE>/benchmarks/bench_helmholtz_adaptive.cpp"
+    },
+    {
+      "file": "benchmarks/bench_helmholtz_adaptive_paper.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/bench_helmholtz_adaptive_paper.dir/bench_helmholtz_adaptive_paper.cpp.o -c <e1_SOURCE>/benchmarks/bench_helmholtz_adaptive_paper.cpp"
+    },
+    {
+      "file": "benchmarks/reference_epoch_paper_runner.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/bench_helmholtz_adaptive_paper.dir/reference_epoch_paper_runner.cpp.o -c <e1_SOURCE>/benchmarks/reference_epoch_paper_runner.cpp"
+    },
+    {
+      "file": "benchmarks/bench_helmholtz_reference_adequacy.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/bench_helmholtz_reference_adequacy.dir/bench_helmholtz_reference_adequacy.cpp.o -c <e1_SOURCE>/benchmarks/bench_helmholtz_reference_adequacy.cpp"
+    },
+    {
+      "file": "benchmarks/bench_helmholtz_e0_calibration.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/bench_helmholtz_e0_calibration.dir/bench_helmholtz_e0_calibration.cpp.o -c <e1_SOURCE>/benchmarks/bench_helmholtz_e0_calibration.cpp"
+    },
+    {
+      "file": "benchmarks/bench_helmholtz_reference_epoch_e0.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/bench_helmholtz_reference_epoch_e0.dir/bench_helmholtz_reference_epoch_e0.cpp.o -c <e1_SOURCE>/benchmarks/bench_helmholtz_reference_epoch_e0.cpp"
+    },
+    {
+      "file": "benchmarks/bench_helmholtz_certified.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/bench_helmholtz_certified.dir/bench_helmholtz_certified.cpp.o -c <e1_SOURCE>/benchmarks/bench_helmholtz_certified.cpp"
+    },
+    {
+      "file": "benchmarks/bench_helmholtz_patch_solver.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/bench_helmholtz_patch_solver.dir/bench_helmholtz_patch_solver.cpp.o -c <e1_SOURCE>/benchmarks/bench_helmholtz_patch_solver.cpp"
+    },
+    {
+      "file": "benchmarks/bench_helmholtz_coarse_schwarz.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/bench_helmholtz_coarse_schwarz.dir/bench_helmholtz_coarse_schwarz.cpp.o -c <e1_SOURCE>/benchmarks/bench_helmholtz_coarse_schwarz.cpp"
+    },
+    {
+      "file": "benchmarks/bench_helmholtz_two_level_schwarz.cpp",
+      "command": "<CXX> -DLOD2D_HAVE_UMFPACK=1 -I<e1_SOURCE>/include -I<DEPENDENCY>/suitesparse -isystem <DEPENDENCY>/eigen3 -O3 -DNDEBUG -O3 -march=native -DNDEBUG -fopenmp -std=c++20 -o CMakeFiles/bench_helmholtz_two_level_schwarz.dir/bench_helmholtz_two_level_schwarz.cpp.o -c <e1_SOURCE>/benchmarks/bench_helmholtz_two_level_schwarz.cpp"
+    }
+  ],
+  "link": "<CXX> -O3 -DNDEBUG CMakeFiles/bench_helmholtz_adaptive_paper.dir/bench_helmholtz_adaptive_paper.cpp.o CMakeFiles/bench_helmholtz_adaptive_paper.dir/reference_epoch_paper_runner.cpp.o -o bench_helmholtz_adaptive_paper  ../liblod2d_core.a ../liblod2d_visualization_io.a <DEPENDENCY>/libumfpack.so <DEPENDENCY>/libcholmod.so <DEPENDENCY>/libgomp.so <DEPENDENCY>/libpthread.a <DEPENDENCY>/libtbb.so.12.5"
+}

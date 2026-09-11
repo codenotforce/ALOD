@@ -20,28 +20,59 @@ add_library(alod_core STATIC
     src/fem/manufactured.cpp
     src/fem/operators.cpp
     src/problems/legacy_cases.cpp
-    src/problems/problems.cpp)
+    src/problems/problems.cpp
+    src/fem/afem.cpp
+    src/lod/quasi_interp.cpp
+    src/lod/patches.cpp
+    src/lod/slod.cpp
+    src/helmholtz/patch_system.cpp
+    src/helmholtz/patch_solver.cpp
+    src/helmholtz/corrector.cpp)
 target_include_directories(alod_core PUBLIC include PRIVATE ${UMFPACK_INCLUDE_DIR})
 target_compile_definitions(alod_core PRIVATE LOD2D_HAVE_UMFPACK=1)
 target_link_libraries(alod_core PUBLIC Eigen3::Eigen OpenMP::OpenMP_CXX PRIVATE ${UMFPACK_LIBRARY})
 
 add_executable(alod_fem_smoke apps/fem_smoke.cpp)
 target_link_libraries(alod_fem_smoke PRIVATE alod_core)
+add_executable(alod_run apps/alod_run.cpp)
+target_link_libraries(alod_run PRIVATE alod_core)
 
 if(ALOD_BUILD_TESTS)
     enable_testing()
     find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter)
+    add_executable(quasi_average_probe tests/quasi_average_probe.cpp)
+    target_link_libraries(quasi_average_probe PRIVATE alod_core)
+    add_test(NAME quasi_average_discrepancy COMMAND quasi_average_probe)
+    add_executable(test_mathematics tests/test_mathematics.cpp)
+    target_link_libraries(test_mathematics PRIVATE alod_core)
+    add_test(NAME mathematical_regression COMMAND test_mathematics)
+    set_tests_properties(mathematical_regression PROPERTIES ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1" TIMEOUT 120)
     add_test(NAME repository_integrity
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_repository.py)
     add_test(NAME tooling_regression
         COMMAND ${Python3_EXECUTABLE} -m unittest discover -s tests -p test_*.py)
     set_tests_properties(tooling_regression PROPERTIES WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     foreach(problem E1 E2)
+        foreach(method AFEM UFEM SLOD)
+            add_test(NAME baseline_${problem}_${method}
+                COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/compare_baselines.py
+                    --executable $<TARGET_FILE:alod_run>
+                    --fixture ${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/baselines/${problem}_${method}.json)
+            set_tests_properties(baseline_${problem}_${method} PROPERTIES TIMEOUT 180 LABELS smoke)
+        endforeach()
         add_test(NAME fem_${problem}
             COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/compare_oracle.py
                 --executable $<TARGET_FILE:alod_fem_smoke>
                 --fixture ${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/fem_${problem}.json)
         set_tests_properties(fem_${problem} PROPERTIES ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1")
     endforeach()
+    add_test(NAME baseline_thread_reproducibility
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/compare_baselines.py
+            --executable $<TARGET_FILE:alod_run>
+            --fixture ${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/baselines/E2_SLOD.json --threads 2)
+    set_tests_properties(baseline_thread_reproducibility PROPERTIES TIMEOUT 180 LABELS smoke)
+    add_test(NAME baseline_cli
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_cli.py $<TARGET_FILE:alod_run>)
+    set_tests_properties(baseline_cli PROPERTIES TIMEOUT 60 LABELS smoke)
     set_tests_properties(repository_integrity tooling_regression fem_E1 fem_E2 PROPERTIES LABELS smoke TIMEOUT 120)
 endif()

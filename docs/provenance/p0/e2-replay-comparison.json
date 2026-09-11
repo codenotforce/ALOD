@@ -1,0 +1,42 @@
+{
+  "rows": 100,
+  "columns": [
+    "H_step",
+    "ell",
+    "N_H",
+    "N_reference",
+    "sample",
+    "split",
+    "rank",
+    "exact_norm",
+    "exact_error",
+    "floor",
+    "gap",
+    "base_gap",
+    "inside_sq",
+    "outside_sq",
+    "base_inside_sq",
+    "base_outside_sq",
+    "inside_depth_error",
+    "eta_H",
+    "eta_D",
+    "Theta",
+    "PG_residual",
+    "AOT_residual",
+    "regional_budget",
+    "inherit"
+  ],
+  "atol": 1e-12,
+  "rtol": 1e-08,
+  "maximum_absolute_difference": 4.218847493575595e-15,
+  "extra_diagnostic_values": 245,
+  "passed": true,
+  "extra_diagnostic_columns": [
+    "inside_sq",
+    "outside_sq",
+    "base_inside_sq",
+    "base_outside_sq",
+    "inside_depth_error"
+  ],
+  "scope": "Every archived finite value is compared. The shortened endpoint additionally evaluates regional partitions that were absent at H1 for non-nominal samples. Training-only eta fields are absent for audit-only members in both outputs."
+}

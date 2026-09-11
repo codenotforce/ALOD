@@ -88,11 +88,14 @@ def verify(staged=False):
         lines = path_violations(content)
         if lines:
             errors.append(f'{name}: absolute local path at lines {lines[:8]}')
+        decoded = content
         if name.endswith('.json'):
             try:
-                json.loads(content)
+                decoded = json.dumps(json.loads(content), ensure_ascii=False)
             except ValueError as error:
                 errors.append(f'{name}: invalid JSON ({error})')
+        if name.endswith(('.md', '.json')) and re.search(r'[\u4e00-\u9fff]', decoded):
+            errors.append(f'{name}: documentation must be written in English')
     manifest = json.loads(read('docs/provenance/source_manifest.json'))
     for entry in manifest['files']:
         try:

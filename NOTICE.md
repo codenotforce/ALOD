@@ -1,7 +1,7 @@
-# 来源与许可记录
+# Source and dependency notice
 
-本仓库的初始数值代码来自原 `LOD2d_C++` 项目中归档的 E2 生产源码。每个引入文件的原始相对位置、原始 SHA-256、引入后 SHA-256 和修改理由记录在 `docs/provenance/source_manifest.json`。
+The numerical implementation is derived from the legacy LOD2d C++ project. Imported files and modifications are listed in `docs/provenance/source_manifest.json`; archived production snapshots are fingerprinted in `docs/provenance/p0/`.
 
-此次查找未发现原项目提供的仓库级 LICENSE 或明确的统一许可声明。本次迁移不自行给原代码、论文或历史数据授予新的开源许可证，也不增加推测的作者或版权年份。已有源文件中的说明予以保留；项目权利人确定许可后再补充 LICENSE。
+No project license file was found in the supplied source snapshots. This migration does not invent a license, remove existing ownership, or grant additional redistribution rights. Existing notices are retained. Eigen, SuiteSparse/UMFPACK, BLAS and OpenMP retain their respective upstream licenses. Dependencies are discovered by CMake and are not vendored here.
 
-Eigen、SuiteSparse、OpenMP 运行库由系统安装，本仓库不捆绑其源码或二进制；其各自许可适用于对应依赖。
+Historical output fixtures are regression evidence, not newly reproduced production experiments. Server timing and resource observations describe the archived campaigns only.

@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "problem": "E2",
+  "method": "UFEM",
+  "initial_level": 6,
+  "states": 14,
+  "theta": 0.15,
+  "target": 0,
+  "maximum_nodes": 12000000,
+  "threads": 16,
+  "emit_solution": false
+}

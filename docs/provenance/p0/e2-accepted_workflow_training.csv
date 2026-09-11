@@ -1,0 +1,3 @@
+H_step,inherited_rank,raw_rank,online_rank,evaluations,fresh_comparators,target_min,target_max,worst_target_ratio,last_marginal_gain,target_met,stop,lagged_candidate_budget
+0,0,6,2,3,0,0.031014723357886222,0.048727713357562097,0.89379656272188202,0.1254279522798582,1,budget-met,0
+1,2,4,2,2,0,0.03103283120594006,0.048748060318443004,0.84892662132114916,0.53814874316211225,1,budget-met,1

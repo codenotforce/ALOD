@@ -1,0 +1,503 @@
+{
+  "scope": "Historical baseline contracts and P1 defaults. These configurations do not claim new full production outputs.",
+  "P1_solver_policy": {
+    "FEM": "UMFPACK",
+    "SLOD_patch": "DirectSchur",
+    "SLOD_coarse": "Eigen SparseLU",
+    "SLOD_ell": 3,
+    "SLOD_reference_gap": 4
+  },
+  "historical_solver_difference": "Archived baseline configurations specify direct_saddle and can switch to DirectSchur by a DoF threshold. Original AFEM driver defaults to Eigen SparseLU. P1 makes UMFPACK/DirectSchur explicit, per the migration plan; same-backend old-kernel probes isolate numerical extraction. Historical timing is not used for P1 performance claims.",
+  "E1": {
+    "AFEM": {
+      "C0_usr": 1.6358263950741063,
+      "C1_usr": 1e-12,
+      "ambient_mesh": "reference-shadow",
+      "boundary_beta": 1,
+      "build_hash": "E1-family-AFEM-H6-thetaH015-target0008-rhs-family-20260901",
+      "c_H": 100,
+      "case": "R1",
+      "afem_exact_relative_energy_stop_tolerance": 0.008,
+      "ell0": 0,
+      "ell_max": 0,
+      "git_commit": "WORKTREE@baseline-rhs-family-20260901",
+      "initial_coarse_level": 6,
+      "kernel_riesz_solver": "saddle_point",
+      "manuscript_sha256": "b7fa79f0f7c90d5a9dcb2d2938635e0ed3ccb13224f4adc4dcd9782954fb7874",
+      "maximum_patch_threads": 16,
+      "maximum_reference_level": 0,
+      "minimum_reference_level_gap": 0,
+      "method": "AFEM",
+      "patch_solver_kind": "direct_saddle",
+      "patch_symbolic_cache_slots": 1,
+      "patch_reuse_identical_factorization": false,
+      "petrov_mode": "two_sided",
+      "plateau_diagnostic": {
+        "maximum_relative_oscillation": 0.15,
+        "minimum_geometric_mean_ratio": 0.9,
+        "window_steps": 3
+      },
+      "practical_stop_tolerance": 0.004,
+      "quadrature": {
+        "base_triangle_order": 12,
+        "gaussian_triangle_order": 16,
+        "max_recursive_subdivisions": 8,
+        "singular_triangle_order": 24
+      },
+      "reference_epoch": 0,
+      "reference_adequacy": {
+        "enabled": false,
+        "maximum_terminal_error_fraction": 0.25,
+        "refinement_levels": 1
+      },
+      "reference_level": 24,
+      "reference_refresh_level_gap": 0,
+      "reference_mesh": "uniform-nvb",
+      "relative_energy_targets": [
+        0.1,
+        0.05,
+        0.02,
+        0.01
+      ],
+      "repeat_index": 0,
+      "rho_star": 0.25,
+      "schema_version": 4,
+      "baseline_rhs_family_diagnostic": true,
+      "baseline_rhs_family_seed": 20260901,
+      "baseline_rhs_family_test_seed": 20260902,
+      "baseline_rhs_family_training_samples": 16,
+      "baseline_rhs_family_test_samples": 24,
+      "baseline_rhs_family_shift_audit_samples": 8,
+      "theta_H": 0.15,
+      "theta_loc": 1.961323606684523,
+      "timing_repeats": 1,
+      "trajectory_policy": "fixed_work_horizon",
+      "tolerances": {
+        "eigen_relative_residual": 1e-10,
+        "interpolation_right_inverse": 1e-09,
+        "linear_relative_residual": 1e-10,
+        "prolongation_composition": 1e-10
+      },
+      "wavenumber": 16,
+      "work_limits": {
+        "maximum_H_steps": 180,
+        "maximum_ambient_elements": 16000000,
+        "maximum_coarse_elements": 16000000,
+        "maximum_iterations": 600,
+        "maximum_unknowns": 12000000,
+        "maximum_wall_seconds": 28800
+      }
+    },
+    "UFEM": {
+      "C0_usr": 1.6358263950741063,
+      "C1_usr": 1e-12,
+      "ambient_mesh": "reference-shadow",
+      "boundary_beta": 1,
+      "build_hash": "E1-family-UFEM-H6-level20-rhs-family-20260901",
+      "c_H": 100,
+      "case": "R1",
+      "ell0": 0,
+      "ell_max": 0,
+      "git_commit": "WORKTREE@baseline-rhs-family-20260901",
+      "initial_coarse_level": 6,
+      "kernel_riesz_solver": "saddle_point",
+      "manuscript_sha256": "b7fa79f0f7c90d5a9dcb2d2938635e0ed3ccb13224f4adc4dcd9782954fb7874",
+      "maximum_patch_threads": 0,
+      "maximum_reference_level": 0,
+      "minimum_reference_level_gap": 0,
+      "method": "UFEM",
+      "patch_solver_kind": "direct_saddle",
+      "patch_symbolic_cache_slots": 1,
+      "patch_reuse_identical_factorization": false,
+      "petrov_mode": "two_sided",
+      "plateau_diagnostic": {
+        "maximum_relative_oscillation": 0.15,
+        "minimum_geometric_mean_ratio": 0.9,
+        "window_steps": 3
+      },
+      "practical_stop_tolerance": 0.005,
+      "quadrature": {
+        "base_triangle_order": 12,
+        "gaussian_triangle_order": 16,
+        "max_recursive_subdivisions": 8,
+        "singular_triangle_order": 24
+      },
+      "reference_epoch": 0,
+      "reference_adequacy": {
+        "enabled": false,
+        "maximum_terminal_error_fraction": 0.25,
+        "refinement_levels": 1
+      },
+      "reference_level": 20,
+      "reference_refresh_level_gap": 0,
+      "reference_mesh": "uniform-nvb",
+      "relative_energy_targets": [
+        0.1,
+        0.05,
+        0.02,
+        0.01
+      ],
+      "repeat_index": 0,
+      "rho_star": 0.25,
+      "schema_version": 4,
+      "baseline_rhs_family_diagnostic": true,
+      "baseline_rhs_family_seed": 20260901,
+      "baseline_rhs_family_test_seed": 20260902,
+      "baseline_rhs_family_training_samples": 16,
+      "baseline_rhs_family_test_samples": 24,
+      "baseline_rhs_family_shift_audit_samples": 8,
+      "theta_H": 0.1,
+      "theta_loc": 1.961323606684523,
+      "timing_repeats": 1,
+      "trajectory_policy": "fixed_work_horizon",
+      "tolerances": {
+        "eigen_relative_residual": 1e-10,
+        "interpolation_right_inverse": 1e-09,
+        "linear_relative_residual": 1e-10,
+        "prolongation_composition": 1e-10
+      },
+      "wavenumber": 16,
+      "work_limits": {
+        "maximum_H_steps": 14,
+        "maximum_ambient_elements": 16000000,
+        "maximum_coarse_elements": 16000000,
+        "maximum_iterations": 100,
+        "maximum_unknowns": 12000000,
+        "maximum_wall_seconds": 28800
+      }
+    },
+    "SLOD": {
+      "C0_usr": 1.6358263950741063,
+      "C1_usr": 1e-12,
+      "ambient_mesh": "reference-shadow",
+      "boundary_beta": 1,
+      "build_hash": "E1-family-SLOD-H6-h10-gap4-ell3-rhs-family-20260901",
+      "c_H": 100,
+      "case": "R1",
+      "ell0": 3,
+      "ell_max": 3,
+      "git_commit": "WORKTREE@baseline-rhs-family-20260901",
+      "initial_coarse_level": 6,
+      "kernel_riesz_solver": "saddle_point",
+      "manuscript_sha256": "b7fa79f0f7c90d5a9dcb2d2938635e0ed3ccb13224f4adc4dcd9782954fb7874",
+      "maximum_patch_threads": 16,
+      "maximum_reference_level": 0,
+      "minimum_reference_level_gap": 0,
+      "method": "SLOD",
+      "patch_solver_kind": "direct_saddle",
+      "patch_symbolic_cache_slots": 1,
+      "patch_reuse_identical_factorization": true,
+      "petrov_mode": "two_sided",
+      "plateau_diagnostic": {
+        "maximum_relative_oscillation": 0.15,
+        "minimum_geometric_mean_ratio": 0.9,
+        "window_steps": 3
+      },
+      "practical_stop_tolerance": 0.005,
+      "quadrature": {
+        "base_triangle_order": 12,
+        "gaussian_triangle_order": 16,
+        "max_recursive_subdivisions": 8,
+        "singular_triangle_order": 24
+      },
+      "reference_epoch": 0,
+      "reference_adequacy": {
+        "enabled": false,
+        "maximum_terminal_error_fraction": 0.25,
+        "refinement_levels": 1
+      },
+      "reference_level": 10,
+      "reference_refresh_level_gap": 0,
+      "reference_mesh": "uniform-nvb",
+      "relative_energy_targets": [
+        0.1,
+        0.05,
+        0.02,
+        0.01
+      ],
+      "repeat_index": 0,
+      "rho_star": 0.25,
+      "schema_version": 4,
+      "slod_direct_schur_min_reference_dofs": 24000,
+      "manufactured_exact_only_errors": true,
+      "baseline_rhs_family_diagnostic": true,
+      "baseline_rhs_family_seed": 20260901,
+      "baseline_rhs_family_test_seed": 20260902,
+      "baseline_rhs_family_training_samples": 16,
+      "baseline_rhs_family_test_samples": 24,
+      "baseline_rhs_family_shift_audit_samples": 8,
+      "theta_H": 0.1,
+      "theta_loc": 1.961323606684523,
+      "timing_repeats": 1,
+      "trajectory_policy": "fixed_work_horizon",
+      "tolerances": {
+        "eigen_relative_residual": 1e-10,
+        "interpolation_right_inverse": 1e-09,
+        "linear_relative_residual": 1e-10,
+        "prolongation_composition": 1e-10
+      },
+      "wavenumber": 16,
+      "work_limits": {
+        "maximum_H_steps": 10,
+        "maximum_ambient_elements": 8000000,
+        "maximum_coarse_elements": 1000000,
+        "maximum_iterations": 160,
+        "maximum_unknowns": 5000000,
+        "maximum_wall_seconds": 86400
+      }
+    }
+  },
+  "E2": {
+    "AFEM": {
+      "source": "results/E1-E2-fair-baseline-rhs-family-server-20260901/runs/E2-family-afem-H6-thetaH015-target0003-level40/S_AFEM_k16_r0_430afdb336788fd0/run.json",
+      "source_sha256": "41f555240eda81a8f3bdfe90d5037a03ddd0dd6850773dcaa3f115a78f4f144e",
+      "config": {
+        "C0_usr": 1.6358263950741063,
+        "C1_usr": 1e-12,
+        "ambient_mesh": "reference-shadow",
+        "boundary_beta": 1,
+        "build_hash": "E2-family-AFEM-H6-level40-target0003-rhs-family-20260901",
+        "c_H": 100,
+        "case": "S",
+        "afem_exact_relative_energy_stop_tolerance": 0.003,
+        "ell0": 0,
+        "ell_max": 0,
+        "git_commit": "WORKTREE@baseline-rhs-family-20260901",
+        "initial_coarse_level": 6,
+        "kernel_riesz_solver": "saddle_point",
+        "manuscript_sha256": "b7fa79f0f7c90d5a9dcb2d2938635e0ed3ccb13224f4adc4dcd9782954fb7874",
+        "maximum_patch_threads": 16,
+        "maximum_reference_level": 0,
+        "minimum_reference_level_gap": 0,
+        "method": "AFEM",
+        "patch_solver_kind": "direct_saddle",
+        "patch_symbolic_cache_slots": 1,
+        "patch_reuse_identical_factorization": false,
+        "petrov_mode": "two_sided",
+        "plateau_diagnostic": {
+          "maximum_relative_oscillation": 0.15,
+          "minimum_geometric_mean_ratio": 0.9,
+          "window_steps": 3
+        },
+        "practical_stop_tolerance": 0.003,
+        "quadrature": {
+          "base_triangle_order": 12,
+          "gaussian_triangle_order": 16,
+          "max_recursive_subdivisions": 6,
+          "singular_triangle_order": 24
+        },
+        "reference_epoch": 0,
+        "reference_adequacy": {
+          "enabled": false,
+          "maximum_terminal_error_fraction": 0.25,
+          "refinement_levels": 1
+        },
+        "reference_level": 40,
+        "reference_refresh_level_gap": 0,
+        "reference_mesh": "uniform-nvb",
+        "relative_energy_targets": [
+          0.1,
+          0.05,
+          0.02,
+          0.01
+        ],
+        "repeat_index": 0,
+        "rho_star": 0.25,
+        "schema_version": 4,
+        "singular_oscillatory_fraction": 0,
+        "smooth_wave_amplitude": 0.5,
+        "singular_solution_profile": "boundary-weight-gaussian-alpha80",
+        "baseline_rhs_family_diagnostic": true,
+        "baseline_rhs_family_seed": 20260831,
+        "baseline_rhs_family_test_seed": 20260831,
+        "baseline_rhs_family_training_samples": 16,
+        "baseline_rhs_family_test_samples": 24,
+        "baseline_rhs_family_shift_audit_samples": 8,
+        "theta_H": 0.15,
+        "theta_loc": 1.961323606684523,
+        "timing_repeats": 1,
+        "trajectory_policy": "fixed_work_horizon",
+        "tolerances": {
+          "eigen_relative_residual": 1e-10,
+          "interpolation_right_inverse": 1e-09,
+          "linear_relative_residual": 1e-10,
+          "prolongation_composition": 1e-10
+        },
+        "wavenumber": 16,
+        "work_limits": {
+          "maximum_H_steps": 160,
+          "maximum_ambient_elements": 16000000,
+          "maximum_coarse_elements": 16000000,
+          "maximum_iterations": 1600,
+          "maximum_unknowns": 12000000,
+          "maximum_wall_seconds": 43200
+        }
+      }
+    },
+    "UFEM": {
+      "source": "results/E2c-fair-baselines-production-20260901/UFEM/run.json",
+      "source_sha256": "ccc6ea3bd7aba2b64401c879f86f204841ade4c352723dc45d29c19118362232",
+      "config": {
+        "C0_usr": 1.6358263950741063,
+        "C1_usr": 1e-12,
+        "ambient_mesh": "reference-shadow",
+        "boundary_beta": 1,
+        "build_hash": "E2c-family-nominal-UFEM-H6-exact-only-step13-20260901",
+        "c_H": 100,
+        "case": "S",
+        "ell0": 0,
+        "ell_max": 0,
+        "git_commit": "WORKTREE",
+        "initial_coarse_level": 6,
+        "kernel_riesz_solver": "saddle_point",
+        "manuscript_sha256": "b7fa79f0f7c90d5a9dcb2d2938635e0ed3ccb13224f4adc4dcd9782954fb7874",
+        "maximum_patch_threads": 16,
+        "maximum_reference_level": 0,
+        "minimum_reference_level_gap": 0,
+        "method": "UFEM",
+        "patch_solver_kind": "direct_saddle",
+        "patch_symbolic_cache_slots": 1,
+        "patch_reuse_identical_factorization": false,
+        "petrov_mode": "two_sided",
+        "plateau_diagnostic": {
+          "maximum_relative_oscillation": 0.15,
+          "minimum_geometric_mean_ratio": 0.9,
+          "window_steps": 3
+        },
+        "practical_stop_tolerance": 0.003,
+        "quadrature": {
+          "base_triangle_order": 12,
+          "gaussian_triangle_order": 16,
+          "max_recursive_subdivisions": 6,
+          "singular_triangle_order": 24
+        },
+        "reference_epoch": 0,
+        "reference_adequacy": {
+          "enabled": false,
+          "maximum_terminal_error_fraction": 0.25,
+          "refinement_levels": 1
+        },
+        "reference_level": 19,
+        "reference_refresh_level_gap": 0,
+        "reference_mesh": "uniform-nvb",
+        "relative_energy_targets": [
+          0.1,
+          0.05,
+          0.02,
+          0.01
+        ],
+        "repeat_index": 0,
+        "rho_star": 0.25,
+        "schema_version": 4,
+        "singular_oscillatory_fraction": 0,
+        "smooth_wave_amplitude": 0.5,
+        "singular_solution_profile": "boundary-weight-gaussian-alpha80",
+        "manufactured_exact_only_errors": true,
+        "theta_H": 0.15,
+        "theta_loc": 1.961323606684523,
+        "timing_repeats": 1,
+        "trajectory_policy": "fixed_work_horizon",
+        "tolerances": {
+          "eigen_relative_residual": 1e-10,
+          "interpolation_right_inverse": 1e-09,
+          "linear_relative_residual": 1e-10,
+          "prolongation_composition": 1e-10
+        },
+        "wavenumber": 16,
+        "work_limits": {
+          "maximum_H_steps": 13,
+          "maximum_ambient_elements": 16000000,
+          "maximum_coarse_elements": 16000000,
+          "maximum_iterations": 1000,
+          "maximum_unknowns": 12000000,
+          "maximum_wall_seconds": 43200
+        }
+      }
+    },
+    "SLOD": {
+      "source": "results/E2c-fair-baselines-production-20260901/SLOD-H14-H15/run.json",
+      "source_sha256": "18a4c02ea8e98e8e31c6140f91e68df3ce69c1c4a4d059501d4a03e0a85d583d",
+      "config": {
+        "C0_usr": 1.6358263950741063,
+        "C1_usr": 1e-12,
+        "ambient_mesh": "reference-shadow",
+        "boundary_beta": 1,
+        "build_hash": "E2c-family-nominal-SLOD-H14-h18-gap4-ell3-toH15-resume-20260901",
+        "c_H": 100,
+        "case": "S",
+        "ell0": 3,
+        "ell_max": 3,
+        "git_commit": "WORKTREE",
+        "initial_coarse_level": 14,
+        "kernel_riesz_solver": "saddle_point",
+        "manuscript_sha256": "b7fa79f0f7c90d5a9dcb2d2938635e0ed3ccb13224f4adc4dcd9782954fb7874",
+        "maximum_patch_threads": 16,
+        "maximum_reference_level": 0,
+        "minimum_reference_level_gap": 0,
+        "method": "SLOD",
+        "patch_solver_kind": "direct_saddle",
+        "patch_symbolic_cache_slots": 1,
+        "patch_reuse_identical_factorization": true,
+        "petrov_mode": "two_sided",
+        "plateau_diagnostic": {
+          "maximum_relative_oscillation": 0.15,
+          "minimum_geometric_mean_ratio": 0.9,
+          "window_steps": 3
+        },
+        "practical_stop_tolerance": 0.003,
+        "quadrature": {
+          "base_triangle_order": 12,
+          "gaussian_triangle_order": 16,
+          "max_recursive_subdivisions": 6,
+          "singular_triangle_order": 24
+        },
+        "reference_epoch": 0,
+        "reference_adequacy": {
+          "enabled": false,
+          "maximum_terminal_error_fraction": 0.25,
+          "refinement_levels": 1
+        },
+        "reference_level": 18,
+        "reference_refresh_level_gap": 0,
+        "reference_mesh": "uniform-nvb",
+        "relative_energy_targets": [
+          0.1,
+          0.05,
+          0.02,
+          0.01
+        ],
+        "repeat_index": 0,
+        "rho_star": 0.25,
+        "schema_version": 4,
+        "singular_oscillatory_fraction": 0,
+        "smooth_wave_amplitude": 0.5,
+        "singular_solution_profile": "boundary-weight-gaussian-alpha80",
+        "slod_direct_schur_min_reference_dofs": 24000,
+        "manufactured_exact_only_errors": true,
+        "theta_H": 0.15,
+        "theta_loc": 1.961323606684523,
+        "timing_repeats": 1,
+        "trajectory_policy": "fixed_work_horizon",
+        "tolerances": {
+          "eigen_relative_residual": 1e-10,
+          "interpolation_right_inverse": 1e-09,
+          "linear_relative_residual": 1e-10,
+          "prolongation_composition": 1e-10
+        },
+        "wavenumber": 16,
+        "work_limits": {
+          "maximum_H_steps": 1,
+          "maximum_ambient_elements": 16000000,
+          "maximum_coarse_elements": 1000000,
+          "maximum_iterations": 128,
+          "maximum_unknowns": 12000000,
+          "maximum_wall_seconds": 43200
+        }
+      }
+    }
+  },
+  "horizons": {
+    "E1": "AFEM at most 180 updates with target 0.008; UFEM H6..H20; SLOD H6..H16.",
+    "E2": "AFEM at most 160 updates with target 0.003; UFEM H6..H19; SLOD H6..H15. The archived SLOD continuation starts at H14; P1 starts at H6."
+  }
+}

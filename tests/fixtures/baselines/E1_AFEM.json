@@ -1,0 +1,298 @@
+{
+  "provenance": {
+    "library_sha256": "c97969b7fe5b33821b93a86f6097b50ed6039f832252112b55dfd30e7f0d2e81",
+    "model_sha256": "25d203971759485420f7dd29d7e6abb8cf9a57b39b2b8281ee44850aa7983320",
+    "estimator_sha256": "ad2d7d388afb4a91d19db4c645dc971aabc270bb9e9daadf7f800afe34b9c3c9",
+    "probe_sha256": "fc13f7579e61cff71176d83fd79ca990c1c26e8bc6f71e9da6aae1f33116cdcd",
+    "architecture_flags": "portable default architecture, matching ALOD",
+    "scope": "Old production kernels and full LOD model; shared deterministic scheduling/output probe. Not a production campaign."
+  },
+  "args": [
+    "E1",
+    "AFEM",
+    "--initial-level=2",
+    "--states=3",
+    "--emit-solution=1"
+  ],
+  "output": [
+    {
+      "problem": "E1",
+      "method": "AFEM",
+      "state": 0,
+      "nodes": 9,
+      "elements": 8,
+      "free_dof": 3,
+      "reference_nodes": 9,
+      "reference_elements": 8,
+      "mesh_fingerprint": "ddb44ad284d23cac",
+      "reference_fingerprint": "ddb44ad284d23cac",
+      "energy_error": 0.12937665492565437,
+      "l2_error": 0.004798103208894321,
+      "exact_energy_norm": 0.13155152903768033,
+      "relative_energy_error": 0.9834675117200423,
+      "residual": 6.978578641533877e-17,
+      "patch_residual": 0,
+      "constraint_residual": 0,
+      "target_reached": false,
+      "stop_reason": "continue",
+      "marked_elements": [
+        3
+      ],
+      "marked_ids": [
+        9
+      ],
+      "element_ids": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13
+      ],
+      "indicators_squared": [
+        0.004636159695458229,
+        0.018376550717779157,
+        0.0032686344056504424,
+        0.9758062703423163,
+        0.01837655071777939,
+        0.004636159695458214,
+        0.003268634405650447,
+        0.9758062703423153
+      ],
+      "solution": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0.0002578233288277223,
+          -0.0023020094863611244
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          -0.00018767404868601405,
+          0.001686315263848868
+        ],
+        [
+          0.0030325721181293356,
+          -0.0028198422155507608
+        ],
+        [
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "problem": "E1",
+      "method": "AFEM",
+      "state": 1,
+      "nodes": 10,
+      "elements": 10,
+      "free_dof": 4,
+      "reference_nodes": 10,
+      "reference_elements": 10,
+      "mesh_fingerprint": "d08ff8c6d6bf9567",
+      "reference_fingerprint": "d08ff8c6d6bf9567",
+      "energy_error": 0.1297602544891222,
+      "l2_error": 0.0048135742344413675,
+      "exact_energy_norm": 0.1315515290376803,
+      "relative_energy_error": 0.9863834760290394,
+      "residual": 1.2773471389663304e-16,
+      "patch_residual": 0,
+      "constraint_residual": 0,
+      "target_reached": false,
+      "stop_reason": "continue",
+      "marked_elements": [
+        5
+      ],
+      "marked_ids": [
+        13
+      ],
+      "element_ids": [
+        6,
+        7,
+        8,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "indicators_squared": [
+        0.004240854770356133,
+        0.017375684662725547,
+        0.0029914328219337195,
+        0.004233880354671965,
+        0.0029914328219336913,
+        0.9769939192234217,
+        0.4788878025810115,
+        0.0010401912252758062,
+        0.006557575671511187,
+        0.009645873619527158
+      ],
+      "solution": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          -4.454828396866735e-05,
+          -0.0022118130593337293
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          3.328982220365532e-05,
+          0.0016204024902519256
+        ],
+        [
+          0.0028036061563249223,
+          -0.0023977085063888715
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0.0016552090395281027,
+          -0.0019264295444722322
+        ]
+      ]
+    },
+    {
+      "problem": "E1",
+      "method": "AFEM",
+      "state": 2,
+      "nodes": 11,
+      "elements": 12,
+      "free_dof": 5,
+      "reference_nodes": 11,
+      "reference_elements": 12,
+      "mesh_fingerprint": "1820bb300beaa14f",
+      "reference_fingerprint": "1820bb300beaa14f",
+      "energy_error": 0.13095516188740539,
+      "l2_error": 0.004863772253145486,
+      "exact_energy_norm": 0.13155152903768041,
+      "relative_energy_error": 0.995466665004675,
+      "residual": 1.523460133575847e-16,
+      "patch_residual": 0,
+      "constraint_residual": 0,
+      "target_reached": false,
+      "stop_reason": "state_limit",
+      "marked_elements": [
+        11
+      ],
+      "marked_ids": [
+        21
+      ],
+      "element_ids": [
+        6,
+        8,
+        11,
+        12,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "indicators_squared": [
+        0.0033076998269867225,
+        0.002352057482647672,
+        0.0033076998269867025,
+        0.0023520574826476617,
+        0.47918722060737273,
+        0.0019885346910781445,
+        0.006137858233140913,
+        0.009271921238039651,
+        0.009271921238039667,
+        0.006137858233140882,
+        0.001988534691078125,
+        0.4791872206073729
+      ],
+      "solution": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          -0.0006711522680800017,
+          -0.0018388100063826997
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0.0004911927336696305,
+          0.001347823336172327
+        ],
+        [
+          0.002529088027546796,
+          -0.0013223591725465551
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0.002150826201617306,
+          -0.0027230233572085724
+        ],
+        [
+          0.002150826201617296,
+          -0.002723023357208557
+        ]
+      ]
+    }
+  ]
+}

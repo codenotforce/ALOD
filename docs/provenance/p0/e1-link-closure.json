@@ -1,0 +1,133 @@
+{
+  "method": "GNU ld archive members included to satisfy references; direct benchmark objects are recorded in the link command",
+  "members": [
+    {
+      "archive": "liblod2d_core.a",
+      "object": "boundary.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "candidate_dual.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "candidate_flux.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "certificates.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "certified_driver.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "corrector.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "corrector_pipeline.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "edges.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "error_control.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "estimator.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "hierarchy.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "kernel_residual.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "model.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "operators.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "paper_cases.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "paper_config.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "patch_multigrid.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "patch_solver.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "patch_system.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "patches.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "practical_driver.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "quadrature.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "quasi_interp.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "reference_epoch_driver.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "reference_retraction.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "reference_solution_cache.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "refine.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "right_gmres.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "shifted_laplacian.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "singularity_hybrid.cpp.o"
+    },
+    {
+      "archive": "liblod2d_core.a",
+      "object": "verified_spectrum.cpp.o"
+    },
+    {
+      "archive": "liblod2d_visualization_io.a",
+      "object": "vtk_writer.cpp.o"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "scope": "Initial migration checkpoint; not a complete P0/P1 acceptance.",
+  "scope": "P0 provenance/replays and P1 independent numerical core; original byte hashes retained, committed-content hashes normalized to LF.",
   "roots": {
     "legacy": "External legacy source supplied by the operator",
     "paper": "External manuscript supplied by the operator",
@@ -148,33 +148,13 @@
       "copyright": "Inherited; no repository license found. See NOTICE.md."
     },
     {
-      "path": "src/problems/legacy_cases.cpp",
-      "origin_scope": "legacy",
-      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/benchmarks/paper_cases.cpp",
-      "origin_sha256": "8c9a17647d2ae6275ca49f4de53cb1e01407dce76b3098b403d1fb6bf3abed20",
-      "sha256": "f93eca9ade29ef13f453b8bf03fe56aa574d60cb9a2565b2783151ccfd618cd5",
-      "snapshot": "E2-production",
-      "modification": "Replace model include by mesh and refinement declarations; numerical formulas unchanged.",
-      "copyright": "Inherited; no repository license found. See NOTICE.md."
-    },
-    {
-      "path": "include/helmholtz/benchmarks/paper_cases.h",
-      "origin_scope": "legacy",
-      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/include/helmholtz/benchmarks/paper_cases.h",
-      "origin_sha256": "90c72800b51efba45e69e1c95d97123b2b387eaac3dcdbaf898b2358511536cb",
-      "sha256": "aef0563b3154bb59cfea0276747b513fcaf1d1b61ce52c72f0b5913694f5b687",
-      "snapshot": "E2-production",
-      "modification": "Replace experiment configuration by enum-only compatibility header; explicitly include quadrature declarations.",
-      "copyright": "Inherited; no repository license found. See NOTICE.md."
-    },
-    {
       "path": "ALOD_SUBPROJECT_AGENT_PLAN_20260909.md",
       "origin_scope": "initial_project_input",
       "origin": "ALOD_SUBPROJECT_AGENT_PLAN_20260909.md",
       "origin_sha256": "5e4544f14cf014a4732477283ec5ea64cb28e2506d8cb13162c768597c3c9ae2",
-      "sha256": "c4a79ccc41097345bab05eba62502fd96d08bf7421c4c648a70298257bc95dc0",
+      "sha256": "2038515f186caa02204d0aed873912a76672f3de5ecdc30ffe15914ce363906d",
       "snapshot": "initial-user-plan",
-      "modification": "Portable root aliases and current execution-status pointer.",
+      "modification": "English translation of the complete plan; portable symbolic roots and explicit P0 averaging-discrepancy finding.",
       "copyright": "Inherited; no repository license found. See NOTICE.md."
     },
     {
@@ -242,9 +222,9 @@
       "origin_scope": "legacy",
       "origin": "results/E1-family-marking-controls-20260910/reproducibility/server-environment.json",
       "origin_sha256": "4f362fea0c6280577e5bdb07ee0425ec972f6ac6fd6970e23d95fa4ef9adbd82",
-      "sha256": "6215a82df715a73f09a771f201198e81b85c0a40f8c9bcf4b28e8f9afccdbe53",
+      "sha256": "58d3738c90ccacfeb4670abc640484b82dd53b0d5e0203c8a89555da8eb27a24",
       "snapshot": "archived-evidence",
-      "modification": "Archive provenance; replace machine-specific locations with placeholders.",
+      "modification": "English structured CPU summary and portable library locations; original byte hash retained.",
       "copyright": "Inherited; no repository license found. See NOTICE.md."
     },
     {
@@ -416,6 +396,146 @@
       "snapshot": "archived-evidence",
       "modification": "Preserve baseline origin/validation evidence; redact machine paths.",
       "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "src/lod/quasi_interp.cpp",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/lod/quasi_interp.cpp",
+      "origin_sha256": "164efe14759dea73df171b1ea4c4998527ec33007c327135d08283547e20a13f",
+      "sha256": "9a0ab087e63cb52f0132883313729d42390c7fbe9f9fe3e4bf5ba94582200550",
+      "snapshot": "E2-production",
+      "modification": "Numerical implementation unchanged; normalized line endings.",
+      "copyright": "Inherited; see NOTICE.md."
+    },
+    {
+      "path": "src/lod/patches.cpp",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/lod/patches.cpp",
+      "origin_sha256": "3aeadf5d17c75eccbdf4851ad5bb93e842bb17b2fc48ea05da3c78e9835a007c",
+      "sha256": "b5156aaf59e30550f0a259e48d29b7ce72438b26b005fa6566da26d7639a72a5",
+      "snapshot": "E2-production",
+      "modification": "Numerical implementation unchanged; normalized line endings.",
+      "copyright": "Inherited; see NOTICE.md."
+    },
+    {
+      "path": "include/lod/quasi_interp.h",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/include/lod/quasi_interp.h",
+      "origin_sha256": "6c0104ac35fac4d919e18348c37faf651fc1538a77f0b80ac5b7a34f25c8d4c5",
+      "sha256": "98ee55a3b5a2796ed70d24882405fc2519ba3beb4db60d06c052c82cdefaf10f",
+      "snapshot": "E2-production",
+      "modification": "Numerical implementation unchanged; normalized line endings.",
+      "copyright": "Inherited; see NOTICE.md."
+    },
+    {
+      "path": "include/lod/patches.h",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/include/lod/patches.h",
+      "origin_sha256": "f88fc07eab2de70a956fa899f37cd85b9bd134531427540bb3517de4cc58bb90",
+      "sha256": "b6122903ef142af83e14f64641eb56645d4bbf37efd8937c4b77fddb2f0b92a6",
+      "snapshot": "E2-production",
+      "modification": "Numerical implementation unchanged; normalized line endings.",
+      "copyright": "Inherited; see NOTICE.md."
+    },
+    {
+      "path": "src/helmholtz/patch_system.cpp",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/patch_system.cpp",
+      "origin_sha256": "dd542ecd526bfa1ba70b49fa4b8bc6f90d27fe35d49bed7efbc3c049011d72a7",
+      "sha256": "98ef487612e23ed0faf5464334ae397af6461bf10e868379c353ae66f70de12b",
+      "snapshot": "E2-production",
+      "modification": "Numerical implementation unchanged; normalized line endings.",
+      "copyright": "Inherited; see NOTICE.md."
+    },
+    {
+      "path": "include/helmholtz/patch_system.h",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/include/helmholtz/patch_system.h",
+      "origin_sha256": "83216462eceb15de61a8adcd8dd8b0d6748586672b81a58e83668f707a1ec0f0",
+      "sha256": "83216462eceb15de61a8adcd8dd8b0d6748586672b81a58e83668f707a1ec0f0",
+      "snapshot": "E2-production",
+      "modification": "Numerical implementation unchanged; normalized line endings.",
+      "copyright": "Inherited; see NOTICE.md."
+    },
+    {
+      "path": "src/helmholtz/corrector.cpp",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/corrector.cpp",
+      "origin_sha256": "1c2e021408170f97373eb21cf0f1250f72d14cccb50340fca4759128ff0751d0",
+      "sha256": "1c2e021408170f97373eb21cf0f1250f72d14cccb50340fca4759128ff0751d0",
+      "snapshot": "E2-production",
+      "modification": "Numerical implementation unchanged; normalized line endings.",
+      "copyright": "Inherited; see NOTICE.md."
+    },
+    {
+      "path": "src/helmholtz/patch_solver.cpp",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/patch_solver.cpp",
+      "origin_sha256": "3b941ff942af0e15f9c0a8e04e7df8226e37daaaf670b672309845aead3480b9",
+      "sha256": "5605318e5baa1b59e9ae88178916e93cef740db98c356e7a9c3a2fc49041b06e",
+      "snapshot": "E2-production",
+      "modification": "Extracted DirectSchur only; removed shifted/GMRES/saddle alternatives and fallback.",
+      "copyright": "Inherited; see NOTICE.md."
+    },
+    {
+      "path": "include/helmholtz/patch_solver.h",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/include/helmholtz/patch_solver.h",
+      "origin_sha256": "0614d580c1209c5ff19fba0e1fef2a1c735be1223ef652c8858a45494c64e566",
+      "sha256": "9d986a786da3b155a87dac974a47feaddf9fcf1690586bfa8f6716950f235b2c",
+      "snapshot": "E2-production",
+      "modification": "DirectSchur-only interface; no hidden solver switches.",
+      "copyright": "Inherited; see NOTICE.md."
+    },
+    {
+      "path": "include/helmholtz/corrector.h",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/include/helmholtz/corrector.h",
+      "origin_sha256": "7bfb6e6332a130dffaebee6d559d3f8cf6803acfcba675002ab378bc00880b9e",
+      "sha256": "b3cecb9a35952b5f20beef648195e42c528f038445f9bbdb889314d2c0abc7a4",
+      "snapshot": "E2-production",
+      "modification": "Retained basis assembly declarations; P1 baseline owns direct patch loop.",
+      "copyright": "Inherited; see NOTICE.md."
+    },
+    {
+      "path": "src/fem/afem.cpp",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/adaptive/estimator.cpp",
+      "origin_sha256": "ad2d7d388afb4a91d19db4c645dc971aabc270bb9e9daadf7f800afe34b9c3c9",
+      "sha256": "c61b61cd0375aa13ac6255cadaf8f6d42edf3b82e0c204883d1dbaf09cb647cf",
+      "snapshot": "E2-production",
+      "modification": "Extracted single-mesh conforming P1 residual and deterministic Doerfler; removed kernel/dual and multi-mesh diagnostics.",
+      "copyright": "Inherited; see NOTICE.md."
+    },
+    {
+      "path": "include/alod/afem.hpp",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/include/helmholtz/adaptive/estimator.h",
+      "origin_sha256": "4a0e5d206c48f81041ef72ef3bdc2ef0d10b23dea193235cc2f66add5916e0aa",
+      "sha256": "5ec09406708678e402efd89939fdbd8abfa8eadc9da8f2549dff9983267abacd",
+      "snapshot": "E2-production",
+      "modification": "Single-mesh AFEM-only interface.",
+      "copyright": "Inherited; see NOTICE.md."
+    },
+    {
+      "path": "src/problems/legacy_cases.cpp",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/benchmarks/paper_cases.cpp",
+      "origin_sha256": "8c9a17647d2ae6275ca49f4de53cb1e01407dce76b3098b403d1fb6bf3abed20",
+      "sha256": "bb86bfc4406bb163f2e22afbf9b37a5a3e0b0c8c392ac3c2df2f3ac7f31e5de5",
+      "snapshot": "E2-production",
+      "modification": "Retained E1 translated packet and alpha80 E2 family only; unchanged retained formulas. Removed R2, cutoff and alternate profiles.",
+      "copyright": "Inherited; see NOTICE.md."
+    },
+    {
+      "path": "include/helmholtz/benchmarks/paper_cases.h",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/include/helmholtz/benchmarks/paper_cases.h",
+      "origin_sha256": "90c72800b51efba45e69e1c95d97123b2b387eaac3dcdbaf898b2358511536cb",
+      "sha256": "ac395ada770a9c2707ff5b1fd06ecfb4314d0d9f7f589f3b37ba19f577f9ba6f",
+      "snapshot": "E2-production",
+      "modification": "Production E1/E2 interfaces only.",
+      "copyright": "Inherited; see NOTICE.md."
     }
   ]
 }

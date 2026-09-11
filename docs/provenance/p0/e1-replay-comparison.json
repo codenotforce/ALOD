@@ -1,0 +1,47 @@
+{
+  "family": {
+    "rows": 170,
+    "columns": [
+      "H_step",
+      "N_H",
+      "N_reference",
+      "sample",
+      "split",
+      "shared_variant",
+      "nominal",
+      "seed",
+      "singular_coefficient",
+      "wave_x",
+      "wave_y",
+      "wave_amplitude",
+      "wave_phase",
+      "shared_rank",
+      "retrained_rank",
+      "exact_shared",
+      "exact_retrained",
+      "reference_shared",
+      "reference_retrained",
+      "reference_floor",
+      "floor_aware_passed",
+      "shared_algebraic_residual",
+      "retrained_algebraic_residual",
+      "shared_aot_residual",
+      "retrained_aot_residual"
+    ],
+    "atol": 1e-12,
+    "rtol": 1e-08,
+    "maximum_absolute_difference": 3.057394337702135e-10,
+    "passed": true
+  },
+  "marks": {
+    "rows": 120,
+    "columns": [
+      "step",
+      "marked_element"
+    ],
+    "atol": 1e-12,
+    "rtol": 1e-08,
+    "maximum_absolute_difference": 0.0,
+    "passed": true
+  }
+}

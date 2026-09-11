@@ -1,0 +1,692 @@
+[
+  {
+    "file": "benchmarks/bench_H4h8.cpp",
+    "original_sha256": "b429f6097c2e295d687c2ee4f9d1f025866272312d44c609a25d8906d5699f58",
+    "replay_sha256": "b429f6097c2e295d687c2ee4f9d1f025866272312d44c609a25d8906d5699f58"
+  },
+  {
+    "file": "benchmarks/bench_H4h9.cpp",
+    "original_sha256": "00ab9cf56247150d0a09929f3b8fff4b2a20681f45eaa18a8dcd89d33e188ff7",
+    "replay_sha256": "00ab9cf56247150d0a09929f3b8fff4b2a20681f45eaa18a8dcd89d33e188ff7"
+  },
+  {
+    "file": "benchmarks/bench_helmholtz_adaptive.cpp",
+    "original_sha256": "a122e1e341849c613cd164f9188fe0c7a69089b7c39c3d661e62d605199c73b8",
+    "replay_sha256": "a122e1e341849c613cd164f9188fe0c7a69089b7c39c3d661e62d605199c73b8"
+  },
+  {
+    "file": "benchmarks/bench_helmholtz_adaptive_paper.cpp",
+    "original_sha256": "a34ba03550503c3d33b6848f77f6e479d1463ea3228c174406aebcd40e2b7938",
+    "replay_sha256": "a34ba03550503c3d33b6848f77f6e479d1463ea3228c174406aebcd40e2b7938"
+  },
+  {
+    "file": "benchmarks/bench_helmholtz_certified.cpp",
+    "original_sha256": "c80f30ab0ebde986284be2be3c7600aaeb02bad1dcd1431b5e26393af70fccb3",
+    "replay_sha256": "c80f30ab0ebde986284be2be3c7600aaeb02bad1dcd1431b5e26393af70fccb3"
+  },
+  {
+    "file": "benchmarks/bench_helmholtz_coarse_schwarz.cpp",
+    "original_sha256": "a130a7b0009fb4e1935f1534e320dccde1cf6a686b2eba63c360e051b6e15c59",
+    "replay_sha256": "a130a7b0009fb4e1935f1534e320dccde1cf6a686b2eba63c360e051b6e15c59"
+  },
+  {
+    "file": "benchmarks/bench_helmholtz_e0_calibration.cpp",
+    "original_sha256": "6489333d834f8d84478bb32f8691fa3e5cc3e37a3970b997f0076f68efa3051a",
+    "replay_sha256": "6489333d834f8d84478bb32f8691fa3e5cc3e37a3970b997f0076f68efa3051a"
+  },
+  {
+    "file": "benchmarks/bench_helmholtz_H_convergence.cpp",
+    "original_sha256": "c570c317cc8084365d52d165bfbecafd54c596d79bed3bcf671b289682d8ab37",
+    "replay_sha256": "c570c317cc8084365d52d165bfbecafd54c596d79bed3bcf671b289682d8ab37"
+  },
+  {
+    "file": "benchmarks/bench_helmholtz_hp_convergence.cpp",
+    "original_sha256": "3347f07c0dccfc10ae728cd2b34b51883d39ac6446af95920e5224f12b961677",
+    "replay_sha256": "3347f07c0dccfc10ae728cd2b34b51883d39ac6446af95920e5224f12b961677"
+  },
+  {
+    "file": "benchmarks/bench_helmholtz_k.cpp",
+    "original_sha256": "00ded64cf155eb6adf530c650080ff27148ed9be397bd8b7f81c0d41fbb0df9d",
+    "replay_sha256": "00ded64cf155eb6adf530c650080ff27148ed9be397bd8b7f81c0d41fbb0df9d"
+  },
+  {
+    "file": "benchmarks/bench_helmholtz_local_inverse.cpp",
+    "original_sha256": "70b1af872443b008cc16dd57b19d21b011c48e7de9dc6ded9b28efe8e2a75227",
+    "replay_sha256": "70b1af872443b008cc16dd57b19d21b011c48e7de9dc6ded9b28efe8e2a75227"
+  },
+  {
+    "file": "benchmarks/bench_helmholtz_manufactured.cpp",
+    "original_sha256": "9e8c5386ca0927a42c8aec98c74c06de47b366e3d5e83b7aabe10efd4d91bca8",
+    "replay_sha256": "9e8c5386ca0927a42c8aec98c74c06de47b366e3d5e83b7aabe10efd4d91bca8"
+  },
+  {
+    "file": "benchmarks/bench_helmholtz_patch_solver.cpp",
+    "original_sha256": "16233adb4ca7f49ba7abccaeff7be3fc5dbf6e849829e69e712ed4f0048763bd",
+    "replay_sha256": "16233adb4ca7f49ba7abccaeff7be3fc5dbf6e849829e69e712ed4f0048763bd"
+  },
+  {
+    "file": "benchmarks/bench_helmholtz_reference_adequacy.cpp",
+    "original_sha256": "a600dcccf1207cac679b6a94a881bf098992205b3c13ea00e5015c36edec0285",
+    "replay_sha256": "a600dcccf1207cac679b6a94a881bf098992205b3c13ea00e5015c36edec0285"
+  },
+  {
+    "file": "benchmarks/bench_helmholtz_reference_epoch_e0.cpp",
+    "original_sha256": "0df8bcb962ba78602140f4ca9923d37f7a059bb9b92da4d6b7f6de5b70a55de7",
+    "replay_sha256": "0df8bcb962ba78602140f4ca9923d37f7a059bb9b92da4d6b7f6de5b70a55de7"
+  },
+  {
+    "file": "benchmarks/bench_helmholtz_reference_floor.cpp",
+    "original_sha256": "dfdad3c6a0cf4add9fbabd0027ae133ca7d44bda9d9a007c206ae1a4983e0425",
+    "replay_sha256": "dfdad3c6a0cf4add9fbabd0027ae133ca7d44bda9d9a007c206ae1a4983e0425"
+  },
+  {
+    "file": "benchmarks/bench_helmholtz_repeated_rhs.cpp",
+    "original_sha256": "31291bc79ad5f8ba3f3dce61a6c616a79f628ed7b8aa9fca31a0c586dfb0bcc6",
+    "replay_sha256": "31291bc79ad5f8ba3f3dce61a6c616a79f628ed7b8aa9fca31a0c586dfb0bcc6"
+  },
+  {
+    "file": "benchmarks/bench_helmholtz_two_level_schwarz.cpp",
+    "original_sha256": "a96e5f803553f326593540e6fe9566f03817b613240bf0284bf6b03c6a12336a",
+    "replay_sha256": "a96e5f803553f326593540e6fe9566f03817b613240bf0284bf6b03c6a12336a"
+  },
+  {
+    "file": "benchmarks/bench_helmholtz_visualization.cpp",
+    "original_sha256": "e1828d4afef9eabbbdaa8f6f1be58c54f333e782380a7cdaa4b5adb4398e2c01",
+    "replay_sha256": "e1828d4afef9eabbbdaa8f6f1be58c54f333e782380a7cdaa4b5adb4398e2c01"
+  },
+  {
+    "file": "benchmarks/bench_inverse_inequality.cpp",
+    "original_sha256": "1e85a048da94eacc890b14c0cc72a866d748ad7b356088fd30e45ee6094034a0",
+    "replay_sha256": "1e85a048da94eacc890b14c0cc72a866d748ad7b356088fd30e45ee6094034a0"
+  },
+  {
+    "file": "benchmarks/bench_profile.cpp",
+    "original_sha256": "6136f5f1c4257219edda9613b58af32a2a00ed099086f380790c11b582c967b0",
+    "replay_sha256": "6136f5f1c4257219edda9613b58af32a2a00ed099086f380790c11b582c967b0"
+  },
+  {
+    "file": "benchmarks/bench_refine.cpp",
+    "original_sha256": "a35f0cc52be6ddd497617760548fbd9ab8beee6721eae4e4726e7a462b7a985a",
+    "replay_sha256": "a35f0cc52be6ddd497617760548fbd9ab8beee6721eae4e4726e7a462b7a985a"
+  },
+  {
+    "file": "benchmarks/bench_reuse_rhs.cpp",
+    "original_sha256": "dff88322bf89d3ab709a655355b7f5a281d45160f3c3e5147021631730c53397",
+    "replay_sha256": "dff88322bf89d3ab709a655355b7f5a281d45160f3c3e5147021631730c53397"
+  },
+  {
+    "file": "benchmarks/bench_saddle_h3h10.cpp",
+    "original_sha256": "abc8b96c4f7e80e7671fc64510f600ec1cd3076869344190ac8c5a0aa6150de9",
+    "replay_sha256": "abc8b96c4f7e80e7671fc64510f600ec1cd3076869344190ac8c5a0aa6150de9"
+  },
+  {
+    "file": "benchmarks/diagnostic_campaign_20260907.inc",
+    "original_sha256": "bd25df298dfbcefa1a1bae6bb90b2b293294fe6a5c0d6658291a67a88dcec327",
+    "replay_sha256": "bd25df298dfbcefa1a1bae6bb90b2b293294fe6a5c0d6658291a67a88dcec327"
+  },
+  {
+    "file": "benchmarks/E2_ell_controls.inc",
+    "original_sha256": "7c1c1733806217806f36a992a52c04401979f150d64e873ff0b311f457641618",
+    "replay_sha256": "7c1c1733806217806f36a992a52c04401979f150d64e873ff0b311f457641618"
+  },
+  {
+    "file": "benchmarks/E2_region_controls_audit.inc",
+    "original_sha256": "a172e6090887e09a2f6590acab74d4de652148943476e3ec4ba3de45138675df",
+    "replay_sha256": "a172e6090887e09a2f6590acab74d4de652148943476e3ec4ba3de45138675df"
+  },
+  {
+    "file": "benchmarks/E2_region_controls_helper.inc",
+    "original_sha256": "79112ce8905712e9dac99e955630b27128f9e207fa7445bdc9f6d4b98316e0d5",
+    "replay_sha256": "79112ce8905712e9dac99e955630b27128f9e207fa7445bdc9f6d4b98316e0d5"
+  },
+  {
+    "file": "benchmarks/reference_epoch_paper_runner.cpp",
+    "original_sha256": "2e7317978ebe3673431b35e13c129d437466150d044751de42c4a3844ff440d2",
+    "replay_sha256": "8aefc2f5c6236ca36511a33f17683404fe585594e1c4ea531d321f1c47802d32"
+  },
+  {
+    "file": "benchmarks/regional_as_diagnostics_20260909.inc",
+    "original_sha256": "5e8917b360646783b6721eff1fecfc82ec2bec574711af5ba641445d17c104d2",
+    "replay_sha256": "5e8917b360646783b6721eff1fecfc82ec2bec574711af5ba641445d17c104d2"
+  },
+  {
+    "file": "benchmarks/workflow_campaign_20260908.inc",
+    "original_sha256": "974cadd600eb903c1bd5fd8d9eae813dc5716b45bea21c0b2e7fa3c01ad09a34",
+    "replay_sha256": "974cadd600eb903c1bd5fd8d9eae813dc5716b45bea21c0b2e7fa3c01ad09a34"
+  },
+  {
+    "file": "include/fem/assemble_dg.h",
+    "original_sha256": "ee9931f8f78890af1ba632813a5203bcfa6d5d378e10e90c8cccb13cf213d321",
+    "replay_sha256": "ee9931f8f78890af1ba632813a5203bcfa6d5d378e10e90c8cccb13cf213d321"
+  },
+  {
+    "file": "include/fem/hp_triangle.h",
+    "original_sha256": "9b35d860971ff0fa50ec04511c711d8391cc60648668d6da0c2deb867f3a5396",
+    "replay_sha256": "9b35d860971ff0fa50ec04511c711d8391cc60648668d6da0c2deb867f3a5396"
+  },
+  {
+    "file": "include/helmholtz/adaptive/candidate_dual.h",
+    "original_sha256": "bf311bc211c6ec76c194ad321bf06e42c22a15c2670e0bfc55cdb76c1b80503a",
+    "replay_sha256": "bf311bc211c6ec76c194ad321bf06e42c22a15c2670e0bfc55cdb76c1b80503a"
+  },
+  {
+    "file": "include/helmholtz/adaptive/candidate_flux.h",
+    "original_sha256": "d1415302958c93303a048cb5c5535b22c308c152b8b115bb19252f286bca8fd2",
+    "replay_sha256": "d1415302958c93303a048cb5c5535b22c308c152b8b115bb19252f286bca8fd2"
+  },
+  {
+    "file": "include/helmholtz/adaptive/certificates.h",
+    "original_sha256": "cb71c3366478d983e3f146191a45605bab7f96978256a9e77eaaa14393627ee5",
+    "replay_sha256": "cb71c3366478d983e3f146191a45605bab7f96978256a9e77eaaa14393627ee5"
+  },
+  {
+    "file": "include/helmholtz/adaptive/certified_driver.h",
+    "original_sha256": "4b55b5a2bf2c897c7de06854a070e97a9f1d6f362f4aa702da0defdc7186241f",
+    "replay_sha256": "4b55b5a2bf2c897c7de06854a070e97a9f1d6f362f4aa702da0defdc7186241f"
+  },
+  {
+    "file": "include/helmholtz/adaptive/driver.h",
+    "original_sha256": "57b7b07f012d982aa943fed93a0051c4e6b56cb2fe481f16c05abe295a041a6e",
+    "replay_sha256": "57b7b07f012d982aa943fed93a0051c4e6b56cb2fe481f16c05abe295a041a6e"
+  },
+  {
+    "file": "include/helmholtz/adaptive/error_control.h",
+    "original_sha256": "ad06fee602166696bf730db30d4d2bce4f5d733d5e876bd36252edab91ce5c94",
+    "replay_sha256": "ad06fee602166696bf730db30d4d2bce4f5d733d5e876bd36252edab91ce5c94"
+  },
+  {
+    "file": "include/helmholtz/adaptive/estimator.h",
+    "original_sha256": "4a0e5d206c48f81041ef72ef3bdc2ef0d10b23dea193235cc2f66add5916e0aa",
+    "replay_sha256": "4a0e5d206c48f81041ef72ef3bdc2ef0d10b23dea193235cc2f66add5916e0aa"
+  },
+  {
+    "file": "include/helmholtz/adaptive/hierarchy.h",
+    "original_sha256": "503a1e29a0dce8655abedb06ac7508a1b5b17ffe4d712309cc5f2e676556f725",
+    "replay_sha256": "503a1e29a0dce8655abedb06ac7508a1b5b17ffe4d712309cc5f2e676556f725"
+  },
+  {
+    "file": "include/helmholtz/adaptive/kernel_residual.h",
+    "original_sha256": "8e94cabe26e9885b355bb469aefedd34ee77ce7bad39bd8da07ca49a6183465b",
+    "replay_sha256": "8e94cabe26e9885b355bb469aefedd34ee77ce7bad39bd8da07ca49a6183465b"
+  },
+  {
+    "file": "include/helmholtz/adaptive/numerical_backend.h",
+    "original_sha256": "975bd0d3b6b94a25bdc1ecbec13f66af75fd30aa497dfe54a0b28f4d70dc7569",
+    "replay_sha256": "975bd0d3b6b94a25bdc1ecbec13f66af75fd30aa497dfe54a0b28f4d70dc7569"
+  },
+  {
+    "file": "include/helmholtz/adaptive/practical_driver.h",
+    "original_sha256": "9b9b0aa752fd3fe956281dd8947d4d16389a66e0f9ed58fce7c9b6c3e9e76bb2",
+    "replay_sha256": "9b9b0aa752fd3fe956281dd8947d4d16389a66e0f9ed58fce7c9b6c3e9e76bb2"
+  },
+  {
+    "file": "include/helmholtz/adaptive/reference_epoch_driver.h",
+    "original_sha256": "2cf0caba2e2d645f5b4e30ff6a6d0bd868971373f14131265657ca0ff3adebe7",
+    "replay_sha256": "2cf0caba2e2d645f5b4e30ff6a6d0bd868971373f14131265657ca0ff3adebe7"
+  },
+  {
+    "file": "include/helmholtz/adaptive/reference_retraction.h",
+    "original_sha256": "f29c26e0cc49fecdf6048bcb12c73cd008f9e19961752fe8ee6af6ca9b7e9043",
+    "replay_sha256": "f29c26e0cc49fecdf6048bcb12c73cd008f9e19961752fe8ee6af6ca9b7e9043"
+  },
+  {
+    "file": "include/helmholtz/adaptive/reliability.h",
+    "original_sha256": "7342c83e1305404752359faa1aa8d64c50fb67e5b41eb51ab24d70f6048096ab",
+    "replay_sha256": "7342c83e1305404752359faa1aa8d64c50fb67e5b41eb51ab24d70f6048096ab"
+  },
+  {
+    "file": "include/helmholtz/adaptive/singularity_hybrid.h",
+    "original_sha256": "c59da5416069b7a07bd04e73d5a2185fbfdfd6a9c57ce75bdc3679519bc2eb8b",
+    "replay_sha256": "c59da5416069b7a07bd04e73d5a2185fbfdfd6a9c57ce75bdc3679519bc2eb8b"
+  },
+  {
+    "file": "include/helmholtz/adaptive/verified_spectrum.h",
+    "original_sha256": "41fc4007534339b40f64aab845d394766d190429e94130bcacb48745b4f913f0",
+    "replay_sha256": "41fc4007534339b40f64aab845d394766d190429e94130bcacb48745b4f913f0"
+  },
+  {
+    "file": "include/helmholtz/benchmarks/paper_cases.h",
+    "original_sha256": "90c72800b51efba45e69e1c95d97123b2b387eaac3dcdbaf898b2358511536cb",
+    "replay_sha256": "90c72800b51efba45e69e1c95d97123b2b387eaac3dcdbaf898b2358511536cb"
+  },
+  {
+    "file": "include/helmholtz/boundary.h",
+    "original_sha256": "9adc75b5a5e5229748d25253e2da662eede945955c0a38e6c1f17b91b90af137",
+    "replay_sha256": "9adc75b5a5e5229748d25253e2da662eede945955c0a38e6c1f17b91b90af137"
+  },
+  {
+    "file": "include/helmholtz/coarse_schwarz.h",
+    "original_sha256": "c65b5a64b8f8cfff3ca39e7484c58bfee057bbbe6831f6ab3a47dfe241a8c683",
+    "replay_sha256": "c65b5a64b8f8cfff3ca39e7484c58bfee057bbbe6831f6ab3a47dfe241a8c683"
+  },
+  {
+    "file": "include/helmholtz/corrector.h",
+    "original_sha256": "7bfb6e6332a130dffaebee6d559d3f8cf6803acfcba675002ab378bc00880b9e",
+    "replay_sha256": "7bfb6e6332a130dffaebee6d559d3f8cf6803acfcba675002ab378bc00880b9e"
+  },
+  {
+    "file": "include/helmholtz/experiments/paper_config.h",
+    "original_sha256": "c4af67ae9f938555d660d99e6a78c864801aa344f2b044b42bfe5095ba2f4c11",
+    "replay_sha256": "c4af67ae9f938555d660d99e6a78c864801aa344f2b044b42bfe5095ba2f4c11"
+  },
+  {
+    "file": "include/helmholtz/experiments/reference_epoch_runner.h",
+    "original_sha256": "895728bd996e23ee55bd7079f5da67ea8b69543444ff21dcc0b7f1b427ff7542",
+    "replay_sha256": "895728bd996e23ee55bd7079f5da67ea8b69543444ff21dcc0b7f1b427ff7542"
+  },
+  {
+    "file": "include/helmholtz/experiments/reference_solution_cache.h",
+    "original_sha256": "ea9c1bac4495b9c272c6531c6247f7b2836fd4b8f2948e23c5b31bebb1115c39",
+    "replay_sha256": "ea9c1bac4495b9c272c6531c6247f7b2836fd4b8f2948e23c5b31bebb1115c39"
+  },
+  {
+    "file": "include/helmholtz/hp_interpolation.h",
+    "original_sha256": "e81a2b05df04fe0ec26f3a603302167d5eda466ccf79f6911f9b0c4faad6f14e",
+    "replay_sha256": "e81a2b05df04fe0ec26f3a603302167d5eda466ccf79f6911f9b0c4faad6f14e"
+  },
+  {
+    "file": "include/helmholtz/hp_model.h",
+    "original_sha256": "38a653e5d2a21e3e2ced62625d7a3150902036b7fdd327883a55af28fc955c8e",
+    "replay_sha256": "38a653e5d2a21e3e2ced62625d7a3150902036b7fdd327883a55af28fc955c8e"
+  },
+  {
+    "file": "include/helmholtz/hp_operators.h",
+    "original_sha256": "82e5d26b9c4b8974ed50114120679146f22b14b46ffff72ec5a155818c4460ce",
+    "replay_sha256": "82e5d26b9c4b8974ed50114120679146f22b14b46ffff72ec5a155818c4460ce"
+  },
+  {
+    "file": "include/helmholtz/hp_patch.h",
+    "original_sha256": "afd9a82d9c26af75c4b511f62832a0ddbc1ce2ffa8c0504acf1e85627153102b",
+    "replay_sha256": "afd9a82d9c26af75c4b511f62832a0ddbc1ce2ffa8c0504acf1e85627153102b"
+  },
+  {
+    "file": "include/helmholtz/manufactured.h",
+    "original_sha256": "1835f327c7c1e7a68d65b2929fa23a0af1e712689fc4ad6780ecaa86f8d99f19",
+    "replay_sha256": "1835f327c7c1e7a68d65b2929fa23a0af1e712689fc4ad6780ecaa86f8d99f19"
+  },
+  {
+    "file": "include/helmholtz/model.h",
+    "original_sha256": "4513ff590ece454664fe01eaf7931e1c61785435d0d8056f72faa9dddf344743",
+    "replay_sha256": "4513ff590ece454664fe01eaf7931e1c61785435d0d8056f72faa9dddf344743"
+  },
+  {
+    "file": "include/helmholtz/operators.h",
+    "original_sha256": "331c3356680967d23a1f59f14cd888977944a6d49a4a8deff76c5e67c179b0ec",
+    "replay_sha256": "331c3356680967d23a1f59f14cd888977944a6d49a4a8deff76c5e67c179b0ec"
+  },
+  {
+    "file": "include/helmholtz/patch_hierarchy.h",
+    "original_sha256": "54fb56bdfdaa576e6079d3ad1a3ab813ca244028313fe4b54ec08705171cc740",
+    "replay_sha256": "54fb56bdfdaa576e6079d3ad1a3ab813ca244028313fe4b54ec08705171cc740"
+  },
+  {
+    "file": "include/helmholtz/patch_multigrid.h",
+    "original_sha256": "cdacc0cb53fae0b2a5a050f54e04df2c813d503b1abfa8bd6e3c0e1d00ca2181",
+    "replay_sha256": "cdacc0cb53fae0b2a5a050f54e04df2c813d503b1abfa8bd6e3c0e1d00ca2181"
+  },
+  {
+    "file": "include/helmholtz/patch_solver.h",
+    "original_sha256": "0614d580c1209c5ff19fba0e1fef2a1c735be1223ef652c8858a45494c64e566",
+    "replay_sha256": "0614d580c1209c5ff19fba0e1fef2a1c735be1223ef652c8858a45494c64e566"
+  },
+  {
+    "file": "include/helmholtz/patch_system.h",
+    "original_sha256": "83216462eceb15de61a8adcd8dd8b0d6748586672b81a58e83668f707a1ec0f0",
+    "replay_sha256": "83216462eceb15de61a8adcd8dd8b0d6748586672b81a58e83668f707a1ec0f0"
+  },
+  {
+    "file": "include/helmholtz/quadrature.h",
+    "original_sha256": "98f703552e1030ae62b3920f646500c659399e982cd8aba494a915cc1b97eb67",
+    "replay_sha256": "98f703552e1030ae62b3920f646500c659399e982cd8aba494a915cc1b97eb67"
+  },
+  {
+    "file": "include/helmholtz/schwarz_local_solver.h",
+    "original_sha256": "1092beeb3d7131e70e15b5e193549632c31c8990d1aae566903a4351907c9c56",
+    "replay_sha256": "1092beeb3d7131e70e15b5e193549632c31c8990d1aae566903a4351907c9c56"
+  },
+  {
+    "file": "include/helmholtz/schwarz_patch.h",
+    "original_sha256": "a7e2ef57979e49ecc44ae682d3dae7d91781ae897fba51d750ccbcd96aa7c60b",
+    "replay_sha256": "a7e2ef57979e49ecc44ae682d3dae7d91781ae897fba51d750ccbcd96aa7c60b"
+  },
+  {
+    "file": "include/helmholtz/shifted_laplacian.h",
+    "original_sha256": "8b54d1445efbd62a8537265d6110823bdf955d519496f8dbf0e120a3f1a8707a",
+    "replay_sha256": "8b54d1445efbd62a8537265d6110823bdf955d519496f8dbf0e120a3f1a8707a"
+  },
+  {
+    "file": "include/helmholtz/two_level_schwarz.h",
+    "original_sha256": "d30fcb77b7e9de5388d423ed67ed6be206fcf196811bfbce195c3cb3fc872638",
+    "replay_sha256": "d30fcb77b7e9de5388d423ed67ed6be206fcf196811bfbce195c3cb3fc872638"
+  },
+  {
+    "file": "include/helmholtz/types.h",
+    "original_sha256": "1eea9a993e5101959b566194bb2cc1b1c676ce8b71b77de099f9170f6e55b5c1",
+    "replay_sha256": "1eea9a993e5101959b566194bb2cc1b1c676ce8b71b77de099f9170f6e55b5c1"
+  },
+  {
+    "file": "include/io/vtk_writer.h",
+    "original_sha256": "4231fca10cf36df171f14b35aaabe0f8992bb1fbf4d10809ae475005171ca905",
+    "replay_sha256": "4231fca10cf36df171f14b35aaabe0f8992bb1fbf4d10809ae475005171ca905"
+  },
+  {
+    "file": "include/lod/corrector.h",
+    "original_sha256": "8cf2a13b9ba3054b11fbb374695092bce8762407fa9f10a6d5d547b70aa52ad8",
+    "replay_sha256": "8cf2a13b9ba3054b11fbb374695092bce8762407fa9f10a6d5d547b70aa52ad8"
+  },
+  {
+    "file": "include/lod/lod_model.h",
+    "original_sha256": "1d4f4c88a16bf392e49efc3d8b0b333dceed1840f70410a8d2b3aab791a53646",
+    "replay_sha256": "1d4f4c88a16bf392e49efc3d8b0b333dceed1840f70410a8d2b3aab791a53646"
+  },
+  {
+    "file": "include/lod/patches.h",
+    "original_sha256": "f88fc07eab2de70a956fa899f37cd85b9bd134531427540bb3517de4cc58bb90",
+    "replay_sha256": "f88fc07eab2de70a956fa899f37cd85b9bd134531427540bb3517de4cc58bb90"
+  },
+  {
+    "file": "include/lod/quasi_interp.h",
+    "original_sha256": "6c0104ac35fac4d919e18348c37faf651fc1538a77f0b80ac5b7a34f25c8d4c5",
+    "replay_sha256": "6c0104ac35fac4d919e18348c37faf651fc1538a77f0b80ac5b7a34f25c8d4c5"
+  },
+  {
+    "file": "include/mesh/refine.h",
+    "original_sha256": "8880891d3c0c5d455cb202ec7a319805912904dc91fc5af408d069982841f031",
+    "replay_sha256": "8880891d3c0c5d455cb202ec7a319805912904dc91fc5af408d069982841f031"
+  },
+  {
+    "file": "include/mesh/types.h",
+    "original_sha256": "285057ac96e2efd5de4832b213fb89a254158f23635d357b736761f9c92783ab",
+    "replay_sha256": "285057ac96e2efd5de4832b213fb89a254158f23635d357b736761f9c92783ab"
+  },
+  {
+    "file": "include/solver/cholmod_wrapper.h",
+    "original_sha256": "b8db963749f02d3eb0557b4b51bef99a7de318f7eba3843cc4792871fb57bc80",
+    "replay_sha256": "b8db963749f02d3eb0557b4b51bef99a7de318f7eba3843cc4792871fb57bc80"
+  },
+  {
+    "file": "include/solver/coarse_solve.h",
+    "original_sha256": "52efc0f1141fcfeb42ff678d569ae5dad36d4a6e9da2e1586566eb2cd6be2211",
+    "replay_sha256": "52efc0f1141fcfeb42ff678d569ae5dad36d4a6e9da2e1586566eb2cd6be2211"
+  },
+  {
+    "file": "include/solver/lod_reuse.h",
+    "original_sha256": "c0d467a123dd88d32146ff5d91c2852d6a154f6fd21ff3cb570a8a8bd4bacd62",
+    "replay_sha256": "c0d467a123dd88d32146ff5d91c2852d6a154f6fd21ff3cb570a8a8bd4bacd62"
+  },
+  {
+    "file": "include/solver/right_gmres.h",
+    "original_sha256": "1fd55970b71f8146e8e2a03eb50eedb16fea588d05d707392fd3581705b13b39",
+    "replay_sha256": "1fd55970b71f8146e8e2a03eb50eedb16fea588d05d707392fd3581705b13b39"
+  },
+  {
+    "file": "src/fem/assemble_dg.cpp",
+    "original_sha256": "a735b99b810b31be5523df216aafd49a0abd5ce92183b574935dbdc3ba22d2b2",
+    "replay_sha256": "a735b99b810b31be5523df216aafd49a0abd5ce92183b574935dbdc3ba22d2b2"
+  },
+  {
+    "file": "src/fem/hp_triangle.cpp",
+    "original_sha256": "94b63a470c2cc082e3030159529f85361290bfa2ad1377eefa870df010a2e003",
+    "replay_sha256": "94b63a470c2cc082e3030159529f85361290bfa2ad1377eefa870df010a2e003"
+  },
+  {
+    "file": "src/helmholtz/adaptive/additive_kernel_riesz.inc",
+    "original_sha256": "a4886696d81b77dec43ca5111c32ea8880ea56020d5632b1ecce6592e7ab14a3",
+    "replay_sha256": "a4886696d81b77dec43ca5111c32ea8880ea56020d5632b1ecce6592e7ab14a3"
+  },
+  {
+    "file": "src/helmholtz/adaptive/candidate_dual.cpp",
+    "original_sha256": "9519579ded9501bf0ec04bba2c67d91f0abf959a5ef2a3939ba236e431bd50a3",
+    "replay_sha256": "9519579ded9501bf0ec04bba2c67d91f0abf959a5ef2a3939ba236e431bd50a3"
+  },
+  {
+    "file": "src/helmholtz/adaptive/candidate_flux.cpp",
+    "original_sha256": "e644be0c31dac8f6e58bdebf57aa6668978ee2b1d0877393265c69d2ab654492",
+    "replay_sha256": "e644be0c31dac8f6e58bdebf57aa6668978ee2b1d0877393265c69d2ab654492"
+  },
+  {
+    "file": "src/helmholtz/adaptive/certificates.cpp",
+    "original_sha256": "d47d44a2977d9004ce31897e78eb6e992c6758f23cdf1065345c332d40705cb2",
+    "replay_sha256": "d47d44a2977d9004ce31897e78eb6e992c6758f23cdf1065345c332d40705cb2"
+  },
+  {
+    "file": "src/helmholtz/adaptive/certified_driver.cpp",
+    "original_sha256": "872b64463ff74d91dc01ccadd898de0b8c466a0a1054f9a32b36b57afd72ca9f",
+    "replay_sha256": "872b64463ff74d91dc01ccadd898de0b8c466a0a1054f9a32b36b57afd72ca9f"
+  },
+  {
+    "file": "src/helmholtz/adaptive/driver.cpp",
+    "original_sha256": "d54ed77ca1a3084d7a5a2e4bf8ba5ab83a816ddd6c2eff86834008589d62e5b4",
+    "replay_sha256": "d54ed77ca1a3084d7a5a2e4bf8ba5ab83a816ddd6c2eff86834008589d62e5b4"
+  },
+  {
+    "file": "src/helmholtz/adaptive/error_control.cpp",
+    "original_sha256": "a9629c4e65773a84a43d0feb0c55f738f801daccad48becb50eddb65966cacc6",
+    "replay_sha256": "a9629c4e65773a84a43d0feb0c55f738f801daccad48becb50eddb65966cacc6"
+  },
+  {
+    "file": "src/helmholtz/adaptive/estimator.cpp",
+    "original_sha256": "ad2d7d388afb4a91d19db4c645dc971aabc270bb9e9daadf7f800afe34b9c3c9",
+    "replay_sha256": "ad2d7d388afb4a91d19db4c645dc971aabc270bb9e9daadf7f800afe34b9c3c9"
+  },
+  {
+    "file": "src/helmholtz/adaptive/hierarchy.cpp",
+    "original_sha256": "34fc7588390ba2827d0514a0dbe6aef36f4352458ebca54e33bc70f7a9cad702",
+    "replay_sha256": "34fc7588390ba2827d0514a0dbe6aef36f4352458ebca54e33bc70f7a9cad702"
+  },
+  {
+    "file": "src/helmholtz/adaptive/kernel_residual.cpp",
+    "original_sha256": "08c9a94ae0dc6dadcf6ba08089908d3fccbab7b6e0c5c46941623ffa8cab3cab",
+    "replay_sha256": "08c9a94ae0dc6dadcf6ba08089908d3fccbab7b6e0c5c46941623ffa8cab3cab"
+  },
+  {
+    "file": "src/helmholtz/adaptive/numerical_backend.cpp",
+    "original_sha256": "cb4a3f7ef62a4ef9ae3916a43cb0bfb5c701a371ab1cc87414605af031fcd75e",
+    "replay_sha256": "cb4a3f7ef62a4ef9ae3916a43cb0bfb5c701a371ab1cc87414605af031fcd75e"
+  },
+  {
+    "file": "src/helmholtz/adaptive/practical_driver.cpp",
+    "original_sha256": "ebdc221a903f06a79cbaef4ded1f1f3aa7b224ad675dc3d773cba4ea44a87f47",
+    "replay_sha256": "ebdc221a903f06a79cbaef4ded1f1f3aa7b224ad675dc3d773cba4ea44a87f47"
+  },
+  {
+    "file": "src/helmholtz/adaptive/reference_epoch_driver.cpp",
+    "original_sha256": "76402bf95c1b1e4e1fa18d10b43e0727c8632d28b4fc3297da325418fbba78ef",
+    "replay_sha256": "76402bf95c1b1e4e1fa18d10b43e0727c8632d28b4fc3297da325418fbba78ef"
+  },
+  {
+    "file": "src/helmholtz/adaptive/reference_retraction.cpp",
+    "original_sha256": "b5258f6d4f1cd44a8ed867bfaf3426a552dee67cdf076a59903d751344c5744c",
+    "replay_sha256": "b5258f6d4f1cd44a8ed867bfaf3426a552dee67cdf076a59903d751344c5744c"
+  },
+  {
+    "file": "src/helmholtz/adaptive/reliability.cpp",
+    "original_sha256": "b267a6b8eddc6d65b90cf53be45a0678dd9287004007284c8e994a9383e171fd",
+    "replay_sha256": "b267a6b8eddc6d65b90cf53be45a0678dd9287004007284c8e994a9383e171fd"
+  },
+  {
+    "file": "src/helmholtz/adaptive/singularity_hybrid.cpp",
+    "original_sha256": "661999b82ec268797145554e2a612ccdb8300aead8c8a9d42a0663c254324aa3",
+    "replay_sha256": "661999b82ec268797145554e2a612ccdb8300aead8c8a9d42a0663c254324aa3"
+  },
+  {
+    "file": "src/helmholtz/adaptive/verified_spectrum.cpp",
+    "original_sha256": "19ed6d6dfa340887b378bc55224e0ba6d4f4ce72232792f91c7fa388d02172cc",
+    "replay_sha256": "19ed6d6dfa340887b378bc55224e0ba6d4f4ce72232792f91c7fa388d02172cc"
+  },
+  {
+    "file": "src/helmholtz/benchmarks/paper_cases.cpp",
+    "original_sha256": "8c9a17647d2ae6275ca49f4de53cb1e01407dce76b3098b403d1fb6bf3abed20",
+    "replay_sha256": "8c9a17647d2ae6275ca49f4de53cb1e01407dce76b3098b403d1fb6bf3abed20"
+  },
+  {
+    "file": "src/helmholtz/boundary.cpp",
+    "original_sha256": "1560e20d597929c671fd93b29817a1cdbeb68bd73f4a9f2f4647b1241d8ba14a",
+    "replay_sha256": "1560e20d597929c671fd93b29817a1cdbeb68bd73f4a9f2f4647b1241d8ba14a"
+  },
+  {
+    "file": "src/helmholtz/coarse_schwarz.cpp",
+    "original_sha256": "53c9488a7ea7443451cead9d7f0310d8b1c6277bc5aa764c42076f094549b353",
+    "replay_sha256": "53c9488a7ea7443451cead9d7f0310d8b1c6277bc5aa764c42076f094549b353"
+  },
+  {
+    "file": "src/helmholtz/corrector.cpp",
+    "original_sha256": "1c2e021408170f97373eb21cf0f1250f72d14cccb50340fca4759128ff0751d0",
+    "replay_sha256": "1c2e021408170f97373eb21cf0f1250f72d14cccb50340fca4759128ff0751d0"
+  },
+  {
+    "file": "src/helmholtz/corrector_pipeline.cpp",
+    "original_sha256": "959ca3e026a69a56db79709369a70dae18b7816d3d78e9c1ffc2d8af4f47d4b0",
+    "replay_sha256": "959ca3e026a69a56db79709369a70dae18b7816d3d78e9c1ffc2d8af4f47d4b0"
+  },
+  {
+    "file": "src/helmholtz/experiments/paper_config.cpp",
+    "original_sha256": "d8e403a3a63d318133ff8bf8f5fde5b1779b846c428afd5fdaed0f4a5530c8c3",
+    "replay_sha256": "d8e403a3a63d318133ff8bf8f5fde5b1779b846c428afd5fdaed0f4a5530c8c3"
+  },
+  {
+    "file": "src/helmholtz/experiments/reference_solution_cache.cpp",
+    "original_sha256": "e15d60b1264db0984d2234adf9d8bcf0ef339a8e24932738c8c857ea9752dd20",
+    "replay_sha256": "e15d60b1264db0984d2234adf9d8bcf0ef339a8e24932738c8c857ea9752dd20"
+  },
+  {
+    "file": "src/helmholtz/hp_fem.cpp",
+    "original_sha256": "108e978f7e33ada35faf92c5b3d2bddaffde771813d85f6fd463c522e611a829",
+    "replay_sha256": "108e978f7e33ada35faf92c5b3d2bddaffde771813d85f6fd463c522e611a829"
+  },
+  {
+    "file": "src/helmholtz/hp_interpolation.cpp",
+    "original_sha256": "8bbbf943ed6fc29989c678920b9538298f61aaf9f11367e75de628b38bc89fef",
+    "replay_sha256": "8bbbf943ed6fc29989c678920b9538298f61aaf9f11367e75de628b38bc89fef"
+  },
+  {
+    "file": "src/helmholtz/hp_model.cpp",
+    "original_sha256": "be38395588caa1969b4c2f2fc1b1dfe474e92d2a2976b0cc9fe0e15a349be511",
+    "replay_sha256": "be38395588caa1969b4c2f2fc1b1dfe474e92d2a2976b0cc9fe0e15a349be511"
+  },
+  {
+    "file": "src/helmholtz/hp_operators.cpp",
+    "original_sha256": "fd002b24a01e57270633c135d36b0041f62f09aaa543c384570de96cde7c169d",
+    "replay_sha256": "fd002b24a01e57270633c135d36b0041f62f09aaa543c384570de96cde7c169d"
+  },
+  {
+    "file": "src/helmholtz/hp_patch.cpp",
+    "original_sha256": "333a40c00a8400bfdfaba7bdff9abab69e51c05995ad184fafffe084076cfc01",
+    "replay_sha256": "333a40c00a8400bfdfaba7bdff9abab69e51c05995ad184fafffe084076cfc01"
+  },
+  {
+    "file": "src/helmholtz/manufactured.cpp",
+    "original_sha256": "b70fa6b50b3b20ec0601b7823726a387eec6f6cef034a239f6070efceca07e0b",
+    "replay_sha256": "b70fa6b50b3b20ec0601b7823726a387eec6f6cef034a239f6070efceca07e0b"
+  },
+  {
+    "file": "src/helmholtz/model.cpp",
+    "original_sha256": "25d203971759485420f7dd29d7e6abb8cf9a57b39b2b8281ee44850aa7983320",
+    "replay_sha256": "25d203971759485420f7dd29d7e6abb8cf9a57b39b2b8281ee44850aa7983320"
+  },
+  {
+    "file": "src/helmholtz/operators.cpp",
+    "original_sha256": "35c4f1ba9dc60b248be7e04a219f5a630e954718d8dab1be63583f8d115d296f",
+    "replay_sha256": "35c4f1ba9dc60b248be7e04a219f5a630e954718d8dab1be63583f8d115d296f"
+  },
+  {
+    "file": "src/helmholtz/patch_hierarchy.cpp",
+    "original_sha256": "673dfe353ebdc327a9ad84257b971fbb60c8125186c0a6f7cd70c8c01786726b",
+    "replay_sha256": "673dfe353ebdc327a9ad84257b971fbb60c8125186c0a6f7cd70c8c01786726b"
+  },
+  {
+    "file": "src/helmholtz/patch_multigrid.cpp",
+    "original_sha256": "b64aefbec40f575f75376a74a0b7e8020c9d34f65bb85883d85ae3a1491ababa",
+    "replay_sha256": "b64aefbec40f575f75376a74a0b7e8020c9d34f65bb85883d85ae3a1491ababa"
+  },
+  {
+    "file": "src/helmholtz/patch_solver.cpp",
+    "original_sha256": "3b941ff942af0e15f9c0a8e04e7df8226e37daaaf670b672309845aead3480b9",
+    "replay_sha256": "3b941ff942af0e15f9c0a8e04e7df8226e37daaaf670b672309845aead3480b9"
+  },
+  {
+    "file": "src/helmholtz/patch_system.cpp",
+    "original_sha256": "dd542ecd526bfa1ba70b49fa4b8bc6f90d27fe35d49bed7efbc3c049011d72a7",
+    "replay_sha256": "dd542ecd526bfa1ba70b49fa4b8bc6f90d27fe35d49bed7efbc3c049011d72a7"
+  },
+  {
+    "file": "src/helmholtz/quadrature.cpp",
+    "original_sha256": "81cfdbf37e7c4c1174cb34bf76675c3d227e94dde57ee4629edef3a59a1ada95",
+    "replay_sha256": "81cfdbf37e7c4c1174cb34bf76675c3d227e94dde57ee4629edef3a59a1ada95"
+  },
+  {
+    "file": "src/helmholtz/schwarz_local_solver.cpp",
+    "original_sha256": "72490aed40c32e0467891669f390de67f41a8fc9dcb9e4d8754ac322634a6808",
+    "replay_sha256": "72490aed40c32e0467891669f390de67f41a8fc9dcb9e4d8754ac322634a6808"
+  },
+  {
+    "file": "src/helmholtz/schwarz_patch.cpp",
+    "original_sha256": "b188011300c6e7d425d3cb0d0be16ac859b4e513daabbcd44224d4d0883a8121",
+    "replay_sha256": "b188011300c6e7d425d3cb0d0be16ac859b4e513daabbcd44224d4d0883a8121"
+  },
+  {
+    "file": "src/helmholtz/shifted_laplacian.cpp",
+    "original_sha256": "aaf179489880d104e8f30f09775b833a1856e7d2455c02d5af216c9e45a486f0",
+    "replay_sha256": "aaf179489880d104e8f30f09775b833a1856e7d2455c02d5af216c9e45a486f0"
+  },
+  {
+    "file": "src/helmholtz/two_level_schwarz.cpp",
+    "original_sha256": "d6e79221ca8b0d2944d69d63a687c2335787ba81c9d5c326ef5ba5028c1ac23e",
+    "replay_sha256": "d6e79221ca8b0d2944d69d63a687c2335787ba81c9d5c326ef5ba5028c1ac23e"
+  },
+  {
+    "file": "src/io/vtk_writer.cpp",
+    "original_sha256": "a4963e75f02e8cce7dac0eda47baaa97a40fc6a6cae1921611f75e1cccc094df",
+    "replay_sha256": "a4963e75f02e8cce7dac0eda47baaa97a40fc6a6cae1921611f75e1cccc094df"
+  },
+  {
+    "file": "src/lod/corrector.cpp",
+    "original_sha256": "4d41a6852075f58650d157e5d0af7a2e515f115c33a12e84b21826d68147939b",
+    "replay_sha256": "4d41a6852075f58650d157e5d0af7a2e515f115c33a12e84b21826d68147939b"
+  },
+  {
+    "file": "src/lod/lod_model.cpp",
+    "original_sha256": "e03ce7e9559fb8db2957eb3c9339ee9fe661e89bf24cf5c8318db9d7495ddcd3",
+    "replay_sha256": "e03ce7e9559fb8db2957eb3c9339ee9fe661e89bf24cf5c8318db9d7495ddcd3"
+  },
+  {
+    "file": "src/lod/patches.cpp",
+    "original_sha256": "3aeadf5d17c75eccbdf4851ad5bb93e842bb17b2fc48ea05da3c78e9835a007c",
+    "replay_sha256": "3aeadf5d17c75eccbdf4851ad5bb93e842bb17b2fc48ea05da3c78e9835a007c"
+  },
+  {
+    "file": "src/lod/quasi_interp.cpp",
+    "original_sha256": "164efe14759dea73df171b1ea4c4998527ec33007c327135d08283547e20a13f",
+    "replay_sha256": "164efe14759dea73df171b1ea4c4998527ec33007c327135d08283547e20a13f"
+  },
+  {
+    "file": "src/main.cpp",
+    "original_sha256": "d89d16c337e4fca158256654300fdcb380130ec963b8f78eb32f824c06f35055",
+    "replay_sha256": "d89d16c337e4fca158256654300fdcb380130ec963b8f78eb32f824c06f35055"
+  },
+  {
+    "file": "src/mesh/edges.cpp",
+    "original_sha256": "f76fe9189a0af3841fb98222ea8f0137daa3bf828b7900ca08532e9228476992",
+    "replay_sha256": "f76fe9189a0af3841fb98222ea8f0137daa3bf828b7900ca08532e9228476992"
+  },
+  {
+    "file": "src/mesh/refine.cpp",
+    "original_sha256": "5c2d678ac22524a34a3fef637ab450754fbc5a521735fcc22e59be4333a19809",
+    "replay_sha256": "5c2d678ac22524a34a3fef637ab450754fbc5a521735fcc22e59be4333a19809"
+  },
+  {
+    "file": "src/solver/coarse_solve.cpp",
+    "original_sha256": "e39718d72a2d1b3fd5a71d49636046e6015799766e76c5b3c32d4aedf36b4a40",
+    "replay_sha256": "e39718d72a2d1b3fd5a71d49636046e6015799766e76c5b3c32d4aedf36b4a40"
+  },
+  {
+    "file": "src/solver/lod_reuse.cpp",
+    "original_sha256": "be9e231b94b98cf094d8ee6e2447c5de0028a25de974e56ce9c0c8c8d99f6e9c",
+    "replay_sha256": "be9e231b94b98cf094d8ee6e2447c5de0028a25de974e56ce9c0c8c8d99f6e9c"
+  },
+  {
+    "file": "src/solver/right_gmres.cpp",
+    "original_sha256": "7e9e8013d2e06d795d85bc5c8c4f253a32d1013ce9802e843d336edc1246146b",
+    "replay_sha256": "7e9e8013d2e06d795d85bc5c8c4f253a32d1013ce9802e843d336edc1246146b"
+  }
+]

@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "problem": "E2",
+  "method": "SLOD",
+  "initial_level": 2,
+  "states": 3,
+  "theta": 0.15,
+  "target": 0,
+  "maximum_nodes": 20000,
+  "threads": 1,
+  "emit_solution": false
+}

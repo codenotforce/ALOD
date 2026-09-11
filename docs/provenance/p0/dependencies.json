@@ -1,0 +1,10 @@
+{
+  "observed": "2026-09-11",
+  "compiler": "GCC 11.4.0",
+  "cmake": "3.22.1",
+  "Eigen": "3.4.0-2ubuntu2",
+  "SuiteSparse": "5.10.1+dfsg-4build1",
+  "BLAS": "3.10.0-2ubuntu1",
+  "OpenMP_runtime": "libgomp 12.3.0-1ubuntu1~22.04.3",
+  "historical_scope": "Compiler/CMake also match archived build evidence. Library package versions were read from the same production host on the observation date; no historical package lock was archived."
+}

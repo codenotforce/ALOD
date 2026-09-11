@@ -1,51 +1,43 @@
-# 迁移状态
+# Migration status
 
-日期：2026-09-11。提交边界：**P0 来源冻结与 P1 最小核的初始验证检查点**。这不是 P0/P1 全阶段验收，也没有进入 P2–P9 生产迁移。为了在拆分前建立可比较的数值证据，只先提取了用于独立 FEM oracle 比较的小核。
+Updated: 2026-09-11. **P0 and P1 are complete at their defined acceptance scope.** P2-P9 production migration has not started. Historical full campaigns remain imported evidence; this repository has not generated new 51-state E1 or 33-state E2 production trajectories.
 
-## 已完成
+## P0: source discovery and old replay
 
-- 重新核对计划引用的 58 项来源，全部匹配原证据哈希。当前论文 SHA-256 为 `f714fb0ba66c2cc276437002aa2306d16271fd91fc88205ff8c3ca07ccdcbc37`；标签及当前 7 图/8 表清单已保存。
-- 明确区分 E1 主生产、四组固定 ell 对照、E2 accepted 状态和历史旁路状态；导入四组 canonical 数据，而非恢复目录中的审计前缀。
-- 固定 E1/E2 各 48 个正式样本。E1 参数表中的 `shift-audit` 规范化为 `shift`；原 CSV 的角色名称保持原样，验证器显式处理映射。
-- 保存 E1 对照 110 个、E2 生产 114 个源码/头文件的保守引用清单，无未解析的引号 include。它们覆盖旧源树，不等于已经裁剪完成的编译/链接闭包。
-- 从 E2 生产快照引入 mesh、boundary、quadrature、operators、manufactured；从 `model.cpp` 逐字提取两个初始网格构造函数。保持节点次序、边界标签、NVB 和数值公式。
-- 制造解代码仅替换重型头文件依赖，显式补齐 quadrature/refine 声明。保留内部 `lod2d` 名称和旧 profile 分支作为过渡，尚未宣称满足最终“仅 E1/E2”裁剪标准。
-- 提供独立 CMake、UMFPACK 强依赖、E1/E2 小网格 FEM 入口、CI、仓库完整性检查、暂存区路径扫描及 64 MiB 旧 CSV 字段支持。
+- Verified the 58 originally cited evidence items and froze the current manuscript inventory (seven figures, eight tables), configurations, source differences, sample roles and canonical audits.
+- Recovered the actual archived E1 production source and verified runner, workflow, executable and static-library hashes against production checksums. E2 uses its accepted production snapshot, including the selected-value kernel API absent from the main legacy worktree.
+- Rebuilt both old programs from source without reusing old libraries. E1 completed the historically validated 27-state H2/h4 smoke; its 170 sampled family rows and 120 coarse-mark entries agree with the archive. E2 completed two H6/h10 states; all 100 accepted audit rows agree with the archived prefix. Tolerance is 1e-12 + 1e-8*abs(expected); identities and marks are exact.
+- Recorded resource-only replay patches, effective configurations, build-hash/environment branch inventories, source hashes, compiler/link commands, actual linked archive members and dependency-version evidence. Historical package locking was not archived; observed host versions are labelled by date.
+- Reproduced the manuscript/source averaging discrepancy on a graded mesh. This is an explicit P2 scientific decision. P0 establishes provenance and the counterexample; it does not claim adaptive manuscript equivalence.
 
-## 本次验证
+See `provenance/p0/README.md` and the accompanying machine-readable evidence. The replay tools require explicitly supplied legacy sources and never run server launchers.
 
-在 WSL Ubuntu 22.04 中执行，构建并发为 2；FEM 回归为 1 个 OpenMP 线程，BLAS=1。未运行服务器实验。实际环境版本及最终测量记录见 `provenance/validation.json`。
+## P1: independent minimal core and baselines
 
-```sh
-python3 tools/build_legacy_oracle.py --source "$E2_SOURCE_ROOT"
-cmake --preset release
-cmake --build --preset release
-ctest --preset release
-python3 tools/check_repository.py
-python3 -m unittest discover -s tests -p 'test_*.py'
-```
+- Independent CMake build with mandatory UMFPACK, Eigen and OpenMP; portable compiler flags and a self-contained CI smoke workflow.
+- E1 and alpha=80 E2 manufactured factories only; historical R2 and alternate singular/cutoff profiles removed. Retained numerical formulas agree with the old fixed-grid FEM oracles.
+- Mixed-boundary FEM, quadrature, NVB, nested nodal/DG prolongations and stable mesh/element identities. Ancestry records parent IDs and NVB generation changes at refinement-transaction boundaries.
+- `alod_run` provides AFEM, UFEM and fixed uniform-grid SLOD. AFEM uses the old conforming strong residual and exact-index Doerfler ordering; UFEM refines all elements. SLOD uses ell=3, H+4 reference levels, direct Schur patch equations and two-sided PG assembly. Exact-error stopping is confined to the baseline controller.
+- Strict smoke/full JSON presets, a streaming run wrapper, portable configuration/executable hashes, explicit failure status and state records. Full presets expose historical horizons; their complete campaigns have not been rerun.
+- Six old-kernel baseline fixtures, each with three states and complete complex solutions. With matching portable compiler settings, all 18 new states have maximum absolute difference 0, including AFEM indicators/marks and mesh identities. Original SLOD fixtures call the complete old model; the new implementation uses the extracted minimal core.
+- Manufactured PDE identities, independent finite-difference derivatives, boundary residuals, quadrature convergence, mesh conformity/area/boundary preservation, nodal injection, lineage, residual reconstruction and Doerfler scaling/tie/error cases are tested. CLI artifact status, invalid inputs, exact stopping and thread reproducibility are covered.
 
-旧版 oracle 使用原生产头文件和原 FEM/制造解实现，单独构建；仅把初始网格构造从旧 `model.cpp` 中截出。新旧共用的是名义问题选择与输出探针，不是被比较的数值核。比较覆盖 E1/E2 在 NVB 6 层的全部节点复数解、自由度、元素数、边界长度、矩阵/载荷范数、积分误差和残差，容差为 `1e-12 + 1e-8*abs(expected)`，整数精确匹配。本机最大绝对差为 0。
+The final clean-checkout CTest and staged portability results are recorded in `provenance/p1_validation.json`. The clean build contains no legacy checkout, old library or preexisting build cache. No new remote CI pass or server performance result is inferred from local tests.
 
-每次运行同时检查嵌套 P1 线性函数注入及离散自由节点残差。E1 该粗网格相对能量误差约 1.126，E2 约 0.387；这些只用于回归，不能用于论文精度结论。
+## Reproducibility limits
 
-4 项 CTest 通过，其中工具回归包含 5 个测试。E1 审计通过 `48*(51+51+97+97)=14208` 行、成员角色、坐标一致性和 PG 残差检查；E2 接受状态通过 `33*50=1650` 行检查。缺失/重复行、非有限数和超容差输出会失败。引入内容哈希按 Git LF 规范存储，同时保留原文件字节哈希。
+Native vectorization changes the ordering of nearly equal indicators on an E1 symmetric coarse mesh. `provenance/p1_floating_point_sensitivity.json` records the first observed difference. Matching compiler flags give exact old/new agreement; arbitrary cross-architecture adaptive trajectory identity is not claimed. The original comparison rule remains unchanged, with no new tie tolerance.
 
-另外从 Git 暂存区导出全新目录，重新全量构建，4 项 CTest 再次全部通过（1.99 秒）。该目录没有旧项目源码、旧库或既有构建缓存。挂载文件系统在链接时报告过 0.023 秒时间戳偏差，程序成功生成且验证通过；此信息保留在验证记录中。当前仅确认本地验证，尚未把远程 CI 状态写成已通过。
+The archived quasi-interpolator averages incident elements arithmetically, while the manuscript uses area weighting. Both reproduce coarse P1 functions and coincide on the uniform meshes allowed by P1 SLOD. The graded counterexample has operator difference 0.15023130314433289. Resolve the intended definition and rerun the corresponding adaptive oracles before accepting P2.
 
-## 下一步与阶段门槛
+## Next phases
 
-| 阶段 | 状态与必须补齐的验收 |
+| Phase | Remaining work |
 |---|---|
-| P0 | 部分完成：补齐 E1 主生产真实 runner 构建来源；从归档旧程序重跑 E1/E2 自适应小状态；逐一消除配置之外的分支歧义；把保守 include 清单缩为各目标的链接闭包；补齐历史依赖版本和完整编译/链接命令 |
-| P1 | 最小 FEM 核已验证：AFEM/UFEM/SLOD 驱动尚未实现；补齐制造解边界/PDE/积分收敛测试及稳定网格身份；裁剪遗留 profile/非目标接口后再次对照 |
-| P2–P4 | 未开始：LOD、准插值、局部 Riesz、标记、Theta、m_ref、区域 AS、POD、AOT、继承及对应回归 |
-| P5–P7 | 未开始：真正 checkpoint/resume、独立审计、资源保护、优化测量和小中集成 |
-| P8 | 未开始：本仓库未新生成 51/33 状态生产轨迹或论文图表；历史数据仅作回归输入 |
-| P9 | 仅提前提供首次提交需要的 README/忽略与构建配置；完整发布验收待 P8 之后 |
+| P2 | General adaptive LOD/PG, kernel Riesz, Theta, explicit marking members and the graded-mesh interpolation decision |
+| P3-P4 | Reference/candidate controllers, regional AS, POD/AOT, ell changes and inheritance |
+| P5-P7 | Checkpoint/resume, independent audit, resource protection, measured optimization and integration |
+| P8 | New accepted production trajectories and reproducible paper figures/tables |
+| P9 | Final release documentation and full publication acceptance |
 
-E2 生产头文件与主工作区的 `AdditiveKernelRieszContext` 接口存在差异，后续须使用生产快照。AOT 优化目录的 runner/helper 应与该快照整合并全量构建，不能链接旧静态库。下一会话先读本文、`source_manifest.json`、`source_differences.json` 和计划书，再继续 P0 剩余门槛。
-
-## 已复现与仅候选项
-
-已复现：上述小网格 FEM 数值，不包含任何完整自适应轨迹。已验证导入：E1 四组和 E2 accepted 审计。仅历史证据：AOT 分解复用收益、服务器资源与计时、原论文终态。仅候选：计划中的大规模缓存收益、32 线程收益、m_ref>2 科学效果、区域 AS 对 localization 的分工；本次没有新增性能结论。
+Read this file, the implementation map, source manifest and phase plan before continuing. Do not replace accepted-source headers with main-worktree versions, infer new performance from historical timing, or overwrite regression fixtures to hide a failed comparison.

@@ -1,0 +1,22 @@
+{
+  "comparison": "Old native-architecture kernel versus portable build; exact comparator retained. Portable old/new equivalence tested separately.",
+  "differences": [
+    {
+      "state": 2,
+      "native_marks": [
+        4
+      ],
+      "portable_marks": [
+        11
+      ],
+      "native_indicators": {
+        "4": 0.4791872206073726,
+        "11": 0.47918722060737245
+      },
+      "portable_indicators": {
+        "4": 0.47918722060737273,
+        "11": 0.4791872206073729
+      }
+    }
+  ]
+}

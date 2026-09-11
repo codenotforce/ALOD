@@ -1,0 +1,260 @@
+[
+  {
+    "file": "benchmarks/bench_helmholtz_adaptive_paper.cpp",
+    "line": 1206,
+    "environment": "LOD2D_PROGRESS",
+    "replay_value": "unset"
+  },
+  {
+    "file": "benchmarks/bench_helmholtz_adaptive_paper.cpp",
+    "line": 1222,
+    "environment": "LOD2D_PROFILE_MODEL_STAGES",
+    "replay_value": "unset"
+  },
+  {
+    "file": "benchmarks/diagnostic_campaign_20260907.inc",
+    "line": 18,
+    "token": "regadaptive",
+    "enabled_by_replay_build_hash": true
+  },
+  {
+    "file": "benchmarks/E2_ell_controls.inc",
+    "line": 28,
+    "token": "forcepromote",
+    "enabled_by_replay_build_hash": false
+  },
+  {
+    "file": "benchmarks/E2_ell_controls.inc",
+    "line": 28,
+    "token": "notrigger",
+    "enabled_by_replay_build_hash": false
+  },
+  {
+    "file": "benchmarks/E2_ell_controls.inc",
+    "line": 63,
+    "token": "resetell",
+    "enabled_by_replay_build_hash": false
+  },
+  {
+    "file": "benchmarks/E2_region_controls_audit.inc",
+    "line": 7,
+    "token": "ellcontrol",
+    "enabled_by_replay_build_hash": true
+  },
+  {
+    "file": "benchmarks/E2_region_controls_audit.inc",
+    "line": 8,
+    "token": "phase1",
+    "enabled_by_replay_build_hash": false
+  },
+  {
+    "file": "benchmarks/E2_region_controls_helper.inc",
+    "line": 3,
+    "token": "ctrlfast",
+    "enabled_by_replay_build_hash": true
+  },
+  {
+    "file": "benchmarks/E2_region_controls_helper.inc",
+    "line": 45,
+    "token": "ellcontrol",
+    "enabled_by_replay_build_hash": true
+  },
+  {
+    "file": "benchmarks/E2_region_controls_helper.inc",
+    "line": 48,
+    "token": "phase1",
+    "enabled_by_replay_build_hash": false
+  },
+  {
+    "file": "benchmarks/E2_region_controls_helper.inc",
+    "line": 65,
+    "token": "regionalbudget",
+    "enabled_by_replay_build_hash": true
+  },
+  {
+    "file": "benchmarks/E2_region_controls_helper.inc",
+    "line": 65,
+    "token": "inherit",
+    "enabled_by_replay_build_hash": true
+  },
+  {
+    "file": "benchmarks/E2_region_controls_helper.inc",
+    "line": 66,
+    "token": "phase1",
+    "enabled_by_replay_build_hash": false
+  },
+  {
+    "file": "benchmarks/reference_epoch_paper_runner.cpp",
+    "line": 3593,
+    "token": "ellcontrol",
+    "enabled_by_replay_build_hash": true
+  },
+  {
+    "file": "benchmarks/reference_epoch_paper_runner.cpp",
+    "line": 3661,
+    "environment": "LOD2D_VALIDATE_FAMILY_BATCH",
+    "replay_value": "unset"
+  },
+  {
+    "file": "benchmarks/reference_epoch_paper_runner.cpp",
+    "line": 7068,
+    "token": "traincontrol",
+    "enabled_by_replay_build_hash": false
+  },
+  {
+    "file": "benchmarks/reference_epoch_paper_runner.cpp",
+    "line": 8030,
+    "token": "regadaptive",
+    "enabled_by_replay_build_hash": true
+  },
+  {
+    "file": "benchmarks/reference_epoch_paper_runner.cpp",
+    "line": 8036,
+    "token": "baseonly",
+    "enabled_by_replay_build_hash": false
+  },
+  {
+    "file": "benchmarks/reference_epoch_paper_runner.cpp",
+    "line": 8483,
+    "token": "adjacentfast",
+    "enabled_by_replay_build_hash": true
+  },
+  {
+    "file": "benchmarks/reference_epoch_paper_runner.cpp",
+    "line": 8489,
+    "token": "adjacentfast",
+    "enabled_by_replay_build_hash": true
+  },
+  {
+    "file": "benchmarks/reference_epoch_paper_runner.cpp",
+    "line": 9481,
+    "token": "keepraw",
+    "enabled_by_replay_build_hash": false
+  },
+  {
+    "file": "benchmarks/reference_epoch_paper_runner.cpp",
+    "line": 9716,
+    "token": "traincontrol",
+    "enabled_by_replay_build_hash": false
+  },
+  {
+    "file": "benchmarks/reference_epoch_paper_runner.cpp",
+    "line": 9722,
+    "token": "keepraw",
+    "enabled_by_replay_build_hash": false
+  },
+  {
+    "file": "benchmarks/regional_as_diagnostics_20260909.inc",
+    "line": 18,
+    "token": "regionalctl",
+    "enabled_by_replay_build_hash": true
+  },
+  {
+    "file": "benchmarks/regional_as_diagnostics_20260909.inc",
+    "line": 19,
+    "token": "rank8",
+    "enabled_by_replay_build_hash": false
+  },
+  {
+    "file": "benchmarks/regional_as_diagnostics_20260909.inc",
+    "line": 20,
+    "token": "R025",
+    "enabled_by_replay_build_hash": false
+  },
+  {
+    "file": "benchmarks/regional_as_diagnostics_20260909.inc",
+    "line": 20,
+    "token": "R040",
+    "enabled_by_replay_build_hash": false
+  },
+  {
+    "file": "benchmarks/regional_as_diagnostics_20260909.inc",
+    "line": 20,
+    "token": "R060",
+    "enabled_by_replay_build_hash": true
+  },
+  {
+    "file": "benchmarks/regional_as_diagnostics_20260909.inc",
+    "line": 20,
+    "token": "R080",
+    "enabled_by_replay_build_hash": false
+  },
+  {
+    "file": "benchmarks/regional_as_diagnostics_20260909.inc",
+    "line": 48,
+    "token": "baseonly",
+    "enabled_by_replay_build_hash": false
+  },
+  {
+    "file": "benchmarks/regional_as_diagnostics_20260909.inc",
+    "line": 98,
+    "token": "regadaptive",
+    "enabled_by_replay_build_hash": true
+  },
+  {
+    "file": "benchmarks/regional_as_diagnostics_20260909.inc",
+    "line": 99,
+    "token": "regadaptive",
+    "enabled_by_replay_build_hash": true
+  },
+  {
+    "file": "benchmarks/regional_as_diagnostics_20260909.inc",
+    "line": 290,
+    "token": "regadaptive",
+    "enabled_by_replay_build_hash": true
+  },
+  {
+    "file": "benchmarks/regional_as_diagnostics_20260909.inc",
+    "line": 290,
+    "token": "smoke",
+    "enabled_by_replay_build_hash": false
+  },
+  {
+    "file": "benchmarks/regional_as_diagnostics_20260909.inc",
+    "line": 375,
+    "token": "regadaptive",
+    "enabled_by_replay_build_hash": true
+  },
+  {
+    "file": "benchmarks/workflow_campaign_20260908.inc",
+    "line": 21,
+    "token": "smoke",
+    "enabled_by_replay_build_hash": false
+  },
+  {
+    "file": "benchmarks/workflow_campaign_20260908.inc",
+    "line": 22,
+    "token": "workflow-E1",
+    "enabled_by_replay_build_hash": false
+  },
+  {
+    "file": "benchmarks/workflow_campaign_20260908.inc",
+    "line": 27,
+    "token": "refonly",
+    "enabled_by_replay_build_hash": false
+  },
+  {
+    "file": "benchmarks/workflow_campaign_20260908.inc",
+    "line": 29,
+    "token": "burst",
+    "enabled_by_replay_build_hash": false
+  },
+  {
+    "file": "benchmarks/workflow_campaign_20260908.inc",
+    "line": 29,
+    "token": "gate",
+    "enabled_by_replay_build_hash": false
+  },
+  {
+    "file": "benchmarks/workflow_campaign_20260908.inc",
+    "line": 30,
+    "token": "burst70",
+    "enabled_by_replay_build_hash": false
+  },
+  {
+    "file": "benchmarks/workflow_campaign_20260908.inc",
+    "line": 42,
+    "token": "autoell",
+    "enabled_by_replay_build_hash": false
+  }
+]
