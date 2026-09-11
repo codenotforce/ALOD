@@ -1,0 +1,174 @@
+{
+  "ALOD": {
+    "points": 51,
+    "final_dof": 2422,
+    "final_error": 0.009205652787925123,
+    "tail_fit": {
+      "points": 5,
+      "p": 0.6445569777327396,
+      "r2": 0.9967148682286077
+    },
+    "family": {
+      "nominal": 0.009205652787925112,
+      "test_count": 24,
+      "test_p50": 0.009974257276704507,
+      "test_p90": 0.010406726519844785,
+      "test_max": 0.011099821453547805,
+      "test_p90_growth": 1.1304713266499795,
+      "test_max_growth": 1.205761471702174,
+      "audit_count": 8,
+      "audit_p90": 0.010991161508385238,
+      "audit_max": 0.01116601211091625,
+      "audit_max_growth": 1.2129516904615938
+    },
+    "first_below_002": {
+      "label": "ALOD",
+      "step": 35,
+      "dof": 906,
+      "reference_dof": 36199,
+      "error": 0.018799480673149287
+    },
+    "first_below_001": {
+      "label": "ALOD",
+      "step": 47,
+      "dof": 2136,
+      "reference_dof": 211013,
+      "error": 0.00992647950816857
+    },
+    "fit_sensitivity": {
+      "4": {
+        "points": 4,
+        "p": 0.6347642219336754,
+        "r2": 0.9939255891982166
+      },
+      "5": {
+        "points": 5,
+        "p": 0.6445569777327396,
+        "r2": 0.9967148682286077
+      },
+      "6": {
+        "points": 6,
+        "p": 0.6355284832573687,
+        "r2": 0.9978088721409187
+      }
+    },
+    "source": "<HOST_PATH>"
+  },
+  "AFEM": {
+    "points": 87,
+    "final_dof": 83557,
+    "final_error": 0.007799464877726856,
+    "tail_fit": {
+      "points": 8,
+      "p": 0.5043331744891739,
+      "r2": 0.9966115667439185
+    },
+    "family": {
+      "nominal": 0.0077994648777283924,
+      "test_count": 24,
+      "test_p50": 0.00843466900611227,
+      "test_p90": 0.008798299059840602,
+      "test_max": 0.009222137907635292,
+      "test_p90_growth": 1.1280644502886872,
+      "test_max_growth": 1.1824064922671023,
+      "audit_count": 8,
+      "audit_p90": 0.009260024159616591,
+      "audit_max": 0.009260024159616957,
+      "audit_max_growth": 1.1872640373135388
+    },
+    "first_below_002": {
+      "label": "AFEM",
+      "step": 65,
+      "dof": 13528,
+      "reference_dof": 0,
+      "error": 0.019302047291180367
+    },
+    "first_below_001": {
+      "label": "AFEM",
+      "step": 81,
+      "dof": 54549,
+      "reference_dof": 0,
+      "error": 0.009595326122324815
+    },
+    "fit_sensitivity": {},
+    "source": "<HOST_PATH>"
+  },
+  "UFEM": {
+    "points": 15,
+    "final_dof": 1048575,
+    "final_error": 0.006140244594696118,
+    "tail_fit": {
+      "points": 8,
+      "p": 0.5062380926143779,
+      "r2": 0.9986540243012737
+    },
+    "family": {
+      "nominal": 0.006140244594708703,
+      "test_count": 24,
+      "test_p50": 0.006141831134663919,
+      "test_p90": 0.006199337944508622,
+      "test_max": 0.00621318502251514,
+      "test_p90_growth": 1.0096239406897314,
+      "test_max_growth": 1.0118790752846056,
+      "audit_count": 8,
+      "audit_p90": 0.006205509149900772,
+      "audit_max": 0.006225743954889629,
+      "audit_max_growth": 1.0139244225310835
+    },
+    "first_below_002": {
+      "label": "UFEM",
+      "step": 11,
+      "dof": 131071,
+      "reference_dof": 1048575,
+      "error": 0.018442460933446873
+    },
+    "first_below_001": {
+      "label": "UFEM",
+      "step": 13,
+      "dof": 524287,
+      "reference_dof": 1048575,
+      "error": 0.009215630913881412
+    },
+    "fit_sensitivity": {},
+    "source": "<HOST_PATH>"
+  },
+  "SLOD": {
+    "points": 11,
+    "final_dof": 65535,
+    "final_error": 0.006191946453058394,
+    "tail_fit": {
+      "points": 6,
+      "p": 0.5526364446640745,
+      "r2": 0.9971989252523097
+    },
+    "family": {
+      "nominal": 0.006191946453057906,
+      "test_count": 24,
+      "test_p50": 0.006193563285758149,
+      "test_p90": 0.006252898425044364,
+      "test_max": 0.006267202825430042,
+      "test_p90_growth": 1.0098437498529007,
+      "test_max_growth": 1.0121539120117828,
+      "audit_count": 8,
+      "audit_p90": 0.006259268112494829,
+      "audit_max": 0.006280170907024158,
+      "audit_max_growth": 1.0142482585460155
+    },
+    "first_below_002": {
+      "label": "SLOD",
+      "step": 7,
+      "dof": 8191,
+      "reference_dof": 131071,
+      "error": 0.019351043399094464
+    },
+    "first_below_001": {
+      "label": "SLOD",
+      "step": 9,
+      "dof": 32767,
+      "reference_dof": 524287,
+      "error": 0.00933302332607634
+    },
+    "fit_sensitivity": {},
+    "source": "<HOST_PATH>"
+  }
+}

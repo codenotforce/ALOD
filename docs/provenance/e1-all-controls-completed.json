@@ -1,0 +1,14 @@
+{
+  "states": {
+    "nominal-alod": 51,
+    "family-alod": 51,
+    "family-afem": 97,
+    "nominal-afem": 97
+  },
+  "validated": true,
+  "completion_sources": [
+    "completed.json",
+    "nominal-afem-completed.json"
+  ],
+  "nominal_afem_sha256": "ba08c03f913ff323488ab0b536a6f095e45547157a14a8c78618545343165fcc"
+}

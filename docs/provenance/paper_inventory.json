@@ -1,0 +1,242 @@
+{
+  "sha256": "f714fb0ba66c2cc276437002aa2306d16271fd91fc88205ff8c3ca07ccdcbc37",
+  "source": "helmholtz_lod_certified_amsart_revised.tex",
+  "figures": [
+    {
+      "labels": [
+        "fig:e1-error-dof"
+      ],
+      "inputs": [
+        "figures/e1_error_dof.pdf"
+      ]
+    },
+    {
+      "labels": [
+        "fig:e1-final-meshes"
+      ],
+      "inputs": [
+        "figures/e1_final_meshes.pdf"
+      ]
+    },
+    {
+      "labels": [
+        "fig:e1-family-marking"
+      ],
+      "inputs": [
+        "figures/e1_family_marking_control.pdf"
+      ]
+    },
+    {
+      "labels": [
+        "fig:e2-error-dof"
+      ],
+      "inputs": [
+        "figures/e2_error_dof.pdf"
+      ]
+    },
+    {
+      "labels": [
+        "fig:e2-final-meshes"
+      ],
+      "inputs": [
+        "figures/e2_final_meshes.pdf"
+      ]
+    },
+    {
+      "labels": [
+        "fig:e1-rhs-centres"
+      ],
+      "inputs": [
+        "figures/e1_rhs_centres.pdf"
+      ]
+    },
+    {
+      "labels": [
+        "fig:e2-rhs-centres"
+      ],
+      "inputs": [
+        "figures/e2_rhs_centres.pdf"
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "labels": [
+        "tab:adaptive-config"
+      ],
+      "inputs": []
+    },
+    {
+      "labels": [
+        "tab:e1-crossings"
+      ],
+      "inputs": []
+    },
+    {
+      "labels": [
+        "tab:e1-terminal-results"
+      ],
+      "inputs": []
+    },
+    {
+      "labels": [
+        "tab:e1-family-control"
+      ],
+      "inputs": [
+        "tables/e1_family_control.tex"
+      ]
+    },
+    {
+      "labels": [
+        "tab:enrichment-config"
+      ],
+      "inputs": []
+    },
+    {
+      "labels": [
+        "tab:e2-terminal-results"
+      ],
+      "inputs": [
+        "tables/e2_terminal_results.tex"
+      ]
+    },
+    {
+      "labels": [
+        "tab:e2-rhs-methods"
+      ],
+      "inputs": [
+        "tables/e2_rhs_methods.tex"
+      ]
+    },
+    {
+      "labels": [
+        "tab:e1-rhs-methods"
+      ],
+      "inputs": []
+    }
+  ],
+  "labels": [
+    "sec:introduction",
+    "sec:model-spaces",
+    "sec:meshes-patches",
+    "eq:strong-problem",
+    "eq:energy-form",
+    "eq:continuous-problem",
+    "eq:reference-problem",
+    "eq:gamma-reference",
+    "ass:helmholtz-stability",
+    "eq:error-splitting",
+    "eq:patch-overlap",
+    "sec:interpolation",
+    "eq:geometric-partition-unity",
+    "lem:IH-local-properties",
+    "eq:IH-approx",
+    "eq:IH-stability",
+    "sec:lod-framework",
+    "sec:fine-scale-kernel",
+    "thm:kernel-coercivity",
+    "eq:kernel-coercivity",
+    "eq:projection-stability",
+    "sec:correctors",
+    "sec:lod-pg",
+    "eq:local-adjoint",
+    "eq:transfer-operators",
+    "eq:computed-spaces",
+    "eq:PG",
+    "prop:ideal-stability",
+    "eq:ideal-stability",
+    "sec:stable-decomposition",
+    "eq:local-kernel-space",
+    "thm:stable-decomposition",
+    "eq:stable-decomposition",
+    "eq:stable-synthesis",
+    "sec:certificates",
+    "sec:reference-residual",
+    "eq:reference-residual",
+    "eq:as-local-riesz",
+    "thm:residual-localization",
+    "eq:residual-equivalence",
+    "prop:local-efficiency",
+    "eq:local-efficiency",
+    "eq:global-efficiency",
+    "sec:corrector-certificate",
+    "eq:rel-cor",
+    "eq:defect-functional",
+    "eq:certifier",
+    "thm:corrector-certificate",
+    "eq:corrector-certificate",
+    "thm:localization",
+    "eq:localization",
+    "rem:two-level-defect",
+    "sec:localized-perturbation",
+    "eq:quadratic-coarse-form-perturbation",
+    "prop:localized-coarse-coefficient-perturbation",
+    "eq:localized-coarse-smallness",
+    "eq:localized-coarse-coefficient-bound",
+    "sec:global-reliability",
+    "thm:reliability",
+    "eq:base-test-orthogonality",
+    "eq:global-reliability",
+    "thm:reference-error",
+    "sec:reference-interval",
+    "eq:reference-interval",
+    "sec:family-enrichment",
+    "sec:residual-enrichment",
+    "sec:family-setting",
+    "eq:family-scale",
+    "eq:regional-as",
+    "eq:residual-krylov",
+    "eq:mode-deflation",
+    "sec:adjoint-optimal-tests",
+    "eq:optimal-test-map",
+    "eq:aot-matrix",
+    "eq:augmented-pg",
+    "prop:augmented-quasioptimality",
+    "eq:augmented-quasioptimality",
+    "eq:coupled-block-system",
+    "sec:family-dictionary-compression",
+    "eq:regional-training-target",
+    "eq:regional-budget-test",
+    "eq:pod-dictionary",
+    "prop:pod-optimality",
+    "eq:distance-gate",
+    "eq:residual-gate",
+    "eq:compression-error-perturbation",
+    "sec:adaptive",
+    "sec:family-marking",
+    "eq:coarse-dorfler",
+    "eq:worst-family-supplement",
+    "eq:strong-reference-indicator",
+    "sec:computational-realization",
+    "alg:singular",
+    "sec:algorithm-smooth",
+    "alg:smooth",
+    "sec:numerics",
+    "eq:relative-exact-error",
+    "tab:adaptive-config",
+    "sec:num-smooth",
+    "eq:smooth-manufactured",
+    "eq:e1-rhs-family",
+    "fig:e1-error-dof",
+    "tab:e1-crossings",
+    "tab:e1-terminal-results",
+    "fig:e1-final-meshes",
+    "fig:e1-family-marking",
+    "tab:e1-family-control",
+    "sec:num-lshape",
+    "eq:lshape-boundary-partition",
+    "eq:lshape-exact-solution",
+    "eq:e2-family",
+    "tab:enrichment-config",
+    "fig:e2-error-dof",
+    "tab:e2-terminal-results",
+    "fig:e2-final-meshes",
+    "tab:e2-rhs-methods",
+    "sec:conclusions",
+    "sec:reproduction",
+    "sec:additional-audits",
+    "tab:e1-rhs-methods",
+    "fig:e1-rhs-centres",
+    "fig:e2-rhs-centres"
+  ]
+}

@@ -1,0 +1,421 @@
+{
+  "schema_version": 1,
+  "scope": "Initial migration checkpoint; not a complete P0/P1 acceptance.",
+  "roots": {
+    "legacy": "External legacy source supplied by the operator",
+    "paper": "External manuscript supplied by the operator",
+    "initial_project_input": "Initial user-supplied project root before path sanitization"
+  },
+  "files": [
+    {
+      "path": "src/mesh/refine.cpp",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/mesh/refine.cpp",
+      "origin_sha256": "5c2d678ac22524a34a3fef637ab450754fbc5a521735fcc22e59be4333a19809",
+      "sha256": "5c2d678ac22524a34a3fef637ab450754fbc5a521735fcc22e59be4333a19809",
+      "snapshot": "E2-production",
+      "modification": "Line endings normalized; numerical implementation unchanged.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "src/mesh/edges.cpp",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/mesh/edges.cpp",
+      "origin_sha256": "f76fe9189a0af3841fb98222ea8f0137daa3bf828b7900ca08532e9228476992",
+      "sha256": "0703aa306aa3026b866f743aa72356e13ddeebbf3ffe30ad329b0174a005b8c6",
+      "snapshot": "E2-production",
+      "modification": "Line endings normalized; numerical implementation unchanged.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "src/fem/boundary.cpp",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/boundary.cpp",
+      "origin_sha256": "1560e20d597929c671fd93b29817a1cdbeb68bd73f4a9f2f4647b1241d8ba14a",
+      "sha256": "1560e20d597929c671fd93b29817a1cdbeb68bd73f4a9f2f4647b1241d8ba14a",
+      "snapshot": "E2-production",
+      "modification": "Line endings normalized; numerical implementation unchanged.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "src/fem/quadrature.cpp",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/quadrature.cpp",
+      "origin_sha256": "81cfdbf37e7c4c1174cb34bf76675c3d227e94dde57ee4629edef3a59a1ada95",
+      "sha256": "81cfdbf37e7c4c1174cb34bf76675c3d227e94dde57ee4629edef3a59a1ada95",
+      "snapshot": "E2-production",
+      "modification": "Line endings normalized; numerical implementation unchanged.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "src/fem/operators.cpp",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/operators.cpp",
+      "origin_sha256": "35c4f1ba9dc60b248be7e04a219f5a630e954718d8dab1be63583f8d115d296f",
+      "sha256": "35c4f1ba9dc60b248be7e04a219f5a630e954718d8dab1be63583f8d115d296f",
+      "snapshot": "E2-production",
+      "modification": "Line endings normalized; numerical implementation unchanged.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "src/fem/manufactured.cpp",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/manufactured.cpp",
+      "origin_sha256": "b70fa6b50b3b20ec0601b7823726a387eec6f6cef034a239f6070efceca07e0b",
+      "sha256": "b70fa6b50b3b20ec0601b7823726a387eec6f6cef034a239f6070efceca07e0b",
+      "snapshot": "E2-production",
+      "modification": "Line endings normalized; numerical implementation unchanged.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "include/mesh/types.h",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/include/mesh/types.h",
+      "origin_sha256": "285057ac96e2efd5de4832b213fb89a254158f23635d357b736761f9c92783ab",
+      "sha256": "489378535a86d0e9333d5f7f1acb09620df3f5da88ef45b193b64c44dc778ed9",
+      "snapshot": "E2-production",
+      "modification": "Line endings normalized; declarations unchanged.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "include/mesh/refine.h",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/include/mesh/refine.h",
+      "origin_sha256": "8880891d3c0c5d455cb202ec7a319805912904dc91fc5af408d069982841f031",
+      "sha256": "8880891d3c0c5d455cb202ec7a319805912904dc91fc5af408d069982841f031",
+      "snapshot": "E2-production",
+      "modification": "Line endings normalized; declarations unchanged.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "include/helmholtz/types.h",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/include/helmholtz/types.h",
+      "origin_sha256": "1eea9a993e5101959b566194bb2cc1b1c676ce8b71b77de099f9170f6e55b5c1",
+      "sha256": "1eea9a993e5101959b566194bb2cc1b1c676ce8b71b77de099f9170f6e55b5c1",
+      "snapshot": "E2-production",
+      "modification": "Line endings normalized; declarations unchanged.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "include/helmholtz/boundary.h",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/include/helmholtz/boundary.h",
+      "origin_sha256": "9adc75b5a5e5229748d25253e2da662eede945955c0a38e6c1f17b91b90af137",
+      "sha256": "9adc75b5a5e5229748d25253e2da662eede945955c0a38e6c1f17b91b90af137",
+      "snapshot": "E2-production",
+      "modification": "Line endings normalized; declarations unchanged.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "include/helmholtz/quadrature.h",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/include/helmholtz/quadrature.h",
+      "origin_sha256": "98f703552e1030ae62b3920f646500c659399e982cd8aba494a915cc1b97eb67",
+      "sha256": "98f703552e1030ae62b3920f646500c659399e982cd8aba494a915cc1b97eb67",
+      "snapshot": "E2-production",
+      "modification": "Line endings normalized; declarations unchanged.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "include/helmholtz/operators.h",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/include/helmholtz/operators.h",
+      "origin_sha256": "331c3356680967d23a1f59f14cd888977944a6d49a4a8deff76c5e67c179b0ec",
+      "sha256": "331c3356680967d23a1f59f14cd888977944a6d49a4a8deff76c5e67c179b0ec",
+      "snapshot": "E2-production",
+      "modification": "Line endings normalized; declarations unchanged.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "include/helmholtz/manufactured.h",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/include/helmholtz/manufactured.h",
+      "origin_sha256": "1835f327c7c1e7a68d65b2929fa23a0af1e712689fc4ad6780ecaa86f8d99f19",
+      "sha256": "1835f327c7c1e7a68d65b2929fa23a0af1e712689fc4ad6780ecaa86f8d99f19",
+      "snapshot": "E2-production",
+      "modification": "Line endings normalized; declarations unchanged.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "src/mesh/initial.cpp",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/model.cpp",
+      "origin_sha256": "25d203971759485420f7dd29d7e6abb8cf9a57b39b2b8281ee44850aa7983320",
+      "sha256": "cc46c59cb0cd22fc74dcc6eb84188112e1540a3e294002ccdbfe32e967c74f2d",
+      "snapshot": "E2-production",
+      "modification": "Extract only the two mesh constructors verbatim; supply narrow includes.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "src/problems/legacy_cases.cpp",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/benchmarks/paper_cases.cpp",
+      "origin_sha256": "8c9a17647d2ae6275ca49f4de53cb1e01407dce76b3098b403d1fb6bf3abed20",
+      "sha256": "f93eca9ade29ef13f453b8bf03fe56aa574d60cb9a2565b2783151ccfd618cd5",
+      "snapshot": "E2-production",
+      "modification": "Replace model include by mesh and refinement declarations; numerical formulas unchanged.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "include/helmholtz/benchmarks/paper_cases.h",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/include/helmholtz/benchmarks/paper_cases.h",
+      "origin_sha256": "90c72800b51efba45e69e1c95d97123b2b387eaac3dcdbaf898b2358511536cb",
+      "sha256": "aef0563b3154bb59cfea0276747b513fcaf1d1b61ce52c72f0b5913694f5b687",
+      "snapshot": "E2-production",
+      "modification": "Replace experiment configuration by enum-only compatibility header; explicitly include quadrature declarations.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "ALOD_SUBPROJECT_AGENT_PLAN_20260909.md",
+      "origin_scope": "initial_project_input",
+      "origin": "ALOD_SUBPROJECT_AGENT_PLAN_20260909.md",
+      "origin_sha256": "5e4544f14cf014a4732477283ec5ea64cb28e2506d8cb13162c768597c3c9ae2",
+      "sha256": "c4a79ccc41097345bab05eba62502fd96d08bf7421c4c648a70298257bc95dc0",
+      "snapshot": "initial-user-plan",
+      "modification": "Portable root aliases and current execution-status pointer.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "docs/provenance/plan_evidence.json",
+      "origin_scope": "legacy",
+      "origin": "docs/ALOD_SOURCE_EVIDENCE_20260911.json",
+      "origin_sha256": "a66d0fdf2d26e6e0f23eba7841fc03e38785fc3d7c14ec542b63cff67f90d19a",
+      "sha256": "c5b05613788c83fbe1de974f5749ed447062f0649ca8a9d5eb22fc0f685c21b5",
+      "snapshot": "archived-evidence",
+      "modification": "Replace machine paths by symbolic roots; preserve original evidence hashes.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "docs/provenance/configs/e1-main.json",
+      "origin_scope": "legacy",
+      "origin": "results/E1-periodic-lazy12-51-20260909/data/config.json",
+      "origin_sha256": "44c094335b59dc6ceeceaab7edf24c6fa27644bc93b4e82da171af2e61b2e145",
+      "sha256": "44c094335b59dc6ceeceaab7edf24c6fa27644bc93b4e82da171af2e61b2e145",
+      "snapshot": "archived-evidence",
+      "modification": "Archive only; machine paths redacted; legacy hidden branches not translated into a production interface.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "docs/provenance/configs/e2-main.json",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/configs/inheritell.json",
+      "origin_sha256": "d1be49ca84519487b6263fcc342c780dbb1a18b59ac00bda5bb4a92b66fe174a",
+      "sha256": "d1be49ca84519487b6263fcc342c780dbb1a18b59ac00bda5bb4a92b66fe174a",
+      "snapshot": "archived-evidence",
+      "modification": "Archive only; machine paths redacted; legacy hidden branches not translated into a production interface.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "docs/provenance/configs/e1-control-alod.json",
+      "origin_scope": "legacy",
+      "origin": "results/E1-family-marking-controls-20260910/configs/alod.json",
+      "origin_sha256": "4d0b4e30172101fbcb3c115987166a29a721ef9ebcca57e84a5d5dc085f4cb14",
+      "sha256": "c5a08e8d807b1491c6f58fdaa2a42b29492c1db05da8b92b97f431342c706cc6",
+      "snapshot": "archived-evidence",
+      "modification": "Archive only; machine paths redacted; legacy hidden branches not translated into a production interface.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "docs/provenance/configs/e1-control-afem.json",
+      "origin_scope": "legacy",
+      "origin": "results/E1-family-marking-controls-20260910/configs/afem.json",
+      "origin_sha256": "3fd1d0c19b4c4be86a651a2ab06a24a9882a035e7316a2f0691616599f1680ec",
+      "sha256": "bb57da7b92a20e0f63067f7fbbf8e17a104f73bd441f3e69eb2a3e9b84e48fb7",
+      "snapshot": "archived-evidence",
+      "modification": "Archive only; machine paths redacted; legacy hidden branches not translated into a production interface.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "docs/provenance/e1-build-provenance.json",
+      "origin_scope": "legacy",
+      "origin": "results/E1-family-marking-controls-20260910/build-provenance.json",
+      "origin_sha256": "54e2563a58f47102ce664c09b56055bc7939d073df78f2913df151f8c5dbf37d",
+      "sha256": "bcdc01821219ff945e0f2d14dd1303bc46fe75afb13596c1b3530906585bdc2a",
+      "snapshot": "archived-evidence",
+      "modification": "Archive provenance; replace machine-specific locations with placeholders.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "docs/provenance/e1-server-environment.json",
+      "origin_scope": "legacy",
+      "origin": "results/E1-family-marking-controls-20260910/reproducibility/server-environment.json",
+      "origin_sha256": "4f362fea0c6280577e5bdb07ee0425ec972f6ac6fd6970e23d95fa4ef9adbd82",
+      "sha256": "6215a82df715a73f09a771f201198e81b85c0a40f8c9bcf4b28e8f9afccdbe53",
+      "snapshot": "archived-evidence",
+      "modification": "Archive provenance; replace machine-specific locations with placeholders.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "docs/provenance/e1-all-controls-completed.json",
+      "origin_scope": "legacy",
+      "origin": "results/E1-family-marking-controls-20260910/all-controls-completed.json",
+      "origin_sha256": "a490da37357d26be4ab42d64f62242c4f5c36d7f8270035576e2c108913a936b",
+      "sha256": "a490da37357d26be4ab42d64f62242c4f5c36d7f8270035576e2c108913a936b",
+      "snapshot": "archived-evidence",
+      "modification": "Archive provenance; replace machine-specific locations with placeholders.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "docs/provenance/e1-portable-data-validation.json",
+      "origin_scope": "legacy",
+      "origin": "results/E1-family-marking-controls-20260910/portable-data-validation.json",
+      "origin_sha256": "85cdcf6e885d389271d2098691d0db1a31e2616db35d1ff1f3a14f8cf29b4a4e",
+      "sha256": "57a6ce954d600f7b44628033f08ed87c9206c8e5a6fcea4680c2cf5f34328990",
+      "snapshot": "archived-evidence",
+      "modification": "Archive provenance; replace machine-specific locations with placeholders.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "data/rhs/rhs_e1.json",
+      "origin_scope": "legacy",
+      "origin": "results/E1-family-marking-controls-20260910/rhs-samples.json",
+      "origin_sha256": "8d89a3b42b2512a6243a3b642a03bff7849015bf6e1d8bc888a48916d6fc5621",
+      "sha256": "cfe93a7a7f18f88e5cbd0a47072436817ca0d849c78570a72f19e4b83438aac7",
+      "snapshot": "archived-evidence",
+      "modification": "Normalize legacy shift-audit role to shift; preserve numeric sample parameters.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "data/rhs/rhs_e2.json",
+      "origin_scope": "legacy",
+      "origin": "results/E2-production-inherit-paper-20260909/data/rhs_parameters.csv",
+      "origin_sha256": "79dfc3965f06001dc55e4e4e2dda28ee0c9d9713bd98104a6fd9deff71fdb1b2",
+      "sha256": "dbfe8f50eccae31b85873b6b28f5222f3c71bc3c62773348aad895d12107ac34",
+      "snapshot": "archived-evidence",
+      "modification": "Convert archived parameter CSV into numeric JSON; roles mapped from accepted production samples.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "tests/fixtures/legacy/e1-nominal-alod.csv",
+      "origin_scope": "legacy",
+      "origin": "results/E1-family-marking-controls-20260910/data/nominal-alod/family_control_samples.csv",
+      "origin_sha256": "97d7bf38744ace7a82e046eac93679cfae7b8eecbded2d91b204061e172767c0",
+      "sha256": "97d7bf38744ace7a82e046eac93679cfae7b8eecbded2d91b204061e172767c0",
+      "snapshot": "archived-evidence",
+      "modification": "Canonical full audit regression table; no recovery-prefix substitution.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "docs/provenance/e1-nominal-alod-started.json",
+      "origin_scope": "legacy",
+      "origin": "results/E1-family-marking-controls-20260910/data/nominal-alod/started.json",
+      "origin_sha256": "b96af0256ccb662df789dbe01f8f768de9321d4bc27bebea10f18421bda6461b",
+      "sha256": "893128407749039dfefd9426dee01b0f1d9f0daaef9a7b357f10fc661c0607b2",
+      "snapshot": "archived-evidence",
+      "modification": "Archive execution environment; redact machine paths.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "tests/fixtures/legacy/e1-family-alod.csv",
+      "origin_scope": "legacy",
+      "origin": "results/E1-family-marking-controls-20260910/data/family-alod/family_control_samples.csv",
+      "origin_sha256": "da00345742f7a09d402716cefba3478edf33c37daad702177968749e86d29073",
+      "sha256": "2b2c222ba7eeebf865baaf47999153e8192404a24eb071772bee59dab9cef09f",
+      "snapshot": "archived-evidence",
+      "modification": "Canonical full audit regression table; no recovery-prefix substitution.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "docs/provenance/e1-family-alod-started.json",
+      "origin_scope": "legacy",
+      "origin": "results/E1-family-marking-controls-20260910/data/family-alod/started.json",
+      "origin_sha256": "a4004360627af0217ed9a28b1962e7a40e347363e2a8650a2833c9233b857fa4",
+      "sha256": "8547c948fad4d6b3db84008de66c723520db703e16677864957edf1d3401d817",
+      "snapshot": "archived-evidence",
+      "modification": "Archive execution environment; redact machine paths.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "tests/fixtures/legacy/e1-nominal-afem.csv",
+      "origin_scope": "legacy",
+      "origin": "results/E1-family-marking-controls-20260910/data/nominal-afem/family_control_samples.csv",
+      "origin_sha256": "ba08c03f913ff323488ab0b536a6f095e45547157a14a8c78618545343165fcc",
+      "sha256": "ba08c03f913ff323488ab0b536a6f095e45547157a14a8c78618545343165fcc",
+      "snapshot": "archived-evidence",
+      "modification": "Canonical full audit regression table; no recovery-prefix substitution.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "docs/provenance/e1-nominal-afem-started.json",
+      "origin_scope": "legacy",
+      "origin": "results/E1-family-marking-controls-20260910/data/nominal-afem/started.json",
+      "origin_sha256": "66ddfd50fa6cd8dbb982cd8d2cc6a5a38b990c23d4acc7ca08a33155e6c6f098",
+      "sha256": "cf68f176fa7145941f675a23ddd5b68eb12775aad12704a40da248a0578ca012",
+      "snapshot": "archived-evidence",
+      "modification": "Archive execution environment; redact machine paths.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "tests/fixtures/legacy/e1-family-afem.csv",
+      "origin_scope": "legacy",
+      "origin": "results/E1-family-marking-controls-20260910/data/family-afem/family_control_samples.csv",
+      "origin_sha256": "cfb9a344dc295f526e7f8f38f2ae00a5bc6c92f97dd77cb097985a9b9b57c80c",
+      "sha256": "165ca67b10f2295c275b4a4c267631bf24bc7485b4c0c5a97058dae3fca0e250",
+      "snapshot": "archived-evidence",
+      "modification": "Canonical full audit regression table; no recovery-prefix substitution.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "docs/provenance/e1-family-afem-started.json",
+      "origin_scope": "legacy",
+      "origin": "results/E1-family-marking-controls-20260910/data/family-afem/started.json",
+      "origin_sha256": "688037c7b2bcbafcedebe7a532a8c3fab83eebf8016bb090440602e8dc0d0d03",
+      "sha256": "c67e4f4571d38626b9a53a96b3c82524a9cddfe6d2f6b6469e1332db4a5bcd7d",
+      "snapshot": "archived-evidence",
+      "modification": "Archive execution environment; redact machine paths.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "tests/fixtures/legacy/e2-accepted.csv",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/outputs/inheritell/runs/S_PALOD-hybrid-reference-epoch_k16_r0_346d04252dd841e0/accepted_control_samples.csv",
+      "origin_sha256": "ae652a8131ef4ed2629240fdb54a09f79780cfbc6c336a10bb98157a9f7cf0ea",
+      "sha256": "ae652a8131ef4ed2629240fdb54a09f79780cfbc6c336a10bb98157a9f7cf0ea",
+      "snapshot": "archived-evidence",
+      "modification": "Only accepted states; retain independent pure diagnostics.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "docs/provenance/e1-paper-summary.json",
+      "origin_scope": "legacy",
+      "origin": "results/E1-production51-paper-20260909/summary.json",
+      "origin_sha256": "150c08af2b2c4cae7a401a30e4f98a09e2b1f5950aa0b67f834baa94dbc5a2eb",
+      "sha256": "5bb22b8de7609d15aa3a6c492d5fb77bc618d079e92a9a93f2fff05b630d63b1",
+      "snapshot": "archived-evidence",
+      "modification": "Historical evidence, not new solver results; redact machine paths.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "docs/provenance/e1-baseline-reuse.json",
+      "origin_scope": "legacy",
+      "origin": "results/E1-production51-paper-20260909/baseline_reuse_audit.json",
+      "origin_sha256": "93f385ee72536a19bac369c2732b1db6da3dcfbf37b944c97f2bf59f0ee3af40",
+      "sha256": "93f385ee72536a19bac369c2732b1db6da3dcfbf37b944c97f2bf59f0ee3af40",
+      "snapshot": "archived-evidence",
+      "modification": "Preserve baseline origin/validation evidence; redact machine paths.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "docs/provenance/e2-paper-summary.json",
+      "origin_scope": "legacy",
+      "origin": "results/E2-production-inherit-paper-20260909/summary.json",
+      "origin_sha256": "0988ea2c860f6766b908b0b8aef657a9b266b661190117c6add6e220f60673cb",
+      "sha256": "0988ea2c860f6766b908b0b8aef657a9b266b661190117c6add6e220f60673cb",
+      "snapshot": "archived-evidence",
+      "modification": "Historical evidence, not new solver results; redact machine paths.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "docs/provenance/e2-baseline-reuse.json",
+      "origin_scope": "legacy",
+      "origin": "results/E2-production-inherit-paper-20260909/baseline_reuse_audit.json",
+      "origin_sha256": "acb09919f3aadb2910bc7fa720861bb6b90dbfbbe2fc582fdf4223bf7924e837",
+      "sha256": "acb09919f3aadb2910bc7fa720861bb6b90dbfbbe2fc582fdf4223bf7924e837",
+      "snapshot": "archived-evidence",
+      "modification": "Preserve baseline origin/validation evidence; redact machine paths.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    }
+  ]
+}

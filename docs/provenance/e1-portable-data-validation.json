@@ -1,0 +1,20 @@
+{
+  "nominal-alod": {
+    "sample_rows": 2448,
+    "sha256": "97d7bf38744ace7a82e046eac93679cfae7b8eecbded2d91b204061e172767c0",
+    "server_source": "<HOST_PATH>",
+    "portable_source": "data/nominal-alod/family_control_samples.csv"
+  },
+  "family-alod": {
+    "sample_rows": 2448,
+    "sha256": "da00345742f7a09d402716cefba3478edf33c37daad702177968749e86d29073",
+    "server_source": "<HOST_PATH>",
+    "portable_source": "data/family-alod/family_control_samples.csv"
+  },
+  "family-afem": {
+    "sample_rows": 4656,
+    "sha256": "cfb9a344dc295f526e7f8f38f2ae00a5bc6c92f97dd77cb097985a9b9b57c80c",
+    "server_source": "<HOST_PATH>",
+    "portable_source": "data/family-afem/family_control_samples.csv"
+  }
+}

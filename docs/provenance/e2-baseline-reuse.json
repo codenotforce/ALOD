@@ -1,0 +1,23 @@
+{
+  "AFEM": {
+    "config": "results/E1-E2-fair-baseline-rhs-family-server-20260901/runs/E2-family-afem-H6-thetaH015-target0003-level40/S_AFEM_k16_r0_430afdb336788fd0/run.json",
+    "matching_problem_and_quadrature": true,
+    "matching_32_test_and_shift_parameters": true,
+    "states": 88,
+    "final_N_on": 189850
+  },
+  "UFEM": {
+    "config": "results/E2c-fair-baselines-production-20260901/UFEM/run.json",
+    "matching_problem_and_quadrature": true,
+    "matching_32_test_and_shift_parameters": true,
+    "states": 14,
+    "final_N_on": 1573888
+  },
+  "SLOD": {
+    "config": "results/E2c-fair-baselines-production-20260901/SLOD-H14-H15/run.json",
+    "matching_problem_and_quadrature": true,
+    "matching_32_test_and_shift_parameters": true,
+    "states": 10,
+    "final_N_on": 98560
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "time": 1789055985.2583141,
+  "cpus": [
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31
+  ],
+  "threads": 16,
+  "replay": true,
+  "audit_from_state": 96,
+  "cmd": [
+    "<HOST_PATH>",
+    "--config=<HOST_PATH>",
+    "--output-dir=<HOST_PATH>",
+    "--reference-cache-dir=<HOST_PATH>",
+    "--manuscript-baseline=<HOST_PATH>"
+  ],
+  "pid": 3188654
+}

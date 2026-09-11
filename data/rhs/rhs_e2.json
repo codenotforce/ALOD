@@ -1,0 +1,482 @@
+[
+  {
+    "sample": 0,
+    "split": "train",
+    "nominal": 1,
+    "singular_coefficient": 1.0,
+    "wave_x": -0.5,
+    "wave_y": 0.5,
+    "wave_amplitude": 0.5,
+    "wave_phase": 0.0
+  },
+  {
+    "sample": 1,
+    "split": "train",
+    "nominal": 0,
+    "singular_coefficient": 0.7654165178537369,
+    "wave_x": -0.5440619909569399,
+    "wave_y": 0.5094267583797409,
+    "wave_amplitude": 0.5612165908737724,
+    "wave_phase": 0.6200424155557467
+  },
+  {
+    "sample": 2,
+    "split": "train",
+    "nominal": 0,
+    "singular_coefficient": 1.0154165178537369,
+    "wave_x": -0.5126923503012377,
+    "wave_y": 0.4780833812922421,
+    "wave_amplitude": 0.6326451623023438,
+    "wave_phase": 0.7628420816280101
+  },
+  {
+    "sample": 3,
+    "split": "train",
+    "nominal": 0,
+    "singular_coefficient": 0.8904165178537369,
+    "wave_x": -0.47434145008721595,
+    "wave_y": 0.4714271793227012,
+    "wave_amplitude": 0.7040737337309153,
+    "wave_phase": -0.6521727912698718
+  },
+  {
+    "sample": 4,
+    "split": "train",
+    "nominal": 0,
+    "singular_coefficient": 1.1404165178537369,
+    "wave_x": -0.4623097105235547,
+    "wave_y": 0.5297916544958315,
+    "wave_amplitude": 0.2857063867921398,
+    "wave_phase": -0.5093731251976085
+  },
+  {
+    "sample": 5,
+    "split": "train",
+    "nominal": 0,
+    "singular_coefficient": 0.8279165178537369,
+    "wave_x": -0.5046400692886479,
+    "wave_y": 0.5125275985641365,
+    "wave_amplitude": 0.35713495822071123,
+    "wave_phase": -0.36657345912534517
+  },
+  {
+    "sample": 6,
+    "split": "train",
+    "nominal": 0,
+    "singular_coefficient": 1.0779165178537369,
+    "wave_x": -0.53178270824493,
+    "wave_y": 0.4987101322786427,
+    "wave_amplitude": 0.4285635296492827,
+    "wave_phase": -0.22377379305308187
+  },
+  {
+    "sample": 7,
+    "split": "train",
+    "nominal": 0,
+    "singular_coefficient": 0.9529165178537369,
+    "wave_x": -0.5116063274005804,
+    "wave_y": 0.4586426451556097,
+    "wave_amplitude": 0.4999921010778541,
+    "wave_phase": -0.08097412698081852
+  },
+  {
+    "sample": 8,
+    "split": "train",
+    "nominal": 0,
+    "singular_coefficient": 1.2029165178537369,
+    "wave_x": -0.4822245110167408,
+    "wave_y": 0.4881559830306007,
+    "wave_amplitude": 0.5714206725064255,
+    "wave_phase": 0.061825539091444615
+  },
+  {
+    "sample": 9,
+    "split": "train",
+    "nominal": 0,
+    "singular_coefficient": 0.7966665178537369,
+    "wave_x": -0.4782504754342272,
+    "wave_y": 0.5285751686095037,
+    "wave_amplitude": 0.6428492439349969,
+    "wave_phase": 0.20462520516370775
+  },
+  {
+    "sample": 10,
+    "split": "train",
+    "nominal": 0,
+    "singular_coefficient": 1.0466665178537369,
+    "wave_x": -0.5262454884036495,
+    "wave_y": 0.5378693774927177,
+    "wave_amplitude": 0.7142778153635683,
+    "wave_phase": 0.3474248712359713
+  },
+  {
+    "sample": 11,
+    "split": "train",
+    "nominal": 0,
+    "singular_coefficient": 0.9216665178537369,
+    "wave_x": -0.5259469466780782,
+    "wave_y": 0.4922036878956692,
+    "wave_amplitude": 0.29591046842479285,
+    "wave_phase": 0.49022453730823456
+  },
+  {
+    "sample": 12,
+    "split": "train",
+    "nominal": 0,
+    "singular_coefficient": 1.1716665178537369,
+    "wave_x": -0.5008816006856857,
+    "wave_y": 0.4604199211988215,
+    "wave_amplitude": 0.36733903985336425,
+    "wave_phase": 0.633024203380498
+  },
+  {
+    "sample": 13,
+    "split": "train",
+    "nominal": 0,
+    "singular_coefficient": 0.8591665178537369,
+    "wave_x": -0.45374992508568357,
+    "wave_y": 0.4838252121673899,
+    "wave_amplitude": 0.4387676112819357,
+    "wave_phase": 0.7758238694527613
+  },
+  {
+    "sample": 14,
+    "split": "train",
+    "nominal": 0,
+    "singular_coefficient": 1.1091665178537369,
+    "wave_x": -0.49359981716409396,
+    "wave_y": 0.5151690876801203,
+    "wave_amplitude": 0.510196182710507,
+    "wave_phase": -0.7808105069878611
+  },
+  {
+    "sample": 15,
+    "split": "train",
+    "nominal": 0,
+    "singular_coefficient": 0.9841665178537369,
+    "wave_x": -0.5251279929831247,
+    "wave_y": 0.5217481232145115,
+    "wave_amplitude": 0.5816247541390784,
+    "wave_phase": -0.6380108409155978
+  },
+  {
+    "sample": 16,
+    "split": "test",
+    "nominal": 0,
+    "singular_coefficient": 0.8778489977121353,
+    "wave_x": -0.46712415319452555,
+    "wave_y": 0.46330855140952304,
+    "wave_amplitude": 0.5462191954736537,
+    "wave_phase": 0.6870589777694172
+  },
+  {
+    "sample": 17,
+    "split": "test",
+    "nominal": 0,
+    "singular_coefficient": 1.1278489977121353,
+    "wave_x": -0.4944178525871123,
+    "wave_y": 0.5044022861366437,
+    "wave_amplitude": 0.6176477669022251,
+    "wave_phase": -0.7279558951284649
+  },
+  {
+    "sample": 18,
+    "split": "test",
+    "nominal": 0,
+    "singular_coefficient": 0.8153489977121353,
+    "wave_x": -0.5102952291566206,
+    "wave_y": 0.5278905375156897,
+    "wave_amplitude": 0.6890763383307965,
+    "wave_phase": -0.5851562290562016
+  },
+  {
+    "sample": 19,
+    "split": "test",
+    "nominal": 0,
+    "singular_coefficient": 1.0653489977121353,
+    "wave_x": -0.5414069483238546,
+    "wave_y": 0.4983654388538838,
+    "wave_amplitude": 0.27070899139202104,
+    "wave_phase": -0.4423565629839383
+  },
+  {
+    "sample": 20,
+    "split": "test",
+    "nominal": 0,
+    "singular_coefficient": 0.9403489977121353,
+    "wave_x": -0.5049151514597856,
+    "wave_y": 0.48255982921891993,
+    "wave_amplitude": 0.34213756282059243,
+    "wave_phase": -0.2995568969116749
+  },
+  {
+    "sample": 21,
+    "split": "test",
+    "nominal": 0,
+    "singular_coefficient": 1.1903489977121353,
+    "wave_x": -0.47165750736496576,
+    "wave_y": 0.4810697407489429,
+    "wave_amplitude": 0.4135661342491639,
+    "wave_phase": -0.1567572308394115
+  },
+  {
+    "sample": 22,
+    "split": "test",
+    "nominal": 0,
+    "singular_coefficient": 0.7840989977121353,
+    "wave_x": -0.4729089524398679,
+    "wave_y": 0.5355114077376157,
+    "wave_amplitude": 0.4849947056777353,
+    "wave_phase": -0.013957564767148156
+  },
+  {
+    "sample": 23,
+    "split": "test",
+    "nominal": 0,
+    "singular_coefficient": 1.0340989977121353,
+    "wave_x": -0.514001183652948,
+    "wave_y": 0.5202500099960486,
+    "wave_amplitude": 0.5564232771063067,
+    "wave_phase": 0.12884210130511498
+  },
+  {
+    "sample": 24,
+    "split": "test",
+    "nominal": 0,
+    "singular_coefficient": 0.9090989977121353,
+    "wave_x": -0.5363470931299289,
+    "wave_y": 0.48912258289568433,
+    "wave_amplitude": 0.6278518485348781,
+    "wave_phase": 0.27164176737737833
+  },
+  {
+    "sample": 25,
+    "split": "test",
+    "nominal": 0,
+    "singular_coefficient": 1.1590989977121353,
+    "wave_x": -0.5011143529307164,
+    "wave_y": 0.45233952441764647,
+    "wave_amplitude": 0.6992804199634496,
+    "wave_phase": 0.41444143344964157
+  },
+  {
+    "sample": 26,
+    "split": "test",
+    "nominal": 0,
+    "singular_coefficient": 0.8465989977121353,
+    "wave_x": -0.4887112528043132,
+    "wave_y": 0.49603802166682354,
+    "wave_amplitude": 0.2809130730246741,
+    "wave_phase": 0.557241099521905
+  },
+  {
+    "sample": 27,
+    "split": "test",
+    "nominal": 0,
+    "singular_coefficient": 1.0965989977121353,
+    "wave_x": -0.4878206866413216,
+    "wave_y": 0.5287772609017108,
+    "wave_amplitude": 0.3523416444532455,
+    "wave_phase": 0.7000407655941685
+  },
+  {
+    "sample": 28,
+    "split": "test",
+    "nominal": 0,
+    "singular_coefficient": 0.9715989977121353,
+    "wave_x": -0.5321361647863936,
+    "wave_y": 0.527875915501542,
+    "wave_amplitude": 0.42377021588181696,
+    "wave_phase": -0.7149741073037137
+  },
+  {
+    "sample": 29,
+    "split": "test",
+    "nominal": 0,
+    "singular_coefficient": 1.2215989977121353,
+    "wave_x": -0.5175745534419959,
+    "wave_y": 0.4894148247698541,
+    "wave_amplitude": 0.49519878731038836,
+    "wave_phase": -0.5721744412314503
+  },
+  {
+    "sample": 30,
+    "split": "test",
+    "nominal": 0,
+    "singular_coefficient": 0.7684739977121353,
+    "wave_x": -0.49199679098994425,
+    "wave_y": 0.4655008283836675,
+    "wave_amplitude": 0.5666273587389598,
+    "wave_phase": -0.42937477515918704
+  },
+  {
+    "sample": 31,
+    "split": "test",
+    "nominal": 0,
+    "singular_coefficient": 1.0184739977121353,
+    "wave_x": -0.4544796618112851,
+    "wave_y": 0.49606600188228894,
+    "wave_amplitude": 0.6380559301675311,
+    "wave_phase": -0.28657510908692374
+  },
+  {
+    "sample": 32,
+    "split": "test",
+    "nominal": 0,
+    "singular_coefficient": 0.8934739977121353,
+    "wave_x": -0.47417802608375664,
+    "wave_y": 0.505649274660086,
+    "wave_amplitude": 0.7094845015961027,
+    "wave_phase": -0.1437754430146604
+  },
+  {
+    "sample": 33,
+    "split": "test",
+    "nominal": 0,
+    "singular_coefficient": 1.1434739977121353,
+    "wave_x": -0.4961401248335794,
+    "wave_y": 0.5389502674977878,
+    "wave_amplitude": 0.2911171546573272,
+    "wave_phase": -0.000975776942397033
+  },
+  {
+    "sample": 34,
+    "split": "test",
+    "nominal": 0,
+    "singular_coefficient": 0.8309739977121353,
+    "wave_x": -0.5445470193103763,
+    "wave_y": 0.5195171303818944,
+    "wave_amplitude": 0.3625457260858986,
+    "wave_phase": 0.1418238891298661
+  },
+  {
+    "sample": 35,
+    "split": "test",
+    "nominal": 0,
+    "singular_coefficient": 1.0809739977121353,
+    "wave_x": -0.5102053943867778,
+    "wave_y": 0.4885293590604708,
+    "wave_amplitude": 0.43397429751447003,
+    "wave_phase": 0.28462355520212945
+  },
+  {
+    "sample": 36,
+    "split": "test",
+    "nominal": 0,
+    "singular_coefficient": 0.9559739977121353,
+    "wave_x": -0.48348372539071965,
+    "wave_y": 0.47178171365023286,
+    "wave_amplitude": 0.5054028689430414,
+    "wave_phase": 0.4274232212743929
+  },
+  {
+    "sample": 37,
+    "split": "test",
+    "nominal": 0,
+    "singular_coefficient": 1.2059739977121353,
+    "wave_x": -0.46104823504275383,
+    "wave_y": 0.5196252987629588,
+    "wave_amplitude": 0.5768314403716128,
+    "wave_phase": 0.5702228873466562
+  },
+  {
+    "sample": 38,
+    "split": "test",
+    "nominal": 0,
+    "singular_coefficient": 0.7997239977121353,
+    "wave_x": -0.5034435378198435,
+    "wave_y": 0.5223974441223628,
+    "wave_amplitude": 0.6482600118001842,
+    "wave_phase": 0.7130225534189196
+  },
+  {
+    "sample": 39,
+    "split": "test",
+    "nominal": 0,
+    "singular_coefficient": 1.0497239977121353,
+    "wave_x": -0.5362210835865872,
+    "wave_y": 0.5059050735031715,
+    "wave_amplitude": 0.7196885832287556,
+    "wave_phase": -0.7019923194789626
+  },
+  {
+    "sample": 40,
+    "split": "shift",
+    "nominal": 0,
+    "singular_coefficient": 1.0,
+    "wave_x": -0.45,
+    "wave_y": 0.5,
+    "wave_amplitude": 0.5,
+    "wave_phase": 0.0
+  },
+  {
+    "sample": 41,
+    "split": "shift",
+    "nominal": 0,
+    "singular_coefficient": 1.0,
+    "wave_x": -0.46464466094067264,
+    "wave_y": 0.5353553390593274,
+    "wave_amplitude": 0.5,
+    "wave_phase": 0.0
+  },
+  {
+    "sample": 42,
+    "split": "shift",
+    "nominal": 0,
+    "singular_coefficient": 1.0,
+    "wave_x": -0.5,
+    "wave_y": 0.55,
+    "wave_amplitude": 0.5,
+    "wave_phase": 0.0
+  },
+  {
+    "sample": 43,
+    "split": "shift",
+    "nominal": 0,
+    "singular_coefficient": 1.0,
+    "wave_x": -0.5353553390593274,
+    "wave_y": 0.5353553390593274,
+    "wave_amplitude": 0.5,
+    "wave_phase": 0.0
+  },
+  {
+    "sample": 44,
+    "split": "shift",
+    "nominal": 0,
+    "singular_coefficient": 1.0,
+    "wave_x": -0.55,
+    "wave_y": 0.5,
+    "wave_amplitude": 0.5,
+    "wave_phase": 0.0
+  },
+  {
+    "sample": 45,
+    "split": "shift",
+    "nominal": 0,
+    "singular_coefficient": 1.0,
+    "wave_x": -0.5353553390593274,
+    "wave_y": 0.46464466094067264,
+    "wave_amplitude": 0.5,
+    "wave_phase": 0.0
+  },
+  {
+    "sample": 46,
+    "split": "shift",
+    "nominal": 0,
+    "singular_coefficient": 1.0,
+    "wave_x": -0.5,
+    "wave_y": 0.45,
+    "wave_amplitude": 0.5,
+    "wave_phase": 0.0
+  },
+  {
+    "sample": 47,
+    "split": "shift",
+    "nominal": 0,
+    "singular_coefficient": 1.0,
+    "wave_x": -0.46464466094067264,
+    "wave_y": 0.46464466094067264,
+    "wave_amplitude": 0.5,
+    "wave_phase": 0.0
+  }
+]

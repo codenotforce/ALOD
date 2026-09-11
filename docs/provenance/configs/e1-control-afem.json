@@ -1,0 +1,79 @@
+{
+  "C0_usr": 1.6358263950741063,
+  "C1_usr": 1e-12,
+  "ambient_mesh": "reference-shadow",
+  "boundary_beta": 1,
+  "build_hash": "E1-family-marking-AFEM-control-20260910",
+  "c_H": 100,
+  "case": "R1",
+  "afem_exact_relative_energy_stop_tolerance": 0.0,
+  "ell0": 0,
+  "ell_max": 0,
+  "git_commit": "WORKTREE@baseline-rhs-family-20260901",
+  "initial_coarse_level": 6,
+  "kernel_riesz_solver": "saddle_point",
+  "manuscript_sha256": "b7fa79f0f7c90d5a9dcb2d2938635e0ed3ccb13224f4adc4dcd9782954fb7874",
+  "maximum_patch_threads": 16,
+  "maximum_reference_level": 0,
+  "minimum_reference_level_gap": 0,
+  "method": "AFEM",
+  "patch_solver_kind": "direct_saddle",
+  "patch_symbolic_cache_slots": 1,
+  "patch_reuse_identical_factorization": false,
+  "petrov_mode": "two_sided",
+  "plateau_diagnostic": {
+    "maximum_relative_oscillation": 0.15,
+    "minimum_geometric_mean_ratio": 0.9,
+    "window_steps": 3
+  },
+  "practical_stop_tolerance": 0.004,
+  "quadrature": {
+    "base_triangle_order": 12,
+    "gaussian_triangle_order": 16,
+    "max_recursive_subdivisions": 8,
+    "singular_triangle_order": 24
+  },
+  "reference_epoch": 0,
+  "reference_adequacy": {
+    "enabled": false,
+    "maximum_terminal_error_fraction": 0.25,
+    "refinement_levels": 1
+  },
+  "reference_level": 40,
+  "reference_refresh_level_gap": 0,
+  "reference_mesh": "uniform-nvb",
+  "relative_energy_targets": [
+    0.1,
+    0.05,
+    0.02,
+    0.01
+  ],
+  "repeat_index": 0,
+  "rho_star": 0.25,
+  "schema_version": 4,
+  "baseline_rhs_family_diagnostic": true,
+  "baseline_rhs_family_seed": 20260901,
+  "baseline_rhs_family_test_seed": 20260902,
+  "baseline_rhs_family_training_samples": 16,
+  "baseline_rhs_family_test_samples": 24,
+  "baseline_rhs_family_shift_audit_samples": 8,
+  "theta_H": 0.15,
+  "theta_loc": 1.961323606684523,
+  "timing_repeats": 1,
+  "trajectory_policy": "fixed_work_horizon",
+  "tolerances": {
+    "eigen_relative_residual": 1e-10,
+    "interpolation_right_inverse": 1e-09,
+    "linear_relative_residual": 1e-10,
+    "prolongation_composition": 1e-10
+  },
+  "wavenumber": 16,
+  "work_limits": {
+    "maximum_H_steps": 96,
+    "maximum_ambient_elements": 16000000,
+    "maximum_coarse_elements": 1200000,
+    "maximum_iterations": 500,
+    "maximum_unknowns": 500000,
+    "maximum_wall_seconds": 1209600
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "name": "nominal-afem",
+  "kind": "afem",
+  "marking": "nominal",
+  "legacy": false,
+  "cpus": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "threads": 16,
+  "pid": 3192898,
+  "pgid": 3192898,
+  "started": 1789057958.8180723,
+  "cmd": [
+    "<HOST_PATH>",
+    "--config=<HOST_PATH>",
+    "--output-dir=<HOST_PATH>",
+    "--reference-cache-dir=<HOST_PATH>",
+    "--manuscript-baseline=<HOST_PATH>"
+  ],
+  "environment": {
+    "OMP_NUM_THREADS": "16",
+    "OMP_DYNAMIC": "FALSE",
+    "OMP_PROC_BIND": "false",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "BLIS_NUM_THREADS": "1",
+    "E1_FAMILY_CONTROL": "1",
+    "E1_FAMILY_MARKING": "nominal",
+    "E1_CONTROL_OUTPUT": "<HOST_PATH>"
+  }
+}

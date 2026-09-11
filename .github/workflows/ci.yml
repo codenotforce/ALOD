@@ -1,0 +1,12 @@
+name: Migration smoke
+on: [push, pull_request]
+jobs:
+  smoke:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install numerical dependencies
+        run: sudo apt-get update && sudo apt-get install -y cmake g++ libeigen3-dev libsuitesparse-dev
+      - run: cmake --preset release
+      - run: cmake --build --preset release
+      - run: ctest --preset release

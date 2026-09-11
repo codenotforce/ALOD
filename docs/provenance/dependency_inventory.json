@@ -1,0 +1,914 @@
+[
+  {
+    "snapshot": "E1-controls",
+    "scope": "Conservative all-source quoted-include inventory, not a pruned linker closure.",
+    "root": "results/E1-family-marking-controls-20260910/reproducibility/production-source",
+    "files": [
+      {
+        "path": "benchmarks/bench_helmholtz_adaptive_paper.cpp",
+        "sha256": "c8d3491f0d438d7d89a43565ae5f6442b96868d09c44914bcd8f1557807987fe"
+      },
+      {
+        "path": "benchmarks/family_control_afem.inc",
+        "sha256": "7775268d59e4f813e32f3370822140ac14aa62275a486afb51fd95795ae8006e"
+      },
+      {
+        "path": "benchmarks/family_control_common.h",
+        "sha256": "18b46034b590c47dd0dcba976f1a60d2ba219314bc274cc0b1b80e091006de12"
+      },
+      {
+        "path": "include/fem/assemble_dg.h",
+        "sha256": "ee9931f8f78890af1ba632813a5203bcfa6d5d378e10e90c8cccb13cf213d321"
+      },
+      {
+        "path": "include/fem/hp_triangle.h",
+        "sha256": "9b35d860971ff0fa50ec04511c711d8391cc60648668d6da0c2deb867f3a5396"
+      },
+      {
+        "path": "include/helmholtz/adaptive/candidate_dual.h",
+        "sha256": "bf311bc211c6ec76c194ad321bf06e42c22a15c2670e0bfc55cdb76c1b80503a"
+      },
+      {
+        "path": "include/helmholtz/adaptive/candidate_flux.h",
+        "sha256": "d1415302958c93303a048cb5c5535b22c308c152b8b115bb19252f286bca8fd2"
+      },
+      {
+        "path": "include/helmholtz/adaptive/certificates.h",
+        "sha256": "cb71c3366478d983e3f146191a45605bab7f96978256a9e77eaaa14393627ee5"
+      },
+      {
+        "path": "include/helmholtz/adaptive/certified_driver.h",
+        "sha256": "4b55b5a2bf2c897c7de06854a070e97a9f1d6f362f4aa702da0defdc7186241f"
+      },
+      {
+        "path": "include/helmholtz/adaptive/driver.h",
+        "sha256": "57b7b07f012d982aa943fed93a0051c4e6b56cb2fe481f16c05abe295a041a6e"
+      },
+      {
+        "path": "include/helmholtz/adaptive/error_control.h",
+        "sha256": "ad06fee602166696bf730db30d4d2bce4f5d733d5e876bd36252edab91ce5c94"
+      },
+      {
+        "path": "include/helmholtz/adaptive/estimator.h",
+        "sha256": "4a0e5d206c48f81041ef72ef3bdc2ef0d10b23dea193235cc2f66add5916e0aa"
+      },
+      {
+        "path": "include/helmholtz/adaptive/hierarchy.h",
+        "sha256": "503a1e29a0dce8655abedb06ac7508a1b5b17ffe4d712309cc5f2e676556f725"
+      },
+      {
+        "path": "include/helmholtz/adaptive/kernel_residual.h",
+        "sha256": "0a762763dfa694a0ace48cfe156d43890662f48ab9980647c699b70d440df77f"
+      },
+      {
+        "path": "include/helmholtz/adaptive/numerical_backend.h",
+        "sha256": "975bd0d3b6b94a25bdc1ecbec13f66af75fd30aa497dfe54a0b28f4d70dc7569"
+      },
+      {
+        "path": "include/helmholtz/adaptive/practical_driver.h",
+        "sha256": "9b9b0aa752fd3fe956281dd8947d4d16389a66e0f9ed58fce7c9b6c3e9e76bb2"
+      },
+      {
+        "path": "include/helmholtz/adaptive/reference_epoch_driver.h",
+        "sha256": "2cf0caba2e2d645f5b4e30ff6a6d0bd868971373f14131265657ca0ff3adebe7"
+      },
+      {
+        "path": "include/helmholtz/adaptive/reference_retraction.h",
+        "sha256": "f29c26e0cc49fecdf6048bcb12c73cd008f9e19961752fe8ee6af6ca9b7e9043"
+      },
+      {
+        "path": "include/helmholtz/adaptive/reliability.h",
+        "sha256": "7342c83e1305404752359faa1aa8d64c50fb67e5b41eb51ab24d70f6048096ab"
+      },
+      {
+        "path": "include/helmholtz/adaptive/singularity_hybrid.h",
+        "sha256": "c59da5416069b7a07bd04e73d5a2185fbfdfd6a9c57ce75bdc3679519bc2eb8b"
+      },
+      {
+        "path": "include/helmholtz/adaptive/verified_spectrum.h",
+        "sha256": "41fc4007534339b40f64aab845d394766d190429e94130bcacb48745b4f913f0"
+      },
+      {
+        "path": "include/helmholtz/benchmarks/paper_cases.h",
+        "sha256": "90c72800b51efba45e69e1c95d97123b2b387eaac3dcdbaf898b2358511536cb"
+      },
+      {
+        "path": "include/helmholtz/boundary.h",
+        "sha256": "9adc75b5a5e5229748d25253e2da662eede945955c0a38e6c1f17b91b90af137"
+      },
+      {
+        "path": "include/helmholtz/coarse_schwarz.h",
+        "sha256": "c65b5a64b8f8cfff3ca39e7484c58bfee057bbbe6831f6ab3a47dfe241a8c683"
+      },
+      {
+        "path": "include/helmholtz/corrector.h",
+        "sha256": "7bfb6e6332a130dffaebee6d559d3f8cf6803acfcba675002ab378bc00880b9e"
+      },
+      {
+        "path": "include/helmholtz/experiments/paper_config.h",
+        "sha256": "c4af67ae9f938555d660d99e6a78c864801aa344f2b044b42bfe5095ba2f4c11"
+      },
+      {
+        "path": "include/helmholtz/experiments/reference_epoch_runner.h",
+        "sha256": "895728bd996e23ee55bd7079f5da67ea8b69543444ff21dcc0b7f1b427ff7542"
+      },
+      {
+        "path": "include/helmholtz/experiments/reference_solution_cache.h",
+        "sha256": "ea9c1bac4495b9c272c6531c6247f7b2836fd4b8f2948e23c5b31bebb1115c39"
+      },
+      {
+        "path": "include/helmholtz/hp_interpolation.h",
+        "sha256": "e81a2b05df04fe0ec26f3a603302167d5eda466ccf79f6911f9b0c4faad6f14e"
+      },
+      {
+        "path": "include/helmholtz/hp_model.h",
+        "sha256": "38a653e5d2a21e3e2ced62625d7a3150902036b7fdd327883a55af28fc955c8e"
+      },
+      {
+        "path": "include/helmholtz/hp_operators.h",
+        "sha256": "82e5d26b9c4b8974ed50114120679146f22b14b46ffff72ec5a155818c4460ce"
+      },
+      {
+        "path": "include/helmholtz/hp_patch.h",
+        "sha256": "afd9a82d9c26af75c4b511f62832a0ddbc1ce2ffa8c0504acf1e85627153102b"
+      },
+      {
+        "path": "include/helmholtz/manufactured.h",
+        "sha256": "1835f327c7c1e7a68d65b2929fa23a0af1e712689fc4ad6780ecaa86f8d99f19"
+      },
+      {
+        "path": "include/helmholtz/model.h",
+        "sha256": "4513ff590ece454664fe01eaf7931e1c61785435d0d8056f72faa9dddf344743"
+      },
+      {
+        "path": "include/helmholtz/operators.h",
+        "sha256": "331c3356680967d23a1f59f14cd888977944a6d49a4a8deff76c5e67c179b0ec"
+      },
+      {
+        "path": "include/helmholtz/patch_hierarchy.h",
+        "sha256": "54fb56bdfdaa576e6079d3ad1a3ab813ca244028313fe4b54ec08705171cc740"
+      },
+      {
+        "path": "include/helmholtz/patch_multigrid.h",
+        "sha256": "cdacc0cb53fae0b2a5a050f54e04df2c813d503b1abfa8bd6e3c0e1d00ca2181"
+      },
+      {
+        "path": "include/helmholtz/patch_solver.h",
+        "sha256": "0614d580c1209c5ff19fba0e1fef2a1c735be1223ef652c8858a45494c64e566"
+      },
+      {
+        "path": "include/helmholtz/patch_system.h",
+        "sha256": "83216462eceb15de61a8adcd8dd8b0d6748586672b81a58e83668f707a1ec0f0"
+      },
+      {
+        "path": "include/helmholtz/quadrature.h",
+        "sha256": "98f703552e1030ae62b3920f646500c659399e982cd8aba494a915cc1b97eb67"
+      },
+      {
+        "path": "include/helmholtz/schwarz_local_solver.h",
+        "sha256": "1092beeb3d7131e70e15b5e193549632c31c8990d1aae566903a4351907c9c56"
+      },
+      {
+        "path": "include/helmholtz/schwarz_patch.h",
+        "sha256": "a7e2ef57979e49ecc44ae682d3dae7d91781ae897fba51d750ccbcd96aa7c60b"
+      },
+      {
+        "path": "include/helmholtz/shifted_laplacian.h",
+        "sha256": "8b54d1445efbd62a8537265d6110823bdf955d519496f8dbf0e120a3f1a8707a"
+      },
+      {
+        "path": "include/helmholtz/two_level_schwarz.h",
+        "sha256": "d30fcb77b7e9de5388d423ed67ed6be206fcf196811bfbce195c3cb3fc872638"
+      },
+      {
+        "path": "include/helmholtz/types.h",
+        "sha256": "1eea9a993e5101959b566194bb2cc1b1c676ce8b71b77de099f9170f6e55b5c1"
+      },
+      {
+        "path": "include/io/vtk_writer.h",
+        "sha256": "4231fca10cf36df171f14b35aaabe0f8992bb1fbf4d10809ae475005171ca905"
+      },
+      {
+        "path": "include/lod/corrector.h",
+        "sha256": "8cf2a13b9ba3054b11fbb374695092bce8762407fa9f10a6d5d547b70aa52ad8"
+      },
+      {
+        "path": "include/lod/lod_model.h",
+        "sha256": "1d4f4c88a16bf392e49efc3d8b0b333dceed1840f70410a8d2b3aab791a53646"
+      },
+      {
+        "path": "include/lod/patches.h",
+        "sha256": "f88fc07eab2de70a956fa899f37cd85b9bd134531427540bb3517de4cc58bb90"
+      },
+      {
+        "path": "include/lod/quasi_interp.h",
+        "sha256": "6c0104ac35fac4d919e18348c37faf651fc1538a77f0b80ac5b7a34f25c8d4c5"
+      },
+      {
+        "path": "include/mesh/refine.h",
+        "sha256": "8880891d3c0c5d455cb202ec7a319805912904dc91fc5af408d069982841f031"
+      },
+      {
+        "path": "include/mesh/types.h",
+        "sha256": "285057ac96e2efd5de4832b213fb89a254158f23635d357b736761f9c92783ab"
+      },
+      {
+        "path": "include/solver/cholmod_wrapper.h",
+        "sha256": "b8db963749f02d3eb0557b4b51bef99a7de318f7eba3843cc4792871fb57bc80"
+      },
+      {
+        "path": "include/solver/coarse_solve.h",
+        "sha256": "52efc0f1141fcfeb42ff678d569ae5dad36d4a6e9da2e1586566eb2cd6be2211"
+      },
+      {
+        "path": "include/solver/lod_reuse.h",
+        "sha256": "c0d467a123dd88d32146ff5d91c2852d6a154f6fd21ff3cb570a8a8bd4bacd62"
+      },
+      {
+        "path": "include/solver/right_gmres.h",
+        "sha256": "1fd55970b71f8146e8e2a03eb50eedb16fea588d05d707392fd3581705b13b39"
+      },
+      {
+        "path": "src/fem/assemble_dg.cpp",
+        "sha256": "a735b99b810b31be5523df216aafd49a0abd5ce92183b574935dbdc3ba22d2b2"
+      },
+      {
+        "path": "src/fem/hp_triangle.cpp",
+        "sha256": "94b63a470c2cc082e3030159529f85361290bfa2ad1377eefa870df010a2e003"
+      },
+      {
+        "path": "src/helmholtz/adaptive/additive_kernel_riesz.inc",
+        "sha256": "94d744dd73d6719334dac70753ab1de09e4992585f7c0de24cd1ef20bd3870a4"
+      },
+      {
+        "path": "src/helmholtz/adaptive/candidate_dual.cpp",
+        "sha256": "9519579ded9501bf0ec04bba2c67d91f0abf959a5ef2a3939ba236e431bd50a3"
+      },
+      {
+        "path": "src/helmholtz/adaptive/candidate_flux.cpp",
+        "sha256": "e644be0c31dac8f6e58bdebf57aa6668978ee2b1d0877393265c69d2ab654492"
+      },
+      {
+        "path": "src/helmholtz/adaptive/certificates.cpp",
+        "sha256": "d47d44a2977d9004ce31897e78eb6e992c6758f23cdf1065345c332d40705cb2"
+      },
+      {
+        "path": "src/helmholtz/adaptive/certified_driver.cpp",
+        "sha256": "872b64463ff74d91dc01ccadd898de0b8c466a0a1054f9a32b36b57afd72ca9f"
+      },
+      {
+        "path": "src/helmholtz/adaptive/driver.cpp",
+        "sha256": "d54ed77ca1a3084d7a5a2e4bf8ba5ab83a816ddd6c2eff86834008589d62e5b4"
+      },
+      {
+        "path": "src/helmholtz/adaptive/error_control.cpp",
+        "sha256": "a9629c4e65773a84a43d0feb0c55f738f801daccad48becb50eddb65966cacc6"
+      },
+      {
+        "path": "src/helmholtz/adaptive/estimator.cpp",
+        "sha256": "ad2d7d388afb4a91d19db4c645dc971aabc270bb9e9daadf7f800afe34b9c3c9"
+      },
+      {
+        "path": "src/helmholtz/adaptive/hierarchy.cpp",
+        "sha256": "34fc7588390ba2827d0514a0dbe6aef36f4352458ebca54e33bc70f7a9cad702"
+      },
+      {
+        "path": "src/helmholtz/adaptive/kernel_residual.cpp",
+        "sha256": "08c9a94ae0dc6dadcf6ba08089908d3fccbab7b6e0c5c46941623ffa8cab3cab"
+      },
+      {
+        "path": "src/helmholtz/adaptive/numerical_backend.cpp",
+        "sha256": "cb4a3f7ef62a4ef9ae3916a43cb0bfb5c701a371ab1cc87414605af031fcd75e"
+      },
+      {
+        "path": "src/helmholtz/adaptive/practical_driver.cpp",
+        "sha256": "ebdc221a903f06a79cbaef4ded1f1f3aa7b224ad675dc3d773cba4ea44a87f47"
+      },
+      {
+        "path": "src/helmholtz/adaptive/reference_epoch_driver.cpp",
+        "sha256": "76402bf95c1b1e4e1fa18d10b43e0727c8632d28b4fc3297da325418fbba78ef"
+      },
+      {
+        "path": "src/helmholtz/adaptive/reference_retraction.cpp",
+        "sha256": "b5258f6d4f1cd44a8ed867bfaf3426a552dee67cdf076a59903d751344c5744c"
+      },
+      {
+        "path": "src/helmholtz/adaptive/reliability.cpp",
+        "sha256": "b267a6b8eddc6d65b90cf53be45a0678dd9287004007284c8e994a9383e171fd"
+      },
+      {
+        "path": "src/helmholtz/adaptive/singularity_hybrid.cpp",
+        "sha256": "661999b82ec268797145554e2a612ccdb8300aead8c8a9d42a0663c254324aa3"
+      },
+      {
+        "path": "src/helmholtz/adaptive/verified_spectrum.cpp",
+        "sha256": "19ed6d6dfa340887b378bc55224e0ba6d4f4ce72232792f91c7fa388d02172cc"
+      },
+      {
+        "path": "src/helmholtz/benchmarks/paper_cases.cpp",
+        "sha256": "8c9a17647d2ae6275ca49f4de53cb1e01407dce76b3098b403d1fb6bf3abed20"
+      },
+      {
+        "path": "src/helmholtz/boundary.cpp",
+        "sha256": "1560e20d597929c671fd93b29817a1cdbeb68bd73f4a9f2f4647b1241d8ba14a"
+      },
+      {
+        "path": "src/helmholtz/coarse_schwarz.cpp",
+        "sha256": "53c9488a7ea7443451cead9d7f0310d8b1c6277bc5aa764c42076f094549b353"
+      },
+      {
+        "path": "src/helmholtz/corrector.cpp",
+        "sha256": "1c2e021408170f97373eb21cf0f1250f72d14cccb50340fca4759128ff0751d0"
+      },
+      {
+        "path": "src/helmholtz/corrector_pipeline.cpp",
+        "sha256": "959ca3e026a69a56db79709369a70dae18b7816d3d78e9c1ffc2d8af4f47d4b0"
+      },
+      {
+        "path": "src/helmholtz/experiments/paper_config.cpp",
+        "sha256": "d8e403a3a63d318133ff8bf8f5fde5b1779b846c428afd5fdaed0f4a5530c8c3"
+      },
+      {
+        "path": "src/helmholtz/experiments/reference_solution_cache.cpp",
+        "sha256": "e15d60b1264db0984d2234adf9d8bcf0ef339a8e24932738c8c857ea9752dd20"
+      },
+      {
+        "path": "src/helmholtz/hp_fem.cpp",
+        "sha256": "108e978f7e33ada35faf92c5b3d2bddaffde771813d85f6fd463c522e611a829"
+      },
+      {
+        "path": "src/helmholtz/hp_interpolation.cpp",
+        "sha256": "8bbbf943ed6fc29989c678920b9538298f61aaf9f11367e75de628b38bc89fef"
+      },
+      {
+        "path": "src/helmholtz/hp_model.cpp",
+        "sha256": "be38395588caa1969b4c2f2fc1b1dfe474e92d2a2976b0cc9fe0e15a349be511"
+      },
+      {
+        "path": "src/helmholtz/hp_operators.cpp",
+        "sha256": "fd002b24a01e57270633c135d36b0041f62f09aaa543c384570de96cde7c169d"
+      },
+      {
+        "path": "src/helmholtz/hp_patch.cpp",
+        "sha256": "333a40c00a8400bfdfaba7bdff9abab69e51c05995ad184fafffe084076cfc01"
+      },
+      {
+        "path": "src/helmholtz/manufactured.cpp",
+        "sha256": "b70fa6b50b3b20ec0601b7823726a387eec6f6cef034a239f6070efceca07e0b"
+      },
+      {
+        "path": "src/helmholtz/model.cpp",
+        "sha256": "25d203971759485420f7dd29d7e6abb8cf9a57b39b2b8281ee44850aa7983320"
+      },
+      {
+        "path": "src/helmholtz/operators.cpp",
+        "sha256": "35c4f1ba9dc60b248be7e04a219f5a630e954718d8dab1be63583f8d115d296f"
+      },
+      {
+        "path": "src/helmholtz/patch_hierarchy.cpp",
+        "sha256": "673dfe353ebdc327a9ad84257b971fbb60c8125186c0a6f7cd70c8c01786726b"
+      },
+      {
+        "path": "src/helmholtz/patch_multigrid.cpp",
+        "sha256": "b64aefbec40f575f75376a74a0b7e8020c9d34f65bb85883d85ae3a1491ababa"
+      },
+      {
+        "path": "src/helmholtz/patch_solver.cpp",
+        "sha256": "3b941ff942af0e15f9c0a8e04e7df8226e37daaaf670b672309845aead3480b9"
+      },
+      {
+        "path": "src/helmholtz/patch_system.cpp",
+        "sha256": "dd542ecd526bfa1ba70b49fa4b8bc6f90d27fe35d49bed7efbc3c049011d72a7"
+      },
+      {
+        "path": "src/helmholtz/quadrature.cpp",
+        "sha256": "81cfdbf37e7c4c1174cb34bf76675c3d227e94dde57ee4629edef3a59a1ada95"
+      },
+      {
+        "path": "src/helmholtz/schwarz_local_solver.cpp",
+        "sha256": "72490aed40c32e0467891669f390de67f41a8fc9dcb9e4d8754ac322634a6808"
+      },
+      {
+        "path": "src/helmholtz/schwarz_patch.cpp",
+        "sha256": "b188011300c6e7d425d3cb0d0be16ac859b4e513daabbcd44224d4d0883a8121"
+      },
+      {
+        "path": "src/helmholtz/shifted_laplacian.cpp",
+        "sha256": "aaf179489880d104e8f30f09775b833a1856e7d2455c02d5af216c9e45a486f0"
+      },
+      {
+        "path": "src/helmholtz/two_level_schwarz.cpp",
+        "sha256": "d6e79221ca8b0d2944d69d63a687c2335787ba81c9d5c326ef5ba5028c1ac23e"
+      },
+      {
+        "path": "src/io/vtk_writer.cpp",
+        "sha256": "a4963e75f02e8cce7dac0eda47baaa97a40fc6a6cae1921611f75e1cccc094df"
+      },
+      {
+        "path": "src/lod/corrector.cpp",
+        "sha256": "4d41a6852075f58650d157e5d0af7a2e515f115c33a12e84b21826d68147939b"
+      },
+      {
+        "path": "src/lod/lod_model.cpp",
+        "sha256": "e03ce7e9559fb8db2957eb3c9339ee9fe661e89bf24cf5c8318db9d7495ddcd3"
+      },
+      {
+        "path": "src/lod/patches.cpp",
+        "sha256": "3aeadf5d17c75eccbdf4851ad5bb93e842bb17b2fc48ea05da3c78e9835a007c"
+      },
+      {
+        "path": "src/lod/quasi_interp.cpp",
+        "sha256": "164efe14759dea73df171b1ea4c4998527ec33007c327135d08283547e20a13f"
+      },
+      {
+        "path": "src/main.cpp",
+        "sha256": "d89d16c337e4fca158256654300fdcb380130ec963b8f78eb32f824c06f35055"
+      },
+      {
+        "path": "src/mesh/edges.cpp",
+        "sha256": "f76fe9189a0af3841fb98222ea8f0137daa3bf828b7900ca08532e9228476992"
+      },
+      {
+        "path": "src/mesh/refine.cpp",
+        "sha256": "5c2d678ac22524a34a3fef637ab450754fbc5a521735fcc22e59be4333a19809"
+      },
+      {
+        "path": "src/solver/coarse_solve.cpp",
+        "sha256": "e39718d72a2d1b3fd5a71d49636046e6015799766e76c5b3c32d4aedf36b4a40"
+      },
+      {
+        "path": "src/solver/lod_reuse.cpp",
+        "sha256": "be9e231b94b98cf094d8ee6e2447c5de0028a25de974e56ce9c0c8c8d99f6e9c"
+      },
+      {
+        "path": "src/solver/right_gmres.cpp",
+        "sha256": "7e9e8013d2e06d795d85bc5c8c4f253a32d1013ce9802e843d336edc1246146b"
+      }
+    ],
+    "unresolved": []
+  },
+  {
+    "snapshot": "E2-production",
+    "scope": "Conservative all-source quoted-include inventory, not a pruned linker closure.",
+    "root": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source",
+    "files": [
+      {
+        "path": "benchmarks/E2_ell_controls.inc",
+        "sha256": "7c1c1733806217806f36a992a52c04401979f150d64e873ff0b311f457641618"
+      },
+      {
+        "path": "benchmarks/E2_region_controls_audit.inc",
+        "sha256": "a172e6090887e09a2f6590acab74d4de652148943476e3ec4ba3de45138675df"
+      },
+      {
+        "path": "benchmarks/E2_region_controls_helper.inc",
+        "sha256": "79112ce8905712e9dac99e955630b27128f9e207fa7445bdc9f6d4b98316e0d5"
+      },
+      {
+        "path": "benchmarks/diagnostic_campaign_20260907.inc",
+        "sha256": "bd25df298dfbcefa1a1bae6bb90b2b293294fe6a5c0d6658291a67a88dcec327"
+      },
+      {
+        "path": "benchmarks/reference_epoch_paper_runner.cpp",
+        "sha256": "2e7317978ebe3673431b35e13c129d437466150d044751de42c4a3844ff440d2"
+      },
+      {
+        "path": "benchmarks/regional_as_diagnostics_20260909.inc",
+        "sha256": "5e8917b360646783b6721eff1fecfc82ec2bec574711af5ba641445d17c104d2"
+      },
+      {
+        "path": "benchmarks/workflow_campaign_20260908.inc",
+        "sha256": "974cadd600eb903c1bd5fd8d9eae813dc5716b45bea21c0b2e7fa3c01ad09a34"
+      },
+      {
+        "path": "include/fem/assemble_dg.h",
+        "sha256": "ee9931f8f78890af1ba632813a5203bcfa6d5d378e10e90c8cccb13cf213d321"
+      },
+      {
+        "path": "include/fem/hp_triangle.h",
+        "sha256": "9b35d860971ff0fa50ec04511c711d8391cc60648668d6da0c2deb867f3a5396"
+      },
+      {
+        "path": "include/helmholtz/adaptive/candidate_dual.h",
+        "sha256": "bf311bc211c6ec76c194ad321bf06e42c22a15c2670e0bfc55cdb76c1b80503a"
+      },
+      {
+        "path": "include/helmholtz/adaptive/candidate_flux.h",
+        "sha256": "d1415302958c93303a048cb5c5535b22c308c152b8b115bb19252f286bca8fd2"
+      },
+      {
+        "path": "include/helmholtz/adaptive/certificates.h",
+        "sha256": "cb71c3366478d983e3f146191a45605bab7f96978256a9e77eaaa14393627ee5"
+      },
+      {
+        "path": "include/helmholtz/adaptive/certified_driver.h",
+        "sha256": "4b55b5a2bf2c897c7de06854a070e97a9f1d6f362f4aa702da0defdc7186241f"
+      },
+      {
+        "path": "include/helmholtz/adaptive/driver.h",
+        "sha256": "57b7b07f012d982aa943fed93a0051c4e6b56cb2fe481f16c05abe295a041a6e"
+      },
+      {
+        "path": "include/helmholtz/adaptive/error_control.h",
+        "sha256": "ad06fee602166696bf730db30d4d2bce4f5d733d5e876bd36252edab91ce5c94"
+      },
+      {
+        "path": "include/helmholtz/adaptive/estimator.h",
+        "sha256": "4a0e5d206c48f81041ef72ef3bdc2ef0d10b23dea193235cc2f66add5916e0aa"
+      },
+      {
+        "path": "include/helmholtz/adaptive/hierarchy.h",
+        "sha256": "503a1e29a0dce8655abedb06ac7508a1b5b17ffe4d712309cc5f2e676556f725"
+      },
+      {
+        "path": "include/helmholtz/adaptive/kernel_residual.h",
+        "sha256": "8e94cabe26e9885b355bb469aefedd34ee77ce7bad39bd8da07ca49a6183465b"
+      },
+      {
+        "path": "include/helmholtz/adaptive/numerical_backend.h",
+        "sha256": "975bd0d3b6b94a25bdc1ecbec13f66af75fd30aa497dfe54a0b28f4d70dc7569"
+      },
+      {
+        "path": "include/helmholtz/adaptive/practical_driver.h",
+        "sha256": "9b9b0aa752fd3fe956281dd8947d4d16389a66e0f9ed58fce7c9b6c3e9e76bb2"
+      },
+      {
+        "path": "include/helmholtz/adaptive/reference_epoch_driver.h",
+        "sha256": "2cf0caba2e2d645f5b4e30ff6a6d0bd868971373f14131265657ca0ff3adebe7"
+      },
+      {
+        "path": "include/helmholtz/adaptive/reference_retraction.h",
+        "sha256": "f29c26e0cc49fecdf6048bcb12c73cd008f9e19961752fe8ee6af6ca9b7e9043"
+      },
+      {
+        "path": "include/helmholtz/adaptive/reliability.h",
+        "sha256": "7342c83e1305404752359faa1aa8d64c50fb67e5b41eb51ab24d70f6048096ab"
+      },
+      {
+        "path": "include/helmholtz/adaptive/singularity_hybrid.h",
+        "sha256": "c59da5416069b7a07bd04e73d5a2185fbfdfd6a9c57ce75bdc3679519bc2eb8b"
+      },
+      {
+        "path": "include/helmholtz/adaptive/verified_spectrum.h",
+        "sha256": "41fc4007534339b40f64aab845d394766d190429e94130bcacb48745b4f913f0"
+      },
+      {
+        "path": "include/helmholtz/benchmarks/paper_cases.h",
+        "sha256": "90c72800b51efba45e69e1c95d97123b2b387eaac3dcdbaf898b2358511536cb"
+      },
+      {
+        "path": "include/helmholtz/boundary.h",
+        "sha256": "9adc75b5a5e5229748d25253e2da662eede945955c0a38e6c1f17b91b90af137"
+      },
+      {
+        "path": "include/helmholtz/coarse_schwarz.h",
+        "sha256": "c65b5a64b8f8cfff3ca39e7484c58bfee057bbbe6831f6ab3a47dfe241a8c683"
+      },
+      {
+        "path": "include/helmholtz/corrector.h",
+        "sha256": "7bfb6e6332a130dffaebee6d559d3f8cf6803acfcba675002ab378bc00880b9e"
+      },
+      {
+        "path": "include/helmholtz/experiments/paper_config.h",
+        "sha256": "c4af67ae9f938555d660d99e6a78c864801aa344f2b044b42bfe5095ba2f4c11"
+      },
+      {
+        "path": "include/helmholtz/experiments/reference_epoch_runner.h",
+        "sha256": "895728bd996e23ee55bd7079f5da67ea8b69543444ff21dcc0b7f1b427ff7542"
+      },
+      {
+        "path": "include/helmholtz/experiments/reference_solution_cache.h",
+        "sha256": "ea9c1bac4495b9c272c6531c6247f7b2836fd4b8f2948e23c5b31bebb1115c39"
+      },
+      {
+        "path": "include/helmholtz/hp_interpolation.h",
+        "sha256": "e81a2b05df04fe0ec26f3a603302167d5eda466ccf79f6911f9b0c4faad6f14e"
+      },
+      {
+        "path": "include/helmholtz/hp_model.h",
+        "sha256": "38a653e5d2a21e3e2ced62625d7a3150902036b7fdd327883a55af28fc955c8e"
+      },
+      {
+        "path": "include/helmholtz/hp_operators.h",
+        "sha256": "82e5d26b9c4b8974ed50114120679146f22b14b46ffff72ec5a155818c4460ce"
+      },
+      {
+        "path": "include/helmholtz/hp_patch.h",
+        "sha256": "afd9a82d9c26af75c4b511f62832a0ddbc1ce2ffa8c0504acf1e85627153102b"
+      },
+      {
+        "path": "include/helmholtz/manufactured.h",
+        "sha256": "1835f327c7c1e7a68d65b2929fa23a0af1e712689fc4ad6780ecaa86f8d99f19"
+      },
+      {
+        "path": "include/helmholtz/model.h",
+        "sha256": "4513ff590ece454664fe01eaf7931e1c61785435d0d8056f72faa9dddf344743"
+      },
+      {
+        "path": "include/helmholtz/operators.h",
+        "sha256": "331c3356680967d23a1f59f14cd888977944a6d49a4a8deff76c5e67c179b0ec"
+      },
+      {
+        "path": "include/helmholtz/patch_hierarchy.h",
+        "sha256": "54fb56bdfdaa576e6079d3ad1a3ab813ca244028313fe4b54ec08705171cc740"
+      },
+      {
+        "path": "include/helmholtz/patch_multigrid.h",
+        "sha256": "cdacc0cb53fae0b2a5a050f54e04df2c813d503b1abfa8bd6e3c0e1d00ca2181"
+      },
+      {
+        "path": "include/helmholtz/patch_solver.h",
+        "sha256": "0614d580c1209c5ff19fba0e1fef2a1c735be1223ef652c8858a45494c64e566"
+      },
+      {
+        "path": "include/helmholtz/patch_system.h",
+        "sha256": "83216462eceb15de61a8adcd8dd8b0d6748586672b81a58e83668f707a1ec0f0"
+      },
+      {
+        "path": "include/helmholtz/quadrature.h",
+        "sha256": "98f703552e1030ae62b3920f646500c659399e982cd8aba494a915cc1b97eb67"
+      },
+      {
+        "path": "include/helmholtz/schwarz_local_solver.h",
+        "sha256": "1092beeb3d7131e70e15b5e193549632c31c8990d1aae566903a4351907c9c56"
+      },
+      {
+        "path": "include/helmholtz/schwarz_patch.h",
+        "sha256": "a7e2ef57979e49ecc44ae682d3dae7d91781ae897fba51d750ccbcd96aa7c60b"
+      },
+      {
+        "path": "include/helmholtz/shifted_laplacian.h",
+        "sha256": "8b54d1445efbd62a8537265d6110823bdf955d519496f8dbf0e120a3f1a8707a"
+      },
+      {
+        "path": "include/helmholtz/two_level_schwarz.h",
+        "sha256": "d30fcb77b7e9de5388d423ed67ed6be206fcf196811bfbce195c3cb3fc872638"
+      },
+      {
+        "path": "include/helmholtz/types.h",
+        "sha256": "1eea9a993e5101959b566194bb2cc1b1c676ce8b71b77de099f9170f6e55b5c1"
+      },
+      {
+        "path": "include/io/vtk_writer.h",
+        "sha256": "4231fca10cf36df171f14b35aaabe0f8992bb1fbf4d10809ae475005171ca905"
+      },
+      {
+        "path": "include/lod/corrector.h",
+        "sha256": "8cf2a13b9ba3054b11fbb374695092bce8762407fa9f10a6d5d547b70aa52ad8"
+      },
+      {
+        "path": "include/lod/lod_model.h",
+        "sha256": "1d4f4c88a16bf392e49efc3d8b0b333dceed1840f70410a8d2b3aab791a53646"
+      },
+      {
+        "path": "include/lod/patches.h",
+        "sha256": "f88fc07eab2de70a956fa899f37cd85b9bd134531427540bb3517de4cc58bb90"
+      },
+      {
+        "path": "include/lod/quasi_interp.h",
+        "sha256": "6c0104ac35fac4d919e18348c37faf651fc1538a77f0b80ac5b7a34f25c8d4c5"
+      },
+      {
+        "path": "include/mesh/refine.h",
+        "sha256": "8880891d3c0c5d455cb202ec7a319805912904dc91fc5af408d069982841f031"
+      },
+      {
+        "path": "include/mesh/types.h",
+        "sha256": "285057ac96e2efd5de4832b213fb89a254158f23635d357b736761f9c92783ab"
+      },
+      {
+        "path": "include/solver/cholmod_wrapper.h",
+        "sha256": "b8db963749f02d3eb0557b4b51bef99a7de318f7eba3843cc4792871fb57bc80"
+      },
+      {
+        "path": "include/solver/coarse_solve.h",
+        "sha256": "52efc0f1141fcfeb42ff678d569ae5dad36d4a6e9da2e1586566eb2cd6be2211"
+      },
+      {
+        "path": "include/solver/lod_reuse.h",
+        "sha256": "c0d467a123dd88d32146ff5d91c2852d6a154f6fd21ff3cb570a8a8bd4bacd62"
+      },
+      {
+        "path": "include/solver/right_gmres.h",
+        "sha256": "1fd55970b71f8146e8e2a03eb50eedb16fea588d05d707392fd3581705b13b39"
+      },
+      {
+        "path": "src/fem/assemble_dg.cpp",
+        "sha256": "a735b99b810b31be5523df216aafd49a0abd5ce92183b574935dbdc3ba22d2b2"
+      },
+      {
+        "path": "src/fem/hp_triangle.cpp",
+        "sha256": "94b63a470c2cc082e3030159529f85361290bfa2ad1377eefa870df010a2e003"
+      },
+      {
+        "path": "src/helmholtz/adaptive/additive_kernel_riesz.inc",
+        "sha256": "a4886696d81b77dec43ca5111c32ea8880ea56020d5632b1ecce6592e7ab14a3"
+      },
+      {
+        "path": "src/helmholtz/adaptive/candidate_dual.cpp",
+        "sha256": "9519579ded9501bf0ec04bba2c67d91f0abf959a5ef2a3939ba236e431bd50a3"
+      },
+      {
+        "path": "src/helmholtz/adaptive/candidate_flux.cpp",
+        "sha256": "e644be0c31dac8f6e58bdebf57aa6668978ee2b1d0877393265c69d2ab654492"
+      },
+      {
+        "path": "src/helmholtz/adaptive/certificates.cpp",
+        "sha256": "d47d44a2977d9004ce31897e78eb6e992c6758f23cdf1065345c332d40705cb2"
+      },
+      {
+        "path": "src/helmholtz/adaptive/certified_driver.cpp",
+        "sha256": "872b64463ff74d91dc01ccadd898de0b8c466a0a1054f9a32b36b57afd72ca9f"
+      },
+      {
+        "path": "src/helmholtz/adaptive/driver.cpp",
+        "sha256": "d54ed77ca1a3084d7a5a2e4bf8ba5ab83a816ddd6c2eff86834008589d62e5b4"
+      },
+      {
+        "path": "src/helmholtz/adaptive/error_control.cpp",
+        "sha256": "a9629c4e65773a84a43d0feb0c55f738f801daccad48becb50eddb65966cacc6"
+      },
+      {
+        "path": "src/helmholtz/adaptive/estimator.cpp",
+        "sha256": "ad2d7d388afb4a91d19db4c645dc971aabc270bb9e9daadf7f800afe34b9c3c9"
+      },
+      {
+        "path": "src/helmholtz/adaptive/hierarchy.cpp",
+        "sha256": "34fc7588390ba2827d0514a0dbe6aef36f4352458ebca54e33bc70f7a9cad702"
+      },
+      {
+        "path": "src/helmholtz/adaptive/kernel_residual.cpp",
+        "sha256": "08c9a94ae0dc6dadcf6ba08089908d3fccbab7b6e0c5c46941623ffa8cab3cab"
+      },
+      {
+        "path": "src/helmholtz/adaptive/numerical_backend.cpp",
+        "sha256": "cb4a3f7ef62a4ef9ae3916a43cb0bfb5c701a371ab1cc87414605af031fcd75e"
+      },
+      {
+        "path": "src/helmholtz/adaptive/practical_driver.cpp",
+        "sha256": "ebdc221a903f06a79cbaef4ded1f1f3aa7b224ad675dc3d773cba4ea44a87f47"
+      },
+      {
+        "path": "src/helmholtz/adaptive/reference_epoch_driver.cpp",
+        "sha256": "76402bf95c1b1e4e1fa18d10b43e0727c8632d28b4fc3297da325418fbba78ef"
+      },
+      {
+        "path": "src/helmholtz/adaptive/reference_retraction.cpp",
+        "sha256": "b5258f6d4f1cd44a8ed867bfaf3426a552dee67cdf076a59903d751344c5744c"
+      },
+      {
+        "path": "src/helmholtz/adaptive/reliability.cpp",
+        "sha256": "b267a6b8eddc6d65b90cf53be45a0678dd9287004007284c8e994a9383e171fd"
+      },
+      {
+        "path": "src/helmholtz/adaptive/singularity_hybrid.cpp",
+        "sha256": "661999b82ec268797145554e2a612ccdb8300aead8c8a9d42a0663c254324aa3"
+      },
+      {
+        "path": "src/helmholtz/adaptive/verified_spectrum.cpp",
+        "sha256": "19ed6d6dfa340887b378bc55224e0ba6d4f4ce72232792f91c7fa388d02172cc"
+      },
+      {
+        "path": "src/helmholtz/benchmarks/paper_cases.cpp",
+        "sha256": "8c9a17647d2ae6275ca49f4de53cb1e01407dce76b3098b403d1fb6bf3abed20"
+      },
+      {
+        "path": "src/helmholtz/boundary.cpp",
+        "sha256": "1560e20d597929c671fd93b29817a1cdbeb68bd73f4a9f2f4647b1241d8ba14a"
+      },
+      {
+        "path": "src/helmholtz/coarse_schwarz.cpp",
+        "sha256": "53c9488a7ea7443451cead9d7f0310d8b1c6277bc5aa764c42076f094549b353"
+      },
+      {
+        "path": "src/helmholtz/corrector.cpp",
+        "sha256": "1c2e021408170f97373eb21cf0f1250f72d14cccb50340fca4759128ff0751d0"
+      },
+      {
+        "path": "src/helmholtz/corrector_pipeline.cpp",
+        "sha256": "959ca3e026a69a56db79709369a70dae18b7816d3d78e9c1ffc2d8af4f47d4b0"
+      },
+      {
+        "path": "src/helmholtz/experiments/paper_config.cpp",
+        "sha256": "d8e403a3a63d318133ff8bf8f5fde5b1779b846c428afd5fdaed0f4a5530c8c3"
+      },
+      {
+        "path": "src/helmholtz/experiments/reference_solution_cache.cpp",
+        "sha256": "e15d60b1264db0984d2234adf9d8bcf0ef339a8e24932738c8c857ea9752dd20"
+      },
+      {
+        "path": "src/helmholtz/hp_fem.cpp",
+        "sha256": "108e978f7e33ada35faf92c5b3d2bddaffde771813d85f6fd463c522e611a829"
+      },
+      {
+        "path": "src/helmholtz/hp_interpolation.cpp",
+        "sha256": "8bbbf943ed6fc29989c678920b9538298f61aaf9f11367e75de628b38bc89fef"
+      },
+      {
+        "path": "src/helmholtz/hp_model.cpp",
+        "sha256": "be38395588caa1969b4c2f2fc1b1dfe474e92d2a2976b0cc9fe0e15a349be511"
+      },
+      {
+        "path": "src/helmholtz/hp_operators.cpp",
+        "sha256": "fd002b24a01e57270633c135d36b0041f62f09aaa543c384570de96cde7c169d"
+      },
+      {
+        "path": "src/helmholtz/hp_patch.cpp",
+        "sha256": "333a40c00a8400bfdfaba7bdff9abab69e51c05995ad184fafffe084076cfc01"
+      },
+      {
+        "path": "src/helmholtz/manufactured.cpp",
+        "sha256": "b70fa6b50b3b20ec0601b7823726a387eec6f6cef034a239f6070efceca07e0b"
+      },
+      {
+        "path": "src/helmholtz/model.cpp",
+        "sha256": "25d203971759485420f7dd29d7e6abb8cf9a57b39b2b8281ee44850aa7983320"
+      },
+      {
+        "path": "src/helmholtz/operators.cpp",
+        "sha256": "35c4f1ba9dc60b248be7e04a219f5a630e954718d8dab1be63583f8d115d296f"
+      },
+      {
+        "path": "src/helmholtz/patch_hierarchy.cpp",
+        "sha256": "673dfe353ebdc327a9ad84257b971fbb60c8125186c0a6f7cd70c8c01786726b"
+      },
+      {
+        "path": "src/helmholtz/patch_multigrid.cpp",
+        "sha256": "b64aefbec40f575f75376a74a0b7e8020c9d34f65bb85883d85ae3a1491ababa"
+      },
+      {
+        "path": "src/helmholtz/patch_solver.cpp",
+        "sha256": "3b941ff942af0e15f9c0a8e04e7df8226e37daaaf670b672309845aead3480b9"
+      },
+      {
+        "path": "src/helmholtz/patch_system.cpp",
+        "sha256": "dd542ecd526bfa1ba70b49fa4b8bc6f90d27fe35d49bed7efbc3c049011d72a7"
+      },
+      {
+        "path": "src/helmholtz/quadrature.cpp",
+        "sha256": "81cfdbf37e7c4c1174cb34bf76675c3d227e94dde57ee4629edef3a59a1ada95"
+      },
+      {
+        "path": "src/helmholtz/schwarz_local_solver.cpp",
+        "sha256": "72490aed40c32e0467891669f390de67f41a8fc9dcb9e4d8754ac322634a6808"
+      },
+      {
+        "path": "src/helmholtz/schwarz_patch.cpp",
+        "sha256": "b188011300c6e7d425d3cb0d0be16ac859b4e513daabbcd44224d4d0883a8121"
+      },
+      {
+        "path": "src/helmholtz/shifted_laplacian.cpp",
+        "sha256": "aaf179489880d104e8f30f09775b833a1856e7d2455c02d5af216c9e45a486f0"
+      },
+      {
+        "path": "src/helmholtz/two_level_schwarz.cpp",
+        "sha256": "d6e79221ca8b0d2944d69d63a687c2335787ba81c9d5c326ef5ba5028c1ac23e"
+      },
+      {
+        "path": "src/io/vtk_writer.cpp",
+        "sha256": "a4963e75f02e8cce7dac0eda47baaa97a40fc6a6cae1921611f75e1cccc094df"
+      },
+      {
+        "path": "src/lod/corrector.cpp",
+        "sha256": "4d41a6852075f58650d157e5d0af7a2e515f115c33a12e84b21826d68147939b"
+      },
+      {
+        "path": "src/lod/lod_model.cpp",
+        "sha256": "e03ce7e9559fb8db2957eb3c9339ee9fe661e89bf24cf5c8318db9d7495ddcd3"
+      },
+      {
+        "path": "src/lod/patches.cpp",
+        "sha256": "3aeadf5d17c75eccbdf4851ad5bb93e842bb17b2fc48ea05da3c78e9835a007c"
+      },
+      {
+        "path": "src/lod/quasi_interp.cpp",
+        "sha256": "164efe14759dea73df171b1ea4c4998527ec33007c327135d08283547e20a13f"
+      },
+      {
+        "path": "src/main.cpp",
+        "sha256": "d89d16c337e4fca158256654300fdcb380130ec963b8f78eb32f824c06f35055"
+      },
+      {
+        "path": "src/mesh/edges.cpp",
+        "sha256": "f76fe9189a0af3841fb98222ea8f0137daa3bf828b7900ca08532e9228476992"
+      },
+      {
+        "path": "src/mesh/refine.cpp",
+        "sha256": "5c2d678ac22524a34a3fef637ab450754fbc5a521735fcc22e59be4333a19809"
+      },
+      {
+        "path": "src/solver/coarse_solve.cpp",
+        "sha256": "e39718d72a2d1b3fd5a71d49636046e6015799766e76c5b3c32d4aedf36b4a40"
+      },
+      {
+        "path": "src/solver/lod_reuse.cpp",
+        "sha256": "be9e231b94b98cf094d8ee6e2447c5de0028a25de974e56ce9c0c8c8d99f6e9c"
+      },
+      {
+        "path": "src/solver/right_gmres.cpp",
+        "sha256": "7e9e8013d2e06d795d85bc5c8c4f253a32d1013ce9802e843d336edc1246146b"
+      }
+    ],
+    "unresolved": []
+  }
+]

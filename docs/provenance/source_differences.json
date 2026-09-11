@@ -1,0 +1,40 @@
+{
+  "kernel_header": [
+    {
+      "path": "include/helmholtz/adaptive/kernel_residual.h",
+      "sha256": "0a762763dfa694a0ace48cfe156d43890662f48ab9980647c699b70d440df77f",
+      "apply_selected": false,
+      "selected_values": false
+    },
+    {
+      "path": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/include/helmholtz/adaptive/kernel_residual.h",
+      "sha256": "8e94cabe26e9885b355bb469aefedd34ee77ce7bad39bd8da07ca49a6183465b",
+      "apply_selected": true,
+      "selected_values": true
+    }
+  ],
+  "optimized_aot": [
+    {
+      "path": "results/E2-AOT-factor-reuse-20260909/reference_epoch_paper_runner.cpp",
+      "sha256": "d9c1d487f7685a838290152d84e27db5ec7d1a84042f10285a747d3075ebfdd8"
+    },
+    {
+      "path": "results/E2-AOT-factor-reuse-20260909/E2_region_controls_helper.inc",
+      "sha256": "79112ce8905712e9dac99e955630b27128f9e207fa7445bdc9f6d4b98316e0d5"
+    },
+    {
+      "path": "results/E2-AOT-factor-reuse-20260909/E2_region_controls_audit.inc",
+      "sha256": "6656747ede04cdcaf5b3b91ccc9b2328bfc9416b1ea69c2c3e75622fa07174fc"
+    },
+    {
+      "path": "results/E2-AOT-factor-reuse-20260909/E2_ell_controls.inc",
+      "sha256": "76ccfc90a8a217b637274e2a595613aacf4ee3e4eff3571ff4d17f6ca186ee37"
+    },
+    {
+      "path": "results/E2-AOT-factor-reuse-20260909/validation.json",
+      "sha256": "75be8c34485589a67d01dc136b7d35789be2236a8d483e3f447a8b1ccfbd8c06"
+    }
+  ],
+  "status": "Inventoried only; regional/AOT production code has not been migrated.",
+  "e1_main_runner_provenance": "Not yet reconstructed; control-source provenance is not a substitute for the main 51-state run."
+}

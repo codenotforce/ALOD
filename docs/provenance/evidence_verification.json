@@ -1,0 +1,352 @@
+{
+  "checks": [
+    {
+      "path": "docs/ALOD_SUBPROJECT_AGENT_PLAN_20260909.md",
+      "expected_sha256": "62a168f85d9ea4d9e3b0f36e028e198fab093475816ecbc32d9fd5d4b874818a",
+      "current_sha256": "62a168f85d9ea4d9e3b0f36e028e198fab093475816ecbc32d9fd5d4b874818a",
+      "matches": true
+    },
+    {
+      "path": "results/E1-periodic-lazy12-51-20260909/data/config.json",
+      "expected_sha256": "44c094335b59dc6ceeceaab7edf24c6fa27644bc93b4e82da171af2e61b2e145",
+      "current_sha256": "44c094335b59dc6ceeceaab7edf24c6fa27644bc93b4e82da171af2e61b2e145",
+      "matches": true
+    },
+    {
+      "path": "results/E1-production51-paper-20260909/summary.json",
+      "expected_sha256": "150c08af2b2c4cae7a401a30e4f98a09e2b1f5950aa0b67f834baa94dbc5a2eb",
+      "current_sha256": "150c08af2b2c4cae7a401a30e4f98a09e2b1f5950aa0b67f834baa94dbc5a2eb",
+      "matches": true
+    },
+    {
+      "path": "results/E1-production51-paper-20260909/baseline_reuse_audit.json",
+      "expected_sha256": "93f385ee72536a19bac369c2732b1db6da3dcfbf37b944c97f2bf59f0ee3af40",
+      "current_sha256": "93f385ee72536a19bac369c2732b1db6da3dcfbf37b944c97f2bf59f0ee3af40",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/CONFIGURATION.md",
+      "expected_sha256": "10774c9c7aa33e88626fe84003bc44be611bc33e6fd6a466b280575d57d4be0c",
+      "current_sha256": "10774c9c7aa33e88626fe84003bc44be611bc33e6fd6a466b280575d57d4be0c",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/configs/alod.json",
+      "expected_sha256": "4d0b4e30172101fbcb3c115987166a29a721ef9ebcca57e84a5d5dc085f4cb14",
+      "current_sha256": "4d0b4e30172101fbcb3c115987166a29a721ef9ebcca57e84a5d5dc085f4cb14",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/configs/afem.json",
+      "expected_sha256": "3fd1d0c19b4c4be86a651a2ab06a24a9882a035e7316a2f0691616599f1680ec",
+      "current_sha256": "3fd1d0c19b4c4be86a651a2ab06a24a9882a035e7316a2f0691616599f1680ec",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/rhs-samples.json",
+      "expected_sha256": "8d89a3b42b2512a6243a3b642a03bff7849015bf6e1d8bc888a48916d6fc5621",
+      "current_sha256": "8d89a3b42b2512a6243a3b642a03bff7849015bf6e1d8bc888a48916d6fc5621",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/all-controls-completed.json",
+      "expected_sha256": "a490da37357d26be4ab42d64f62242c4f5c36d7f8270035576e2c108913a936b",
+      "current_sha256": "a490da37357d26be4ab42d64f62242c4f5c36d7f8270035576e2c108913a936b",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/nominal-afem-completed.json",
+      "expected_sha256": "c9408e2edcf4a1e2f34fccae9fff38eef12498584655741f5367c31e0943be6a",
+      "current_sha256": "c9408e2edcf4a1e2f34fccae9fff38eef12498584655741f5367c31e0943be6a",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/portable-data-validation.json",
+      "expected_sha256": "85cdcf6e885d389271d2098691d0db1a31e2616db35d1ff1f3a14f8cf29b4a4e",
+      "current_sha256": "85cdcf6e885d389271d2098691d0db1a31e2616db35d1ff1f3a14f8cf29b4a4e",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/build-provenance.json",
+      "expected_sha256": "54e2563a58f47102ce664c09b56055bc7939d073df78f2913df151f8c5dbf37d",
+      "current_sha256": "54e2563a58f47102ce664c09b56055bc7939d073df78f2913df151f8c5dbf37d",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/paper-update/summary.json",
+      "expected_sha256": "95ef6a0fd67092eebe47033dd6bd0a6f0ce9e6e5559948e50efc0771bd3f159d",
+      "current_sha256": "95ef6a0fd67092eebe47033dd6bd0a6f0ce9e6e5559948e50efc0771bd3f159d",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/paper-update/REPORT.md",
+      "expected_sha256": "e03d8c08d975d1d4c09a0505be3da6d60426d54d80d325e9646a96fbeb326f13",
+      "current_sha256": "e03d8c08d975d1d4c09a0505be3da6d60426d54d80d325e9646a96fbeb326f13",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/reproducibility/production-source/src/helmholtz/adaptive/certificates.cpp",
+      "expected_sha256": "d47d44a2977d9004ce31897e78eb6e992c6758f23cdf1065345c332d40705cb2",
+      "current_sha256": "d47d44a2977d9004ce31897e78eb6e992c6758f23cdf1065345c332d40705cb2",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/reproducibility/production-source/benchmarks/reference_epoch_paper_runner.cpp",
+      "expected_sha256": "fc5353552b86034adba8370696987e96d9c9d6f50f237b5c63a3198380f4f431",
+      "current_sha256": "fc5353552b86034adba8370696987e96d9c9d6f50f237b5c63a3198380f4f431",
+      "matches": true
+    },
+    {
+      "path": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/configs/inheritell.json",
+      "expected_sha256": "d1be49ca84519487b6263fcc342c780dbb1a18b59ac00bda5bb4a92b66fe174a",
+      "current_sha256": "d1be49ca84519487b6263fcc342c780dbb1a18b59ac00bda5bb4a92b66fe174a",
+      "matches": true
+    },
+    {
+      "path": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/include/helmholtz/adaptive/kernel_residual.h",
+      "expected_sha256": "8e94cabe26e9885b355bb469aefedd34ee77ce7bad39bd8da07ca49a6183465b",
+      "current_sha256": "8e94cabe26e9885b355bb469aefedd34ee77ce7bad39bd8da07ca49a6183465b",
+      "matches": true
+    },
+    {
+      "path": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/adaptive/kernel_residual.cpp",
+      "expected_sha256": "08c9a94ae0dc6dadcf6ba08089908d3fccbab7b6e0c5c46941623ffa8cab3cab",
+      "current_sha256": "08c9a94ae0dc6dadcf6ba08089908d3fccbab7b6e0c5c46941623ffa8cab3cab",
+      "matches": true
+    },
+    {
+      "path": "results/E2-production-inherit-paper-20260909/summary.json",
+      "expected_sha256": "0988ea2c860f6766b908b0b8aef657a9b266b661190117c6add6e220f60673cb",
+      "current_sha256": "0988ea2c860f6766b908b0b8aef657a9b266b661190117c6add6e220f60673cb",
+      "matches": true
+    },
+    {
+      "path": "results/E2-production-inherit-paper-20260909/baseline_reuse_audit.json",
+      "expected_sha256": "acb09919f3aadb2910bc7fa720861bb6b90dbfbbe2fc582fdf4223bf7924e837",
+      "current_sha256": "acb09919f3aadb2910bc7fa720861bb6b90dbfbbe2fc582fdf4223bf7924e837",
+      "matches": true
+    },
+    {
+      "path": "results/E2-AOT-factor-reuse-20260909/validation.json",
+      "expected_sha256": "75be8c34485589a67d01dc136b7d35789be2236a8d483e3f447a8b1ccfbd8c06",
+      "current_sha256": "75be8c34485589a67d01dc136b7d35789be2236a8d483e3f447a8b1ccfbd8c06",
+      "matches": true
+    },
+    {
+      "path": "results/E2-regional-budget-inherit-controls-20260909/analysis/REPORT.md",
+      "expected_sha256": "40ce981887fc03c25dc0f08ed35b288e339391d77e9bbe8a78019303fab74ba4",
+      "current_sha256": "40ce981887fc03c25dc0f08ed35b288e339391d77e9bbe8a78019303fab74ba4",
+      "matches": true
+    },
+    {
+      "path": "results/E2-regional-adjacent-fast-20260909/README.md",
+      "expected_sha256": "67832e560553324d9f7476459f72af326c22d1f8d701f4284d48523bf7ab92e4",
+      "current_sha256": "67832e560553324d9f7476459f72af326c22d1f8d701f4284d48523bf7ab92e4",
+      "matches": true
+    },
+    {
+      "path": "include/helmholtz/adaptive/kernel_residual.h",
+      "expected_sha256": "0a762763dfa694a0ace48cfe156d43890662f48ab9980647c699b70d440df77f",
+      "current_sha256": "0a762763dfa694a0ace48cfe156d43890662f48ab9980647c699b70d440df77f",
+      "matches": true
+    },
+    {
+      "path": "src/helmholtz/adaptive/kernel_residual.cpp",
+      "expected_sha256": "08c9a94ae0dc6dadcf6ba08089908d3fccbab7b6e0c5c46941623ffa8cab3cab",
+      "current_sha256": "08c9a94ae0dc6dadcf6ba08089908d3fccbab7b6e0c5c46941623ffa8cab3cab",
+      "matches": true
+    },
+    {
+      "path": "src/helmholtz/adaptive/certificates.cpp",
+      "expected_sha256": "d47d44a2977d9004ce31897e78eb6e992c6758f23cdf1065345c332d40705cb2",
+      "current_sha256": "d47d44a2977d9004ce31897e78eb6e992c6758f23cdf1065345c332d40705cb2",
+      "matches": true
+    },
+    {
+      "path": "src/helmholtz/benchmarks/paper_cases.cpp",
+      "expected_sha256": "8c9a17647d2ae6275ca49f4de53cb1e01407dce76b3098b403d1fb6bf3abed20",
+      "current_sha256": "8c9a17647d2ae6275ca49f4de53cb1e01407dce76b3098b403d1fb6bf3abed20",
+      "matches": true
+    },
+    {
+      "path": "tools/analysis/prepare_E1_family_marking_paper.py",
+      "expected_sha256": "17a8fff5d15d77ecbaacf8fa7b691e2650568932478937b9785da16983f0b723",
+      "current_sha256": "17a8fff5d15d77ecbaacf8fa7b691e2650568932478937b9785da16983f0b723",
+      "matches": true
+    },
+    {
+      "path": "tools/analysis/prepare_E1_production45_paper.py",
+      "expected_sha256": "e6bc1731aa9273ede42d085decf4c39144aa8bb72d46631b22494b37ad82b498",
+      "current_sha256": "e6bc1731aa9273ede42d085decf4c39144aa8bb72d46631b22494b37ad82b498",
+      "matches": true
+    },
+    {
+      "path": "tools/analysis/prepare_E2_inherit_paper.py",
+      "expected_sha256": "cce8d41d52df94054178de2de2ae0868cb5cc28a9b2a7a6ddc2fe60d0476955c",
+      "current_sha256": "cce8d41d52df94054178de2de2ae0868cb5cc28a9b2a7a6ddc2fe60d0476955c",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/data/nominal-alod/config.json",
+      "expected_sha256": "c5a08e8d807b1491c6f58fdaa2a42b29492c1db05da8b92b97f431342c706cc6",
+      "current_sha256": "c5a08e8d807b1491c6f58fdaa2a42b29492c1db05da8b92b97f431342c706cc6",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/data/nominal-alod/started.json",
+      "expected_sha256": "b96af0256ccb662df789dbe01f8f768de9321d4bc27bebea10f18421bda6461b",
+      "current_sha256": "b96af0256ccb662df789dbe01f8f768de9321d4bc27bebea10f18421bda6461b",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/data/nominal-alod/family_control_samples.csv",
+      "expected_sha256": "97d7bf38744ace7a82e046eac93679cfae7b8eecbded2d91b204061e172767c0",
+      "current_sha256": "97d7bf38744ace7a82e046eac93679cfae7b8eecbded2d91b204061e172767c0",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/data/nominal-alod/family_control_marking.csv",
+      "expected_sha256": "60447aab385da3c5657d15e8a05a72ebd1b7491d02a4f8e80fbb57cb41e6fb42",
+      "current_sha256": "60447aab385da3c5657d15e8a05a72ebd1b7491d02a4f8e80fbb57cb41e6fb42",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/data/family-alod/config.json",
+      "expected_sha256": "c5a08e8d807b1491c6f58fdaa2a42b29492c1db05da8b92b97f431342c706cc6",
+      "current_sha256": "c5a08e8d807b1491c6f58fdaa2a42b29492c1db05da8b92b97f431342c706cc6",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/data/family-alod/started.json",
+      "expected_sha256": "a4004360627af0217ed9a28b1962e7a40e347363e2a8650a2833c9233b857fa4",
+      "current_sha256": "a4004360627af0217ed9a28b1962e7a40e347363e2a8650a2833c9233b857fa4",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/data/family-alod/family_control_samples.csv",
+      "expected_sha256": "da00345742f7a09d402716cefba3478edf33c37daad702177968749e86d29073",
+      "current_sha256": "da00345742f7a09d402716cefba3478edf33c37daad702177968749e86d29073",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/data/family-alod/family_control_marking.csv",
+      "expected_sha256": "805d08f77741e6efe6211b62ff1912de5f1823ca6652edd7ad4c743b9cb296f2",
+      "current_sha256": "805d08f77741e6efe6211b62ff1912de5f1823ca6652edd7ad4c743b9cb296f2",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/data/nominal-afem/config.json",
+      "expected_sha256": "bb57da7b92a20e0f63067f7fbbf8e17a104f73bd441f3e69eb2a3e9b84e48fb7",
+      "current_sha256": "bb57da7b92a20e0f63067f7fbbf8e17a104f73bd441f3e69eb2a3e9b84e48fb7",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/data/nominal-afem/started.json",
+      "expected_sha256": "66ddfd50fa6cd8dbb982cd8d2cc6a5a38b990c23d4acc7ca08a33155e6c6f098",
+      "current_sha256": "66ddfd50fa6cd8dbb982cd8d2cc6a5a38b990c23d4acc7ca08a33155e6c6f098",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/data/nominal-afem/family_control_samples.csv",
+      "expected_sha256": "ba08c03f913ff323488ab0b536a6f095e45547157a14a8c78618545343165fcc",
+      "current_sha256": "ba08c03f913ff323488ab0b536a6f095e45547157a14a8c78618545343165fcc",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/data/nominal-afem/family_control_marking.csv",
+      "expected_sha256": "31df00388426e32b7c334a1d19fbb69f668d1cb4b64b85a6ec08a124a34e5d8b",
+      "current_sha256": "31df00388426e32b7c334a1d19fbb69f668d1cb4b64b85a6ec08a124a34e5d8b",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/data/family-afem/config.json",
+      "expected_sha256": "bb57da7b92a20e0f63067f7fbbf8e17a104f73bd441f3e69eb2a3e9b84e48fb7",
+      "current_sha256": "bb57da7b92a20e0f63067f7fbbf8e17a104f73bd441f3e69eb2a3e9b84e48fb7",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/data/family-afem/started.json",
+      "expected_sha256": "688037c7b2bcbafcedebe7a532a8c3fab83eebf8016bb090440602e8dc0d0d03",
+      "current_sha256": "688037c7b2bcbafcedebe7a532a8c3fab83eebf8016bb090440602e8dc0d0d03",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/data/family-afem/family_control_samples.csv",
+      "expected_sha256": "cfb9a344dc295f526e7f8f38f2ae00a5bc6c92f97dd77cb097985a9b9b57c80c",
+      "current_sha256": "cfb9a344dc295f526e7f8f38f2ae00a5bc6c92f97dd77cb097985a9b9b57c80c",
+      "matches": true
+    },
+    {
+      "path": "results/E1-family-marking-controls-20260910/data/family-afem/family_control_marking.csv",
+      "expected_sha256": "d40d491cd3f96408b7824cd85f2e5be158aee94ed4b3fbcfa33d4a1e6a0804c4",
+      "current_sha256": "d40d491cd3f96408b7824cd85f2e5be158aee94ed4b3fbcfa33d4a1e6a0804c4",
+      "matches": true
+    },
+    {
+      "path": "<PAPER_ROOT>/helmholtz_lod_certified_amsart_revised.tex",
+      "expected_sha256": "f714fb0ba66c2cc276437002aa2306d16271fd91fc88205ff8c3ca07ccdcbc37",
+      "current_sha256": "f714fb0ba66c2cc276437002aa2306d16271fd91fc88205ff8c3ca07ccdcbc37",
+      "matches": true
+    },
+    {
+      "path": "<PAPER_ROOT>/figures/e1_error_dof.pdf",
+      "expected_sha256": "08ea12a822dcbdf1a26d96f72e4a23b77b3a0ee1eb5b250e3a643c5c003d1b4a",
+      "current_sha256": "08ea12a822dcbdf1a26d96f72e4a23b77b3a0ee1eb5b250e3a643c5c003d1b4a",
+      "matches": true
+    },
+    {
+      "path": "<PAPER_ROOT>/figures/e1_final_meshes.pdf",
+      "expected_sha256": "265f8290bd3d9897a704b407f7dd1e9c852f608e94e8113166473778c08d42a8",
+      "current_sha256": "265f8290bd3d9897a704b407f7dd1e9c852f608e94e8113166473778c08d42a8",
+      "matches": true
+    },
+    {
+      "path": "<PAPER_ROOT>/figures/e1_family_marking_control.pdf",
+      "expected_sha256": "c84a2a34224f8669ee00a94fc8a7096f72640ee3e4975050208f1078190be865",
+      "current_sha256": "c84a2a34224f8669ee00a94fc8a7096f72640ee3e4975050208f1078190be865",
+      "matches": true
+    },
+    {
+      "path": "<PAPER_ROOT>/figures/e2_error_dof.pdf",
+      "expected_sha256": "8059adbcddfda13044ea3c89700cd6b268c4672eeee6a995b3e8525eb8424c3a",
+      "current_sha256": "8059adbcddfda13044ea3c89700cd6b268c4672eeee6a995b3e8525eb8424c3a",
+      "matches": true
+    },
+    {
+      "path": "<PAPER_ROOT>/figures/e2_final_meshes.pdf",
+      "expected_sha256": "ed01b090a2be183ac6e091f22008baa98513a292c94f02c781e3b8599db3b949",
+      "current_sha256": "ed01b090a2be183ac6e091f22008baa98513a292c94f02c781e3b8599db3b949",
+      "matches": true
+    },
+    {
+      "path": "<PAPER_ROOT>/figures/e1_rhs_centres.pdf",
+      "expected_sha256": "02c24272ea332ecbb86ba005c36cbbb28d9faa463cc7913b6585debfc2f7fbb9",
+      "current_sha256": "02c24272ea332ecbb86ba005c36cbbb28d9faa463cc7913b6585debfc2f7fbb9",
+      "matches": true
+    },
+    {
+      "path": "<PAPER_ROOT>/figures/e2_rhs_centres.pdf",
+      "expected_sha256": "abb4f1dd549767a27254a810e6469124f58f8b3d94b266061a6d2f28871ad1a3",
+      "current_sha256": "abb4f1dd549767a27254a810e6469124f58f8b3d94b266061a6d2f28871ad1a3",
+      "matches": true
+    },
+    {
+      "path": "<PAPER_ROOT>/tables/e1_family_control.tex",
+      "expected_sha256": "3508bd4dfccf5291c4fee5e7ac09ac7fbd60b628cd06fc350f320ae9c8218643",
+      "current_sha256": "3508bd4dfccf5291c4fee5e7ac09ac7fbd60b628cd06fc350f320ae9c8218643",
+      "matches": true
+    },
+    {
+      "path": "<PAPER_ROOT>/tables/e2_terminal_results.tex",
+      "expected_sha256": "61ccfc43cc305fda052f77f1041739e43de7944a3d74cbe811bd2bfc7115138f",
+      "current_sha256": "61ccfc43cc305fda052f77f1041739e43de7944a3d74cbe811bd2bfc7115138f",
+      "matches": true
+    },
+    {
+      "path": "<PAPER_ROOT>/tables/e2_rhs_methods.tex",
+      "expected_sha256": "4bf7aebe0265f9da00951d0d07f85dd6a9270b1de401df56d64b39728eaecbc3",
+      "current_sha256": "4bf7aebe0265f9da00951d0d07f85dd6a9270b1de401df56d64b39728eaecbc3",
+      "matches": true
+    }
+  ]
+}
