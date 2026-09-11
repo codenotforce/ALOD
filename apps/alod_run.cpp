@@ -19,8 +19,14 @@
 #include <stdexcept>
 #include <string>
 #include <omp.h>
+#ifndef ALOD_LEGACY_ORACLE
+#include "adaptive_run.hpp"
+#endif
 
 int main(int argc,char** argv) {
+#ifndef ALOD_LEGACY_ORACLE
+ if(argc>1&&std::string(argv[1])=="adaptive")return adaptive_main(argc-1,argv+1);
+#endif
  try {
     if(argc==2 && std::string(argv[1])=="--help") {
         std::cout<<"Usage: alod_run E1|E2 AFEM|UFEM|SLOD [--initial-level=N] [--states=N] [--theta=X] [--target=X] [--maximum-nodes=N] [--threads=N] [--emit-solution=0|1]\n";

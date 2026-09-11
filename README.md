@@ -1,8 +1,8 @@
 # ALOD
 
-ALOD is an independent C++20 migration of the E1/E2 Helmholtz experiments. It provides manufactured problems, mixed-boundary P1 FEM, conforming NVB meshes, AFEM/UFEM/SLOD baselines, and fixed-state two-sided LOD with batched kernel estimators, explicit family marking, reference strong residuals and localization spectra.
+ALOD is an independent C++20 migration of the E1/E2 Helmholtz experiments. It provides mixed-boundary P1 FEM, NVB meshes, AFEM/UFEM/SLOD baselines, adaptive two-sided LOD, explicit family marking, reference sweeps, regional AS/POD enrichment, dictionary inheritance and lazy localization checks.
 
-P0 source discovery and old-program replays are recorded in [the P0 evidence](docs/provenance/p0/README.md). P1/P2 implementation and validation are summarized in [migration status](docs/migration_status.md). The full [migration plan](ALOD_SUBPROJECT_AGENT_PLAN_20260909.md) also covers the remaining adaptive controllers, regional enrichment, checkpoint and production phases.
+P0 source discovery and old-program replays are recorded in [the P0 evidence](docs/provenance/p0/README.md). P1-P4 implementation and bounded validation are summarized in [migration status](docs/migration_status.md). The [migration plan](ALOD_SUBPROJECT_AGENT_PLAN_20260909.md) tracks checkpoint, performance and full production work still to be completed.
 
 ## Build and test
 
@@ -44,7 +44,16 @@ See [P2 modules and validation](docs/p2.md) for configuration, API contracts, se
 
 E1 is the localized oscillatory packet with Dirichlet, Neumann and Robin boundaries. E2 is the weighted corner singularity plus an alpha=80 Gaussian wave on the L-shaped domain. Both use kappa=16. Formal load tables and imported canonical audits are in `data/rhs/` and `tests/fixtures/legacy/`. Baseline exact-error stopping is separate from strong-residual marking.
 
-SLOD and P2 LOD use two corrected spaces, direct Schur patch solves and an Eigen SparseLU coarse solve. P2 defaults to manuscript area-weighted interpolation and geometric N² vertex patches. Explicit archive policies preserve the different averaging and patch expansion found in production sources; see [the implementation map](docs/paper_implementation_map.md). P1 SLOD remains restricted to uniform coarse meshes. Adaptive scheduling, regional POD/AOT workflows and restart support are later phases.
+SLOD and LOD use two corrected spaces, direct Schur patch solves and an Eigen SparseLU coarse solve. New LOD defaults to manuscript area-weighted interpolation and geometric N² vertex patches. Explicit archive policies preserve the different averaging and patch expansion found in production sources; see [the implementation map](docs/paper_implementation_map.md). P1 SLOD remains restricted to uniform coarse meshes. Restart support remains P5.
+
+## Run an adaptive experiment
+
+```sh
+python3 tools/run_adaptive.py --config configs/adaptive/e1_smoke.json --output results/e1-adaptive
+python3 tools/run_adaptive.py --config configs/adaptive/e2_smoke.json --output results/e2-adaptive
+```
+
+[P3/P4 documentation](docs/p3_p4.md) describes the state machine, all presets and deferred experiments. E2 `lazy` keeps the E2 threshold `Theta/eta_H > 0.1`; `every` remains a separate policy. E1 fixed-ell nominal/family ALOD and AFEM controls use the same 48 members. Full 51/97/33-state campaigns and long lazy/every comparisons remain pending P8. The E2 cold-start recurrence follows the plan and differs from the archive; its regression report distinguishes numerical proximity from equality.
 
 ## Provenance and contribution checks
 

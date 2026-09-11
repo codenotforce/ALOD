@@ -1,6 +1,6 @@
 # Migration status
 
-Updated: 2026-09-11. **P0, P1 and P2 are complete at their defined acceptance scope.** P3-P9 production migration has not started. Historical full campaigns remain imported evidence; this repository has not generated new 51-state E1 or 33-state E2 production trajectories.
+Updated: 2026-09-11. **P0-P4 implementation and bounded acceptance are complete.** Full production experiments are explicitly deferred to P8; P5-P9 remain open. Historical full campaigns remain imported evidence; this repository has not generated new 51-state E1 or 33-state E2 production trajectories.
 
 ## P0: source discovery and old replay
 
@@ -39,6 +39,8 @@ See `p2.md` and `provenance/p2_validation.json` for the acceptance evidence, lim
 
 ## Reproducibility limits
 
+P3/P4 add the unified reference-sweep controller, E1 fixed/lazy policies and four explicit 48-member controls, E2 regional budget/POD/inheritance, cached AOT factors and every-state/lazy ell policies. E2 lazy reuses E1's timing only and retains the 0.1 threshold. Short tests cover full/partial cycles, same-state promotion and mathematical invariants. The E1 prefix agrees across an ell promotion. E2 target/Theta equality and corrected-training numerical proximity are separate checks. See [P3/P4](p3_p4.md) and `provenance/p34_validation.json` for scope, evidence and pending campaigns.
+
 Native vectorization changes the ordering of nearly equal indicators on an E1 symmetric coarse mesh. `provenance/p1_floating_point_sensitivity.json` records the first observed difference. Matching compiler flags give exact old/new agreement; arbitrary cross-architecture adaptive trajectory identity is not claimed. The original comparison rule remains unchanged, with no new tie tolerance.
 
 The archived quasi-interpolator averages incident elements arithmetically, while the manuscript uses area weighting. Both reproduce coarse P1 functions and coincide on the uniform meshes allowed by P1 SLOD. The graded counterexample has operator difference 0.15023130314433289. P2 also verified that the archived interpolation-support rule can produce N³ vertex patches where the manuscript specifies N². P2 exposes both policies; future trajectory comparisons must select them explicitly. Old archive equality does not imply manuscript-mode trajectory equality.
@@ -47,9 +49,8 @@ The archived quasi-interpolator averages incident elements arithmetically, while
 
 | Phase | Remaining work |
 |---|---|
-| P3-P4 | Reference/candidate controllers, regional AS, POD/AOT, ell changes and inheritance |
 | P5-P7 | Checkpoint/resume, independent audit, resource protection, measured optimization and integration |
-| P8 | New accepted production trajectories and reproducible paper figures/tables |
+| P8 | E1 main and all four controls; E2 every/lazy and inherit/reset campaigns; complete audits and reproducible paper figures/tables |
 | P9 | Final release documentation and full publication acceptance |
 
 Read this file, the implementation map, source manifest and phase plan before continuing. Do not replace accepted-source headers with main-worktree versions, infer new performance from historical timing, or overwrite regression fixtures to hide a failed comparison.

@@ -30,6 +30,11 @@ add_library(alod_core STATIC
     src/estimator/marking.cpp
     src/localization/theta.cpp
     src/localization/dense.cpp
+    src/mesh/nested.cpp
+    src/adaptive/schedule.cpp
+    src/adaptive/refine.cpp
+    src/enrichment/aot.cpp
+    src/enrichment/regional.cpp
     src/helmholtz/patch_system.cpp
     src/helmholtz/patch_solver.cpp
     src/helmholtz/corrector.cpp)
@@ -39,18 +44,28 @@ target_link_libraries(alod_core PUBLIC Eigen3::Eigen OpenMP::OpenMP_CXX PRIVATE 
 
 add_executable(alod_fem_smoke apps/fem_smoke.cpp)
 target_link_libraries(alod_fem_smoke PRIVATE alod_core)
-add_executable(alod_run apps/alod_run.cpp)
+add_executable(alod_run apps/alod_run.cpp apps/adaptive_run.cpp)
 target_link_libraries(alod_run PRIVATE alod_core)
 add_executable(alod_fixed apps/alod_fixed.cpp)
 target_link_libraries(alod_fixed PRIVATE alod_core)
 
 if(ALOD_BUILD_TESTS)
     enable_testing()
+    add_executable(test_p34 tests/test_p34.cpp)
+    target_link_libraries(test_p34 PRIVATE alod_core)
+    add_test(NAME p34_mathematics COMMAND test_p34)
+    add_test(NAME p34_cli COMMAND ${CMAKE_COMMAND} -E env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 python3 ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_adaptive_cli.py $<TARGET_FILE:alod_run>)
+    set_tests_properties(p34_mathematics p34_cli PROPERTIES ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1" TIMEOUT 240)
     add_executable(test_p2 tests/test_p2.cpp)
     target_link_libraries(test_p2 PRIVATE alod_core)
     add_test(NAME p2_mathematics COMMAND test_p2)
     set_tests_properties(p2_mathematics PROPERTIES ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1" TIMEOUT 180)
     find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter)
+    foreach(fixture e1_prefix e2_initial)
+        add_test(NAME p34_${fixture} COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/compare_adaptive.py
+            --executable $<TARGET_FILE:alod_run> --fixture ${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/p34/${fixture}.json)
+        set_tests_properties(p34_${fixture} PROPERTIES TIMEOUT 240 LABELS smoke)
+    endforeach()
     foreach(problem E1 E2)
         foreach(state uniform graded ritz)
             add_test(NAME p2_${problem}_${state}

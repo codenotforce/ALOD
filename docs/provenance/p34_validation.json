@@ -1,0 +1,76 @@
+{
+  "date": "2026-09-11",
+  "scope": "P3/P4 implementation and bounded acceptance; complete production campaigns deferred to P8",
+  "environment": {
+    "os": "Ubuntu 22.04 under WSL",
+    "compiler": "GCC 11.4 portable Release",
+    "python": "3.10",
+    "threads": "1 or 2 in bounded tests; full presets request 16 physical cores"
+  },
+  "acceptance": {
+    "p34_mathematics": "passed",
+    "p34_cli": "passed",
+    "e1_archived_prefix": "six states across promotion; exact marks/ell/free counts and 1e-12 + 1e-8 numeric tolerance, Theta absolute tolerance 1e-7",
+    "e2_initial": "base targets and Theta match; enriched proximity is separate because cold-start recurrence was corrected",
+    "complete_ctest": "27/27 passed from a clean standalone export, without old source, old libraries or prior build cache"
+  },
+  "full_campaigns_run": false,
+  "server_long_jobs_started": false,
+  "pending": [
+    "P5 checkpoints/resume and independent FEM/fresh/pure-RHS audits",
+    "P6/P7 large-grid profiles, storage limits and resource supervision",
+    "P8 E1 51-state main, two 51-state ALOD and two 97-state AFEM controls",
+    "P8 E2 33-state every/lazy and inherit/reset campaigns"
+  ],
+  "source_discrepancies": [
+    "P2 area/arithmetic averaging and N2/support-expanded patches remain explicit",
+    "E1 reference-only closure must preserve the proposed-coarse mesh closure before discarding its update",
+    "E2 archived nominal raw-kernel bootstrap is replaced by the specified greedy normalized phi recurrence"
+  ],
+  "e2_archived_comparison": {
+    "scope": "E2 equivalent targets/Theta and enriched proximity only",
+    "eta_max_absolute_difference": 2.0964252527289062e-06,
+    "exact_error_max_absolute_difference": 6.163430222860811e-07
+  },
+  "e2_two_state_window": [
+    {
+      "state_id": 0,
+      "ell": 2,
+      "rank": 2,
+      "working_rank": 6,
+      "inherited_rank": 0,
+      "training_met": true,
+      "compression_accepted": true,
+      "pg_residual": 1.3935842641466636e-15,
+      "aot_factorizations": 1
+    },
+    {
+      "state_id": 1,
+      "ell": 2,
+      "rank": 2,
+      "working_rank": 4,
+      "inherited_rank": 2,
+      "training_met": true,
+      "compression_accepted": true,
+      "pg_residual": 1.4065136269505388e-15,
+      "aot_factorizations": 2
+    }
+  ],
+  "clean_build": {
+    "tests_passed": 27,
+    "tests_failed": 0,
+    "ctest_wall_seconds": 63.91,
+    "source_matches_working_tree": true,
+    "configure": "cmake --preset release",
+    "build": "cmake --build --preset release",
+    "test": "ctest --preset release",
+    "binary_sha256": "ccfb61e82182906f74c079a7766ada312320cd366366425fdbf30b4f64a3f478"
+  },
+  "portability": {
+    "files_checked": 202,
+    "imported_hashes": 63,
+    "absolute_local_paths": 0,
+    "documentation": "English except the Chinese planning document",
+    "staged_check": "passed before final metadata update; repeated for the exact final staged blobs"
+  }
+}

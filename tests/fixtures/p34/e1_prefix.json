@@ -1,0 +1,180 @@
+{
+  "config": {
+    "problem": "E1",
+    "level": 2,
+    "gap": 2,
+    "ell": 2,
+    "graded": false,
+    "riesz_patches": "archive",
+    "interpolation": "arithmetic",
+    "threads": 1,
+    "maximum_nodes": 20000,
+    "theta": 0.15,
+    "ritz_tolerance": 0.0001,
+    "ritz_iterations": 750,
+    "dense_threshold": 64,
+    "member_ids": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "training_ids": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "method": "ALOD",
+    "cycles": 3,
+    "m_ref": 2,
+    "state_limit": 0,
+    "minimum_gap": 2,
+    "reference_theta": [
+      0.3,
+      0.2
+    ],
+    "ell_mode": "lazy",
+    "maximum_ell": 4,
+    "extra_checks": [],
+    "force_promotions": [],
+    "radius": 0.6,
+    "rank_cap": 24,
+    "inherit": true,
+    "audit": true,
+    "emit_solution": false,
+    "maximum_patch_entries": 8000000,
+    "maximum_dense_entries": 8000000
+  },
+  "scope": "Archived E1 states 0..5 across the state-4 promotion. The new terminal state 6 intentionally performs an additional localization check and is excluded from prefix equality.",
+  "source_hashes": {
+    "floor_norms.csv": "fb4bd94b89af3b647105c6b59c2ca38f979544b613b73a53e05d2a8bc106ca02",
+    "balance_samples.csv": "51aa373f58fd03adaa04c0d46e62d8e05782a300a911cfb571810b8a22b92c24",
+    "coarse_mark_recipe.csv": "b3e9fde830529898c5222d1fa8736d8b239b750a5ea688fce1e716301a0d2016",
+    "lazy_global_ell.csv": "4ca9a7127794be6fb78f35b637f65c1dc85e7b0faa316884c6b5b021edc135ea"
+  },
+  "states": [
+    {
+      "state_id": 0,
+      "ell": 2,
+      "coarse_free": 3,
+      "reference_free": 15,
+      "exact_error": 0.197041822522493,
+      "exact_norm": 0.13155152903768053,
+      "eta": [
+        0.044219906293955634,
+        0.04213885341640555,
+        0.05989197064701156,
+        0.04129987720247253
+      ],
+      "coarse_marks": [
+        0,
+        1
+      ]
+    },
+    {
+      "state_id": 1,
+      "ell": 2,
+      "coarse_free": 5,
+      "reference_free": 24,
+      "exact_error": 0.2584328826208648,
+      "exact_norm": 0.13155152903768053,
+      "eta": [
+        0.0626472122787964,
+        0.05759706985661959,
+        0.08375244543587097,
+        0.059867502186012105
+      ],
+      "coarse_marks": [
+        0,
+        1
+      ]
+    },
+    {
+      "state_id": 2,
+      "ell": 2,
+      "coarse_free": 5,
+      "reference_free": 32,
+      "exact_error": 0.22242494218630485,
+      "exact_norm": 0.13155152903768053,
+      "eta": [
+        0.09169292592790268,
+        0.08314673290804732,
+        0.12269692604117718,
+        0.0857392726200771
+      ],
+      "coarse_marks": [
+        7,
+        9
+      ]
+    },
+    {
+      "state_id": 3,
+      "ell": 2,
+      "coarse_free": 6,
+      "reference_free": 41,
+      "exact_error": 0.19025929099396738,
+      "exact_norm": 0.13155152903768053,
+      "eta": [
+        0.13213979709600052,
+        0.1246338643084452,
+        0.16047406051206828,
+        0.12657184112315603
+      ],
+      "coarse_marks": [
+        11,
+        12
+      ]
+    },
+    {
+      "state_id": 4,
+      "ell": 3,
+      "coarse_free": 6,
+      "reference_free": 51,
+      "exact_error": 0.1638644191607437,
+      "exact_norm": 0.13155152903768053,
+      "eta": [
+        0.15616030793068852,
+        0.14618466033989683,
+        0.18930613177923802,
+        0.14835380127751804
+      ],
+      "coarse_marks": [
+        11,
+        12
+      ]
+    },
+    {
+      "state_id": 5,
+      "ell": 3,
+      "coarse_free": 7,
+      "reference_free": 60,
+      "exact_error": 0.1510277687346088,
+      "exact_norm": 0.13155152903768053,
+      "eta": [
+        0.16983323120809338,
+        0.15917964857627845,
+        0.20212871740794416,
+        0.16236713771548947
+      ],
+      "coarse_marks": [
+        6,
+        7
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "state_id": 0,
+      "ell": 2,
+      "theta": 0.0,
+      "eta": 0.044219906293955634
+    },
+    {
+      "state_id": 4,
+      "ell": 2,
+      "theta": 0.5350177093476741,
+      "eta": 0.15683576125582327
+    }
+  ]
+}
