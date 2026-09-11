@@ -33,6 +33,8 @@ double probe(double depth) {
     C.setFromTriplets(cg.begin(),cg.end()); M.setFromTriplets(mass.begin(),mass.end());
     B.setFromTriplets(inv.begin(),inv.end()); E.setFromTriplets(average.begin(),average.end());
     Sparse expected=E*B*f.P_dg.transpose()*M*C;
+    Sparse manuscript=build_quasi_interp(coarse,f.mesh,f.P_dg,C,f.mesh.nodes.size(),coarse.nodes.size(),QuasiInterpolationPolicy::ManuscriptAreaWeighted);
+    if((manuscript-expected).norm()>1e-12)throw std::runtime_error("manuscript interpolation assembly mismatch");
     Sparse actual=build_quasi_interp(coarse,f.mesh,f.P_dg,C,f.mesh.nodes.size(),coarse.nodes.size());
     Sparse identity(coarse.nodes.size(),coarse.nodes.size());identity.setIdentity();
     Sparse check=actual*f.P_node-identity, check2=expected*f.P_node-identity;

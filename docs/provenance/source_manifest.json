@@ -152,9 +152,9 @@
       "origin_scope": "initial_project_input",
       "origin": "ALOD_SUBPROJECT_AGENT_PLAN_20260909.md",
       "origin_sha256": "5e4544f14cf014a4732477283ec5ea64cb28e2506d8cb13162c768597c3c9ae2",
-      "sha256": "799dc756e900326cc90b6ea734684a7dac4a5aebbe34b6d5b1536a1a571c8466",
+      "sha256": "45d5260a711386cedb89483c3e77aa0f8b3b6cbac10095dc7625ccd8f1799d9f",
       "snapshot": "initial-user-plan",
-      "modification": "Restored the Chinese plan from the initial migration commit at the user's request; retained portable symbolic roots and added the current P0/P1 status, language exception and P0 averaging-discrepancy finding. Original source hash retained.",
+      "modification": "Plan retained in Chinese at user request; portable paths and P0/P1/P2 completion status recorded, including both verified manuscript/archive definition differences.",
       "copyright": "Inherited; no repository license found. See NOTICE.md."
     },
     {
@@ -402,9 +402,9 @@
       "origin_scope": "legacy",
       "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/lod/quasi_interp.cpp",
       "origin_sha256": "164efe14759dea73df171b1ea4c4998527ec33007c327135d08283547e20a13f",
-      "sha256": "9a0ab087e63cb52f0132883313729d42390c7fbe9f9fe3e4bf5ba94582200550",
+      "sha256": "5030be483570e5854d7b6bab811c7bde21252cfbb6cae4ede12bbdd7ee3708a6",
       "snapshot": "E2-production",
-      "modification": "Numerical implementation unchanged; normalized line endings.",
+      "modification": "P2 adds an explicit area-weighted manuscript policy to both sparse-product and element-local assembly; the existing API default remains archived arithmetic for P1 compatibility.",
       "copyright": "Inherited; see NOTICE.md."
     },
     {
@@ -422,9 +422,9 @@
       "origin_scope": "legacy",
       "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/include/lod/quasi_interp.h",
       "origin_sha256": "6c0104ac35fac4d919e18348c37faf651fc1538a77f0b80ac5b7a34f25c8d4c5",
-      "sha256": "98ee55a3b5a2796ed70d24882405fc2519ba3beb4db60d06c052c82cdefaf10f",
+      "sha256": "e30985e34ea452320402a91043fc97cc78a22f351cf259790cda1ea6129b2b74",
       "snapshot": "E2-production",
-      "modification": "Numerical implementation unchanged; normalized line endings.",
+      "modification": "P2 adds an explicit area-weighted manuscript policy to both sparse-product and element-local assembly; the existing API default remains archived arithmetic for P1 compatibility.",
       "copyright": "Inherited; see NOTICE.md."
     },
     {
@@ -536,6 +536,72 @@
       "snapshot": "E2-production",
       "modification": "Production E1/E2 interfaces only.",
       "copyright": "Inherited; see NOTICE.md."
+    },
+    {
+      "path": "src/lod/lod.cpp",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/model.cpp",
+      "origin_sha256": "4da71e4c9b289d4939acffa750fb727a5f8829bd061febd168bbbfe6ef8e30bf",
+      "sha256": "a369d84ce010a613f09bf2e2699742c84e56ce15cc7ce5666509c3b3a5fa43e7",
+      "snapshot": "E2-production",
+      "modification": "Fixed-state two-sided direct-Schur assembly, shared batch PG factor and immutable identities; excludes controller and audit machinery.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "src/lod/fingerprint.hpp",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/adaptive/kernel_residual.cpp",
+      "origin_sha256": "db07ff1fa841913cdf967460d2b6d17059a6f242d5dd035dadeeb616d872f6f7",
+      "sha256": "f300e7c4ff457cc33ae3f6e8dd1319d0a3b4d628eb8f1c7e70ed118277d957f6",
+      "snapshot": "E2-production",
+      "modification": "Extracted fixed-byte-order fingerprint helper for actual embeddings and patch factor grouping.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "src/estimator/riesz.cpp",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/adaptive/kernel_residual.cpp",
+      "origin_sha256": "db07ff1fa841913cdf967460d2b6d17059a6f242d5dd035dadeeb616d872f6f7",
+      "sha256": "4b32ecf498b3264056cb1021d8e80088dcb7244be356b291bcd417295dfa27d4",
+      "snapshot": "E2-production",
+      "modification": "Extracted active-row QR reduction, restrictions and geometry; manuscript N2 and explicit archived support-expansion policies. Batched additive Schur/saddle body is from additive_kernel_riesz.inc. Preserves duplicate-patch multiplicity, deterministic reductions and selected/full identities; adds resource caps and local kernel residuals.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md.",
+      "additional_origins": [
+        {
+          "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/adaptive/additive_kernel_riesz.inc",
+          "sha256": "def46c5a096476f6c881c2beb02c347cdfe3d65ec1b97268c4ccc865dd657e89"
+        }
+      ]
+    },
+    {
+      "path": "src/estimator/marking.cpp",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/benchmarks/reference_epoch_paper_runner.cpp",
+      "origin_sha256": "2e7317978ebe3673431b35e13c129d437466150d044751de42c4a3844ff440d2",
+      "sha256": "56b6e7863e33daa7e113229cccf8f24757bad6c88e0ac60566da318e0001cb97",
+      "snapshot": "E2-production",
+      "modification": "Extracted mean normalized mass and minimal worst-member supplement semantics; explicit stable member IDs and training-role validation. Typed reference strong residual delegates to the preserved conforming residual kernel.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "src/localization/theta.cpp",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/adaptive/certificates.cpp",
+      "origin_sha256": "e939ee9638c41cfc630e79136878859109a3c4703eb3d77e737c288fc4c7ec49",
+      "sha256": "235c49437218683cec75e014bbf770418cc2e7eaee6a8c7d6abaecf56238a114",
+      "snapshot": "E2-production",
+      "modification": "Extracted reference_defect_spectrum_matrix_free block Ritz iteration and corrector defect/coarse-energy construction. Reuses prepared additive Riesz factors; strict warm-start identities, explicit nonconvergence, no strict certification driver.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "src/localization/dense.cpp",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/adaptive/reference_retraction.cpp",
+      "origin_sha256": "4d12c090573ef1614165a14ecf83491541e22f8c34c4469c7ec354120da6b154",
+      "sha256": "9a80d790765437b48958d67845937258aacd78eddb417d172bcdef935bba143c",
+      "snapshot": "E2-production",
+      "modification": "Extracted whitened_matrix and largest_generalized_eigenvalue_dense only, retaining the archived power iteration and optional dense cross-check/fallback; omits retraction and sparse scalar iterations.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md."
     }
   ]
 }

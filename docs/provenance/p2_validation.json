@@ -1,0 +1,550 @@
+{
+  "date": "2026-09-11",
+  "scope": "P2 fixed-state acceptance; P3/P4 controllers are not implemented",
+  "local_environment": {
+    "compiler": "GCC 11.4.0",
+    "cmake": "3.22.1",
+    "eigen": "3.4.0",
+    "suite_sparse": "5.10.1",
+    "architecture": "portable default",
+    "threads": 1,
+    "blas_threads": 1
+  },
+  "archived_comparisons": [
+    {
+      "fixture": "E1_graded.json",
+      "sha256": "a9a213c5c7ab38c551ed71fdbb85049c434b5cc6553f008c38bac9ddf2a3780d",
+      "maximum_absolute_difference": {
+        "solution": 0,
+        "node_squared": 0.0,
+        "element_squared": 0.0,
+        "reference_strong_squared": 0.0,
+        "eta": 0.0,
+        "frozen_scales": 0.0
+      },
+      "theta_old": 2.8307004685675214,
+      "theta_new": 2.830700468567522,
+      "theta_difference": 4.440892098500626e-16,
+      "exact_marks": true,
+      "exact_patch_geometry": true,
+      "ritz_iterations": 6,
+      "ritz_residual": 2.7698378633504417e-05
+    },
+    {
+      "fixture": "E1_ritz.json",
+      "sha256": "fd7a837de7e23a1d897f5f37581c21504f66d1ad1338f251cc6df949fc33df14",
+      "maximum_absolute_difference": {
+        "solution": 0,
+        "node_squared": 0.0,
+        "element_squared": 0.0,
+        "reference_strong_squared": 0.0,
+        "eta": 0.0,
+        "frozen_scales": 0.0
+      },
+      "theta_old": 6.877091311321054,
+      "theta_new": 6.87709131132105,
+      "theta_difference": 4.440892098500626e-15,
+      "exact_marks": true,
+      "exact_patch_geometry": true,
+      "ritz_iterations": 4,
+      "ritz_residual": 9.941940848952251e-05
+    },
+    {
+      "fixture": "E1_uniform.json",
+      "sha256": "f8edd45bad9c5711c6928e2519b02912555df9022fec364543aff150c6891f63",
+      "maximum_absolute_difference": {
+        "solution": 0,
+        "node_squared": 0.0,
+        "element_squared": 0.0,
+        "reference_strong_squared": 0.0,
+        "eta": 0.0,
+        "frozen_scales": 0.0
+      },
+      "theta_old": 3.4668994608410586e-08,
+      "theta_new": 2.316223570123382e-08,
+      "theta_difference": 1.1506758907176767e-08,
+      "exact_marks": true,
+      "exact_patch_geometry": true,
+      "ritz_iterations": 1,
+      "ritz_residual": 9.274016337019414e-16
+    },
+    {
+      "fixture": "E2_graded.json",
+      "sha256": "7fd18fefed0821a7c7ccc54dbd72fb5255f3e30d94191149ccefa25d3fa54573",
+      "maximum_absolute_difference": {
+        "solution": 0.0,
+        "node_squared": 0.0,
+        "element_squared": 0.0,
+        "reference_strong_squared": 0.0,
+        "eta": 0.0,
+        "frozen_scales": 0.0
+      },
+      "theta_old": 3.954290269227792,
+      "theta_new": 3.9542902692277915,
+      "theta_difference": 4.440892098500626e-16,
+      "exact_marks": true,
+      "exact_patch_geometry": true,
+      "ritz_iterations": 28,
+      "ritz_residual": 8.076537399460825e-05
+    },
+    {
+      "fixture": "E2_ritz.json",
+      "sha256": "5f0ff051bfb661c15b1c3534fbedf4c9b96867f6c7dddfc802bac5a9a0732213",
+      "maximum_absolute_difference": {
+        "solution": 0.0,
+        "node_squared": 0.0,
+        "element_squared": 0.0,
+        "reference_strong_squared": 0.0,
+        "eta": 0.0,
+        "frozen_scales": 0.0
+      },
+      "theta_old": 203.9993644206301,
+      "theta_new": 203.9993644206299,
+      "theta_difference": 1.9895196601282805e-13,
+      "exact_marks": true,
+      "exact_patch_geometry": true,
+      "ritz_iterations": 3,
+      "ritz_residual": 5.8938672906782355e-06
+    },
+    {
+      "fixture": "E2_uniform.json",
+      "sha256": "2a9aec631e86dd9a3e722d114fdc7e4dbd24bdde5d4ba618f96b5f7bf3f15bed",
+      "maximum_absolute_difference": {
+        "solution": 0.0,
+        "node_squared": 0.0,
+        "element_squared": 0.0,
+        "reference_strong_squared": 0.0,
+        "eta": 0.0,
+        "frozen_scales": 0.0
+      },
+      "theta_old": 3.7736170478300695,
+      "theta_new": 3.7736170478300686,
+      "theta_difference": 8.881784197001252e-16,
+      "exact_marks": true,
+      "exact_patch_geometry": true,
+      "ritz_iterations": 19,
+      "ritz_residual": 9.536868171958924e-05
+    }
+  ],
+  "definition_differences": [
+    {
+      "case": "E1_graded",
+      "archive_nominal_eta": 0.14103327074099767,
+      "manuscript_nominal_eta": 0.15465139593423938,
+      "archive_theta": 2.830700468567522,
+      "manuscript_theta": 15.09750888285943,
+      "maximum_solution_difference": 0.053792805943528636,
+      "patch_sizes_archive": [
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10
+      ],
+      "patch_sizes_manuscript": [
+        6,
+        9,
+        8,
+        9,
+        10,
+        10,
+        10,
+        8,
+        8,
+        10
+      ]
+    },
+    {
+      "case": "E1_uniform",
+      "archive_nominal_eta": 0.054416979753628136,
+      "manuscript_nominal_eta": 0.054416979753628136,
+      "archive_theta": 2.316223570123382e-08,
+      "manuscript_theta": 2.316223570123382e-08,
+      "maximum_solution_difference": 0,
+      "patch_sizes_archive": [
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8
+      ],
+      "patch_sizes_manuscript": [
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8
+      ]
+    },
+    {
+      "case": "E2_graded",
+      "archive_nominal_eta": 21.850651988288824,
+      "manuscript_nominal_eta": 11.883780447209638,
+      "archive_theta": 3.9542902692277915,
+      "manuscript_theta": 2.741975516529286,
+      "maximum_solution_difference": 1.4230802440051653,
+      "patch_sizes_archive": [
+        12,
+        16,
+        22,
+        26,
+        14,
+        16,
+        20,
+        14,
+        26,
+        25,
+        24,
+        16,
+        20,
+        26,
+        26,
+        21,
+        24,
+        24,
+        14,
+        20,
+        18,
+        16
+      ],
+      "patch_sizes_manuscript": [
+        6,
+        9,
+        17,
+        24,
+        8,
+        8,
+        16,
+        8,
+        16,
+        16,
+        14,
+        10,
+        12,
+        12,
+        18,
+        10,
+        12,
+        18,
+        8,
+        10,
+        10,
+        10
+      ]
+    },
+    {
+      "case": "E2_uniform",
+      "archive_nominal_eta": 27.02110552968818,
+      "manuscript_nominal_eta": 18.496948579130898,
+      "archive_theta": 3.7736170478300686,
+      "manuscript_theta": 2.435756659222981,
+      "maximum_solution_difference": 0.0,
+      "patch_sizes_archive": [
+        14,
+        14,
+        20,
+        24,
+        14,
+        16,
+        20,
+        14,
+        24,
+        24,
+        24,
+        14,
+        18,
+        24,
+        24,
+        20,
+        24,
+        24,
+        14,
+        20,
+        18
+      ],
+      "patch_sizes_manuscript": [
+        8,
+        8,
+        16,
+        24,
+        8,
+        8,
+        16,
+        8,
+        14,
+        16,
+        14,
+        8,
+        10,
+        12,
+        18,
+        10,
+        12,
+        18,
+        8,
+        10,
+        10
+      ]
+    }
+  ],
+  "independent_checks": [
+    "explicit dense constrained kernel inverse",
+    "all geometric boundary centers and complete local supports",
+    "node-to-element allocation per element and total",
+    "full/empty/partial mask multiplicity and AS identity",
+    "batch/scalar and two-thread reproducibility",
+    "training IDs, audit exclusion, permutation and worst-member supplement",
+    "coarse-energy generalized spectrum and conjugate sides",
+    "block warm start, stale identity rejection and explicit nonconvergence",
+    "load scaling and zero ratio statuses",
+    "typed reference strong residual and algebraic reconstruction",
+    "CLI success/failure artifacts"
+  ],
+  "server": {
+    "access": "PowerShell -> ssh shuihan -> fresh isolated workspace and unique tmux sessions",
+    "environment": {
+      "compiler": "GCC 11.4.0",
+      "cmake": "3.22.1",
+      "eigen": "3.4.0",
+      "physical_cores": 64,
+      "logical_cpus": 128,
+      "initial_active_experiment_jobs": 0
+    },
+    "source_archive_sha256": "859e43a62a62e654d54e7b08f3c1ffc3825e08295969906e34d8b79e199f5a47",
+    "executable_sha256": "cf3069bdedfdade7b0fab21ba50031143634c68fd66c29f469e091a4e804d311",
+    "profile": {
+      "config": {
+        "problem": "E2",
+        "level": 6,
+        "gap": 4,
+        "ell": 2,
+        "graded": false,
+        "riesz_patches": "n2",
+        "interpolation": "area",
+        "threads": 16,
+        "maximum_nodes": 10000,
+        "theta": 0.15,
+        "ritz_tolerance": 0.0001,
+        "ritz_iterations": 750,
+        "dense_threshold": 0,
+        "member_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "training_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ]
+      },
+      "cpus": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "physical_cores": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          0,
+          5
+        ],
+        [
+          0,
+          6
+        ],
+        [
+          0,
+          7
+        ],
+        [
+          0,
+          32
+        ],
+        [
+          0,
+          33
+        ],
+        [
+          0,
+          34
+        ],
+        [
+          0,
+          35
+        ],
+        [
+          0,
+          36
+        ],
+        [
+          0,
+          37
+        ],
+        [
+          0,
+          38
+        ],
+        [
+          0,
+          39
+        ]
+      ],
+      "reserve_kib": 83886080.0,
+      "initial_available_kib": 384243296,
+      "initial_swap_free_kib": 1852,
+      "peak_group_rss_kib": 88424,
+      "peak_group_swap_kib": 0,
+      "minimum_available_kib": 384189568,
+      "maximum_rss_gib": 4.0,
+      "maximum_seconds": 1800,
+      "worker_affinity": {
+        "3261032": "0-15",
+        "3261033": "0-15",
+        "3261034": "0-15",
+        "3261035": "0-15",
+        "3261036": "0-15",
+        "3261037": "0-15",
+        "3261038": "0-15",
+        "3261039": "0-15",
+        "3261040": "0-15",
+        "3261041": "0-15",
+        "3261042": "0-15",
+        "3261043": "0-15",
+        "3261044": "0-15",
+        "3261045": "0-15",
+        "3261046": "0-15",
+        "3261047": "0-15"
+      },
+      "worker_cpu_ticks": {
+        "3261032": 121,
+        "3261033": 99,
+        "3261034": 100,
+        "3261035": 100,
+        "3261036": 100,
+        "3261037": 101,
+        "3261038": 101,
+        "3261039": 101,
+        "3261040": 100,
+        "3261041": 99,
+        "3261042": 100,
+        "3261043": 100,
+        "3261044": 100,
+        "3261045": 101,
+        "3261046": 101,
+        "3261047": 100
+      },
+      "status": "complete",
+      "returncode": 0,
+      "participating_workers": 16,
+      "wall_seconds": 1.3951378390192986,
+      "child_kernel_peak_rss_kib": 88424,
+      "child_user_seconds": 16.726276,
+      "child_system_seconds": 0.082227
+    },
+    "numerical": {
+      "coarse_nodes": 225,
+      "reference_nodes": 3201,
+      "theta": 0.052077050257032444,
+      "ritz_residual": 8.977954634311389e-05,
+      "ritz_iterations": 5,
+      "ritz_converged": true,
+      "pg_residual": 1.1040922692667981e-15,
+      "patch_residual": 1.6001578943724475e-14,
+      "constraint_residual": 1.1278920287141882e-15,
+      "mean_bulk": 0.18647674112269264,
+      "worst_bulk": 0.20058434972641687,
+      "riesz_factorizations": 225
+    },
+    "repeat_maximum_solution_difference": 0.0,
+    "scope": "One bounded fixed-state resource window, followed by kernel peak-RSS instrumentation confirmation. No production campaign or speedup comparison. Final ratio-output additions were validated locally; they do not change the profiled numerical solve. Final warm-block selection and dense-allocation guards were covered by the clean local suite."
+  },
+  "clean_checkout": {
+    "status": "passed",
+    "tests_passed": 23,
+    "tests_failed": 0,
+    "configuration": "Portable Release, CMake preset release, two compiler jobs",
+    "isolation": "Fresh standalone source export; no legacy checkout, old library, prior build cache or Git history",
+    "final_core_sha256": {
+      "src/lod/lod.cpp": "a369d84ce010a613f09bf2e2699742c84e56ce15cc7ce5666509c3b3a5fa43e7",
+      "src/estimator/riesz.cpp": "4b32ecf498b3264056cb1021d8e80088dcb7244be356b291bcd417295dfa27d4",
+      "src/estimator/marking.cpp": "56b6e7863e33daa7e113229cccf8f24757bad6c88e0ac60566da318e0001cb97",
+      "src/localization/theta.cpp": "235c49437218683cec75e014bbf770418cc2e7eaee6a8c7d6abaecf56238a114",
+      "src/localization/dense.cpp": "9a80d790765437b48958d67845937258aacd78eddb417d172bcdef935bba143c"
+    }
+  },
+  "fixture_generation": "tools/build_p2_oracles.py with an explicitly supplied portable archived source and freshly rebuilt library; existing fixtures are immutable",
+  "caveat": "Archive equivalence uses arithmetic interpolation and support-expanded patches. Manuscript area/N2 results have separate independent mathematical validation.",
+  "marking_reference": "Independent archived mean/minimal-supplement recipe applied to captured old-library indicators and energies; full production controller not executed."
+}

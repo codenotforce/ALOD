@@ -14,7 +14,8 @@ Eigen::SparseMatrix<double> build_quasi_interp_sparse_products(
     const TriMesh &coarse,
     const TriMesh &fine,
     const Eigen::SparseMatrix<double> &P1dg,
-    const Eigen::SparseMatrix<double> &cg2dgh) {
+    const Eigen::SparseMatrix<double> &cg2dgh,
+    QuasiInterpolationPolicy policy) {
     const int NTh = static_cast<int>(fine.elems.size());
     const int NTH = static_cast<int>(coarse.elems.size());
     const int NHdg = 3 * NTH;
@@ -52,7 +53,8 @@ Eigen::SparseMatrix<double> build_quasi_interp_sparse_products(
     incidence_triplets.reserve(3 * static_cast<std::size_t>(NTH));
     for (int e = 0; e < NTH; ++e)
         for (int i = 0; i < 3; ++i)
-            incidence_triplets.emplace_back(coarse.elems[e][i], 3*e+i, 1.0);
+            incidence_triplets.emplace_back(coarse.elems[e][i], 3*e+i,
+                policy == QuasiInterpolationPolicy::ManuscriptAreaWeighted ? coarse_areas[e] : 1.0);
     Eigen::SparseMatrix<double> incidence(coarse_nodes, NHdg);
     incidence.setFromTriplets(
         incidence_triplets.begin(), incidence_triplets.end());
@@ -64,7 +66,7 @@ Eigen::SparseMatrix<double> build_quasi_interp_sparse_products(
         for (Eigen::SparseMatrix<double>::InnerIterator it(
                  incidence, column); it; ++it) {
             averaging_triplets.emplace_back(
-                it.row(), it.col(), 1.0 / degree(it.row()));
+                it.row(), it.col(), it.value() / degree(it.row()));
         }
     }
     Eigen::SparseMatrix<double> averaging(coarse_nodes, NHdg);
@@ -97,7 +99,7 @@ Eigen::SparseMatrix<double>
 build_quasi_interp(const TriMesh &coarse, const TriMesh &fine,
                    const Eigen::SparseMatrix<double> &P1dg,
                    const Eigen::SparseMatrix<double> &cg2dgh,
-                   int /*Nh*/, int /*NH*/) {
+                   int /*Nh*/, int /*NH*/, QuasiInterpolationPolicy policy) {
     int NTh  = static_cast<int>(fine.elems.size());
     int NTH  = static_cast<int>(coarse.elems.size());
     int NHdg = 3 * NTH;
@@ -115,7 +117,7 @@ build_quasi_interp(const TriMesh &coarse, const TriMesh &fine,
     constexpr int local_assembly_element_threshold = 80000;
     if (NTh < local_assembly_element_threshold) {
         return build_quasi_interp_sparse_products(
-            coarse, fine, P1dg, cg2dgh);
+            coarse, fine, P1dg, cg2dgh, policy);
     }
 
     // Algebraically this routine evaluates
@@ -140,10 +142,11 @@ build_quasi_interp(const TriMesh &coarse, const TriMesh &fine,
 
     // E_H is the vertex-wise average of coarse DG values.
     int Nh_c = static_cast<int>(coarse.nodes.size());
-    std::vector<int> vertex_degree(Nh_c, 0);
+    std::vector<double> vertex_degree(Nh_c, 0);
     for (int e = 0; e < NTH; ++e) {
         for (int i = 0; i < 3; ++i)
-            ++vertex_degree[coarse.elems[e][i]];
+            vertex_degree[coarse.elems[e][i]] +=
+                policy == QuasiInterpolationPolicy::ManuscriptAreaWeighted ? coarse_areas[e] : 1.0;
     }
     std::vector<char> is_dirichlet(coarse.nodes.size(), false);
     for (int node : coarse.dirichlet) {
@@ -182,7 +185,8 @@ build_quasi_interp(const TriMesh &coarse, const TriMesh &fine,
         for (int coarse_local = 0; coarse_local < 3; ++coarse_local) {
             const int coarse_node = coarse.elems[coarse_parent][coarse_local];
             if (is_dirichlet[coarse_node]) continue;
-            const double averaging = 1.0 / vertex_degree[coarse_node];
+            const double averaging = (policy == QuasiInterpolationPolicy::ManuscriptAreaWeighted
+                ? coarse_areas[coarse_parent] : 1.0) / vertex_degree[coarse_node];
             for (int fine_local = 0; fine_local < 3; ++fine_local) {
                 const double value = averaging * local(coarse_local, fine_local);
                 if (value != 0.0) {

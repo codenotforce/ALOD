@@ -25,6 +25,11 @@ add_library(alod_core STATIC
     src/lod/quasi_interp.cpp
     src/lod/patches.cpp
     src/lod/slod.cpp
+    src/lod/lod.cpp
+    src/estimator/riesz.cpp
+    src/estimator/marking.cpp
+    src/localization/theta.cpp
+    src/localization/dense.cpp
     src/helmholtz/patch_system.cpp
     src/helmholtz/patch_solver.cpp
     src/helmholtz/corrector.cpp)
@@ -36,10 +41,32 @@ add_executable(alod_fem_smoke apps/fem_smoke.cpp)
 target_link_libraries(alod_fem_smoke PRIVATE alod_core)
 add_executable(alod_run apps/alod_run.cpp)
 target_link_libraries(alod_run PRIVATE alod_core)
+add_executable(alod_fixed apps/alod_fixed.cpp)
+target_link_libraries(alod_fixed PRIVATE alod_core)
 
 if(ALOD_BUILD_TESTS)
     enable_testing()
+    add_executable(test_p2 tests/test_p2.cpp)
+    target_link_libraries(test_p2 PRIVATE alod_core)
+    add_test(NAME p2_mathematics COMMAND test_p2)
+    set_tests_properties(p2_mathematics PROPERTIES ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1" TIMEOUT 180)
     find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter)
+    foreach(problem E1 E2)
+        foreach(state uniform graded ritz)
+            add_test(NAME p2_${problem}_${state}
+                COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/compare_p2.py
+                    --executable $<TARGET_FILE:alod_fixed>
+                    --fixture ${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/p2/${problem}_${state}.json)
+            set_tests_properties(p2_${problem}_${state} PROPERTIES TIMEOUT 180 LABELS smoke)
+        endforeach()
+    endforeach()
+    add_test(NAME p2_thread_reproducibility
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/compare_p2.py
+            --executable $<TARGET_FILE:alod_fixed>
+            --fixture ${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/p2/E2_graded.json --threads 2)
+    set_tests_properties(p2_thread_reproducibility PROPERTIES TIMEOUT 180 LABELS smoke)
+    add_test(NAME p2_cli COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_fixed_cli.py $<TARGET_FILE:alod_fixed>)
+    set_tests_properties(p2_cli PROPERTIES TIMEOUT 120 LABELS smoke)
     add_executable(quasi_average_probe tests/quasi_average_probe.cpp)
     target_link_libraries(quasi_average_probe PRIVATE alod_core)
     add_test(NAME quasi_average_discrepancy COMMAND quasi_average_probe)

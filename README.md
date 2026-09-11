@@ -1,8 +1,8 @@
 # ALOD
 
-ALOD is an independent C++20 migration of the E1/E2 Helmholtz experiments. It currently provides manufactured problems, mixed-boundary P1 FEM, conforming NVB meshes, a strong-residual AFEM baseline, uniform FEM, and uniform-grid SLOD with ell=3 and four additional reference levels.
+ALOD is an independent C++20 migration of the E1/E2 Helmholtz experiments. It provides manufactured problems, mixed-boundary P1 FEM, conforming NVB meshes, AFEM/UFEM/SLOD baselines, and fixed-state two-sided LOD with batched kernel estimators, explicit family marking, reference strong residuals and localization spectra.
 
-P0 source discovery and old-program replays are recorded in [the P0 evidence](docs/provenance/p0/README.md). P1 implementation and validation are summarized in [migration status](docs/migration_status.md). The full [migration plan](ALOD_SUBPROJECT_AGENT_PLAN_20260909.md) also covers the remaining adaptive LOD, regional enrichment, checkpoint and production phases.
+P0 source discovery and old-program replays are recorded in [the P0 evidence](docs/provenance/p0/README.md). P1/P2 implementation and validation are summarized in [migration status](docs/migration_status.md). The full [migration plan](ALOD_SUBPROJECT_AGENT_PLAN_20260909.md) also covers the remaining adaptive controllers, regional enrichment, checkpoint and production phases.
 
 ## Build and test
 
@@ -33,9 +33,18 @@ Each problem has AFEM, UFEM and SLOD presets under `configs/smoke/` and `configs
 
 ## Numerical scope
 
+Run a P2 fixed state with explicit training-member IDs:
+
+```sh
+python3 tools/run_fixed.py --config configs/p2/e1_fixed.json --output results/e1-fixed
+python3 tools/run_fixed.py --config configs/p2/e2_fixed.json --output results/e2-fixed
+```
+
+See [P2 modules and validation](docs/p2.md) for configuration, API contracts, server profiling and the separate manuscript/archived numerical policies.
+
 E1 is the localized oscillatory packet with Dirichlet, Neumann and Robin boundaries. E2 is the weighted corner singularity plus an alpha=80 Gaussian wave on the L-shaped domain. Both use kappa=16. Formal load tables and imported canonical audits are in `data/rhs/` and `tests/fixtures/legacy/`. Baseline exact-error stopping is separate from strong-residual marking.
 
-SLOD uses two corrected spaces, direct Schur patch solves and an Eigen SparseLU coarse solve. Adaptive quasi-interpolation has a known manuscript/source averaging discrepancy, reproduced by a regression test and documented in [the implementation map](docs/paper_implementation_map.md). P1 SLOD is restricted to uniform coarse meshes. General adaptive LOD/POD/AOT workflows and restart support are later phases.
+SLOD and P2 LOD use two corrected spaces, direct Schur patch solves and an Eigen SparseLU coarse solve. P2 defaults to manuscript area-weighted interpolation and geometric N² vertex patches. Explicit archive policies preserve the different averaging and patch expansion found in production sources; see [the implementation map](docs/paper_implementation_map.md). P1 SLOD remains restricted to uniform coarse meshes. Adaptive scheduling, regional POD/AOT workflows and restart support are later phases.
 
 ## Provenance and contribution checks
 

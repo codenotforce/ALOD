@@ -1,6 +1,6 @@
 # Migration status
 
-Updated: 2026-09-11. **P0 and P1 are complete at their defined acceptance scope.** P2-P9 production migration has not started. Historical full campaigns remain imported evidence; this repository has not generated new 51-state E1 or 33-state E2 production trajectories.
+Updated: 2026-09-11. **P0, P1 and P2 are complete at their defined acceptance scope.** P3-P9 production migration has not started. Historical full campaigns remain imported evidence; this repository has not generated new 51-state E1 or 33-state E2 production trajectories.
 
 ## P0: source discovery and old replay
 
@@ -24,17 +24,29 @@ See `provenance/p0/README.md` and the accompanying machine-readable evidence. Th
 
 The final clean-checkout CTest and staged portability results are recorded in `provenance/p1_validation.json`. The clean build contains no legacy checkout, old library or preexisting build cache. No new remote CI pass or server performance result is inferred from local tests.
 
+## P2: fixed-state LOD, estimators and localization
+
+- General fixed nested LOD spaces, including locally refined coarse meshes, with direct-Schur correctors, conjugate two-sided PG and a reused coarse factor for multiple RHS.
+- Batched constrained energy Riesz contexts, all geometric coarse vertices, per-element mass conservation, shared identical factors with correct multiplicity, and complete-support selected masks.
+- Explicit training-member IDs, frozen computed energy normalizers, mean plus worst-member Doerfler marking, nominal `[0]` selection and rejection of audit-only members.
+- A separately typed full-reference strong residual evaluated on the embedded LOD solution; AFEM continues to use its own conforming FEM solution.
+- Retained small-space and four-vector matrix-free localization iterations, the correct uncorrected coarse-energy denominator, state-bound warm starts, convergence evidence and explicit zero-ratio/nonconvergence handling.
+- Explicit manuscript and archive policies for the two discovered numerical differences: area versus arithmetic averaging and N² versus support-expanded vertex patches. Archive equality and manuscript mathematical validation are reported separately.
+- Six frozen old-library fixed states with 16 RHS, complete solution/indicator comparisons, exact marking/geometry checks, independent dense-kernel and spectral checks, two-thread reproducibility and CLI failure tests.
+- One isolated server window for H6/h10 E2, ell=2, 16 RHS and 16 physical cores, followed by a peak-memory instrumentation confirmation. All workers participated; the matrix-free Ritz iteration converged. This is a bounded fixed-state profile, not a production campaign or speedup claim.
+
+See `p2.md` and `provenance/p2_validation.json` for the acceptance evidence, limits and reproducible commands.
+
 ## Reproducibility limits
 
 Native vectorization changes the ordering of nearly equal indicators on an E1 symmetric coarse mesh. `provenance/p1_floating_point_sensitivity.json` records the first observed difference. Matching compiler flags give exact old/new agreement; arbitrary cross-architecture adaptive trajectory identity is not claimed. The original comparison rule remains unchanged, with no new tie tolerance.
 
-The archived quasi-interpolator averages incident elements arithmetically, while the manuscript uses area weighting. Both reproduce coarse P1 functions and coincide on the uniform meshes allowed by P1 SLOD. The graded counterexample has operator difference 0.15023130314433289. Resolve the intended definition and rerun the corresponding adaptive oracles before accepting P2.
+The archived quasi-interpolator averages incident elements arithmetically, while the manuscript uses area weighting. Both reproduce coarse P1 functions and coincide on the uniform meshes allowed by P1 SLOD. The graded counterexample has operator difference 0.15023130314433289. P2 also verified that the archived interpolation-support rule can produce N³ vertex patches where the manuscript specifies N². P2 exposes both policies; future trajectory comparisons must select them explicitly. Old archive equality does not imply manuscript-mode trajectory equality.
 
 ## Next phases
 
 | Phase | Remaining work |
 |---|---|
-| P2 | General adaptive LOD/PG, kernel Riesz, Theta, explicit marking members and the graded-mesh interpolation decision |
 | P3-P4 | Reference/candidate controllers, regional AS, POD/AOT, ell changes and inheritance |
 | P5-P7 | Checkpoint/resume, independent audit, resource protection, measured optimization and integration |
 | P8 | New accepted production trajectories and reproducible paper figures/tables |
