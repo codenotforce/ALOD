@@ -1,4 +1,5 @@
 #include "alod/afem.hpp"
+#include "alod/mesh_state.hpp"
 #include "helmholtz/boundary.h"
 #include <algorithm>
 #include <atomic>
@@ -61,6 +62,23 @@ Eigen::Vector2d outward_normal(
 }
 }
 namespace diagnostics {
+struct ResidualMeshContext::Impl {
+    const TriMesh& mesh;
+    std::string identity;
+    std::vector<ElementGeometry> geometry;
+    std::unordered_map<std::uint64_t,std::vector<EdgeIncident>> incidence;
+    explicit Impl(const TriMesh& input):mesh(input),identity(alod::mesh_fingerprint(input)),geometry(input.elems.size()){
+        incidence.reserve(3*mesh.elems.size());
+        static constexpr int local_edges[3][3]={{0,1,2},{1,2,0},{2,0,1}};
+        for(int e=0;e<static_cast<int>(mesh.elems.size());++e){
+            const auto& tri=mesh.elems[e];geometry[e]=element_geometry(mesh,tri);
+            for(const auto& edge:local_edges)
+                incidence[edge_key(tri[edge[0]],tri[edge[1]])].push_back({e,tri[edge[2]]});
+        }
+    }
+};
+ResidualMeshContext::ResidualMeshContext(const TriMesh& mesh):impl_(std::make_unique<Impl>(mesh)){}
+ResidualMeshContext::~ResidualMeshContext()=default;
 HelmholtzResidualContributions assemble_helmholtz_residual_contributions(
     const TriMesh &fine,
     const HelmholtzOperators &operators,
@@ -68,7 +86,10 @@ HelmholtzResidualContributions assemble_helmholtz_residual_contributions(
     const ComplexVector &load,
     const ComplexFunction &source,
     const QuadraturePolicy &quadrature,
-    const QuadratureContext &quadrature_context) {
+    const QuadratureContext &quadrature_context,
+    const std::vector<ElementGeometry>& geometry,
+    const std::unordered_map<std::uint64_t,std::vector<EdgeIncident>>& edge_incidence,
+    const SourceMomentData* moments) {
     const int element_count = static_cast<int>(fine.elems.size());
     const int node_count = static_cast<int>(fine.nodes.size());
     if (!source) throw std::invalid_argument("residual estimator source is empty");
@@ -88,11 +109,7 @@ HelmholtzResidualContributions assemble_helmholtz_residual_contributions(
         std::array<Complex, 3>{Complex(0.0), Complex(0.0), Complex(0.0)});
     result.reconstructed_residual = ComplexVector::Zero(node_count);
 
-    std::vector<ElementGeometry> geometry(element_count);
     std::vector<Eigen::Vector2cd> gradients(element_count, Eigen::Vector2cd::Zero());
-    std::unordered_map<std::uint64_t, std::vector<EdgeIncident>> edge_incidence;
-    edge_incidence.reserve(3 * fine.elems.size());
-    static constexpr int local_edges[3][3] = {{0, 1, 2}, {1, 2, 0}, {2, 0, 1}};
 
     // High-order/singular manufactured forcing quadrature dominates the
     // strong-residual path on deep candidate meshes.  Elements are
@@ -102,19 +119,43 @@ HelmholtzResidualContributions assemble_helmholtz_residual_contributions(
     std::atomic<bool> element_failure{false};
     std::exception_ptr element_exception;
 #if defined(_OPENMP)
-#pragma omp parallel for schedule(static)
+#pragma omp parallel
+#endif
+    {
+    std::vector<PhysicalTriangleQuadraturePoint> points;
+#if defined(_OPENMP)
+#pragma omp for schedule(static)
 #endif
     for (int element = 0; element < element_count; ++element) {
         if (element_failure.load(std::memory_order_relaxed)) continue;
         try {
             const Triangle &tri = fine.elems[element];
-            geometry[element] = element_geometry(fine, tri);
             for (int local = 0; local < 3; ++local) {
                 gradients[element] += solution(tri[local])
                     * geometry[element].gradients[local].cast<Complex>();
             }
-            for (const auto &point : triangle_quadrature_points(
-                     fine, element, quadrature, quadrature_context)) {
+            if(moments){
+                const auto& mass=(*moments->mass)[element];const auto& f=moments->load[element];
+                const double coefficient=operators.wavenumber*operators.wavenumber*operators.refractive_index[element];
+                std::array<Complex,3> mu{};long double cross=0,energy=0;
+                for(int i=0;i<3;++i){
+                    for(int j=0;j<3;++j)mu[i]+=mass[3*i+j]*solution(tri[j]);
+                    cross+=std::real(std::conj(f[i])*solution(tri[i]));
+                    energy+=std::real(std::conj(solution(tri[i]))*mu[i]);
+                }
+                const long double source_norm=moments->squared[element];
+                const long double mixed=2.L*coefficient*cross,discrete=static_cast<long double>(coefficient)*coefficient*energy;
+                const long double total=source_norm+mixed+discrete;
+                const long double scale=std::abs(source_norm)+std::abs(mixed)+std::abs(discrete);
+                // Avoid expanded-norm cancellation near a vanishing residual.
+                if(std::isfinite(total)&&total>1e-6L*scale){
+                    result.body_l2_squared[element]=static_cast<double>(total);
+                    for(int i=0;i<3;++i)result.body_residual_nodal[element][i]=f[i]+coefficient*mu[i];
+                    continue;
+                }
+            }
+            triangle_quadrature_points_into(fine, element, quadrature, quadrature_context, points);
+            for (const auto &point : points) {
                 Complex value = 0.0;
                 for (int local = 0; local < 3; ++local) {
                     value += point.barycentric[local] * solution(tri[local]);
@@ -140,15 +181,11 @@ HelmholtzResidualContributions assemble_helmholtz_residual_contributions(
             }
         }
     }
+    }
     if (element_exception) std::rethrow_exception(element_exception);
 
     for (int element = 0; element < element_count; ++element) {
         const Triangle &tri = fine.elems[element];
-        for (const auto &local_edge : local_edges) {
-            edge_incidence[
-                edge_key(tri[local_edge[0]], tri[local_edge[1]])]
-                .push_back({element, tri[local_edge[2]]});
-        }
         for (int local = 0; local < 3; ++local) {
             result.reconstructed_residual(tri[local])
                 += result.body_residual_nodal[element][local];
@@ -218,19 +255,24 @@ HelmholtzResidualContributions assemble_helmholtz_residual_contributions(
         / std::max(1.0, algebraic.norm());
     return result;
 }
-HelmholtzP1ResidualEstimate estimate_conforming_p1_residual(
-    const TriMesh &mesh,
+HelmholtzP1ResidualEstimate ResidualMeshContext::estimate(
     const HelmholtzOperators &operators,
     const ComplexVector &solution,
     const ComplexVector &load,
     const ComplexFunction &source,
     const QuadraturePolicy &quadrature,
-    const QuadratureContext &quadrature_context) {
+    const QuadratureContext &quadrature_context,const SourceMomentData* moments) const {
+    const auto& mesh=impl_->mesh;
+    if(moments&&(moments->mesh_identity!=impl_->identity||!(moments->policy==quadrature)
+        ||moments->context.integrand_class!=quadrature_context.integrand_class
+        ||moments->context.feature_point!=quadrature_context.feature_point||moments->context.feature_scale!=quadrature_context.feature_scale
+        ||moments->squared.size()!=mesh.elems.size()||moments->load.size()!=mesh.elems.size()
+        ||!moments->mass||moments->mass->size()!=mesh.elems.size()))throw std::invalid_argument("source moment cache identity mismatch");
     const int element_count = static_cast<int>(mesh.elems.size());
     const HelmholtzResidualContributions contributions =
         assemble_helmholtz_residual_contributions(
             mesh, operators, solution, load, source,
-            quadrature, quadrature_context);
+            quadrature, quadrature_context,impl_->geometry,impl_->incidence,moments);
 
     HelmholtzP1ResidualEstimate result;
     result.body_squared.assign(element_count, 0.0);
@@ -240,7 +282,7 @@ HelmholtzP1ResidualEstimate estimate_conforming_p1_residual(
     result.element_squared.assign(element_count, 0.0);
     for (int element = 0; element < element_count; ++element) {
         const double diameter =
-            element_geometry(mesh, mesh.elems[element]).diameter;
+            impl_->geometry[element].diameter;
         result.body_squared[element] = diameter * diameter
             * contributions.body_l2_squared[element];
     }
@@ -268,6 +310,13 @@ HelmholtzP1ResidualEstimate estimate_conforming_p1_residual(
         contributions.algebraic_relative_difference;
     return result;
 }
+HelmholtzP1ResidualEstimate estimate_conforming_p1_residual(
+    const TriMesh& mesh,const HelmholtzOperators& operators,const ComplexVector& solution,
+    const ComplexVector& load,const ComplexFunction& source,const QuadraturePolicy& quadrature,
+    const QuadratureContext& context){
+    return ResidualMeshContext(mesh).estimate(operators,solution,load,source,quadrature,context);
+}
+
 }
 std::vector<int> mark_doerfler(
     const std::vector<double> &indicator_squared,

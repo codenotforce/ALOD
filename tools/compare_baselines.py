@@ -18,6 +18,11 @@ def main():
         text=True,capture_output=True,env=env,timeout=180)
     if r.returncode: raise SystemExit(r.stderr)
     actual=[json.loads(x) for x in r.stdout.splitlines()]
+    # The archived fixture predates these diagnostic columns. Verify them,
+    # then compare every original field with the unchanged strict oracle.
+    for row in actual:
+        assert row.pop('wavenumber')==16
+        assert row.pop('H_max')>0 and row.pop('h_max')>0
     delta=compare(f['output'],actual)
     print(f'{a.fixture.stem}: {len(actual)} states, threads={a.threads}, max absolute delta={delta:.3g}')
 

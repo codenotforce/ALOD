@@ -1,5 +1,7 @@
 # Manuscript-to-implementation map
 
+Version 4 update (2026-09-22): see [the current implementation review](paper_v4_review.md). Numerical policies and performance statements below describe their original migration stage unless explicitly updated.
+
 Manuscript SHA-256: `f714fb0ba66c2cc276437002aa2306d16271fd91fc88205ff8c3ca07ccdcbc37`. Exact labels and the current seven figures/eight tables are in `provenance/paper_inventory.json`.
 
 | Definition | Archived implementation | Migration validation |

@@ -9,13 +9,14 @@ import subprocess
 import time
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT = dict(problem="E1", level=2, gap=3, ell=1, graded=False, riesz_patches="n2",
-               interpolation="area", threads=1, maximum_nodes=20000,
+DEFAULT = dict(wavenumber=16, problem="E1", level=2, gap=3, ell=1, graded=False, riesz_patches="n2",
+               interpolation="area", threads=0, maximum_nodes=20000,
                theta=0.15, ritz_tolerance=1e-4, ritz_iterations=750,
                dense_threshold=64, member_ids=list(range(16)), training_ids=list(range(16)))
 
 
 def validate(config):
+    if isinstance(config, dict): config = {"wavenumber":16, **config}
     if not isinstance(config, dict) or set(config) != set(DEFAULT):
         raise ValueError("fixed-state configuration must have exactly the documented fields")
     if config["problem"] not in ("E1", "E2") or config["interpolation"] not in ("area", "arithmetic"):
@@ -24,13 +25,15 @@ def validate(config):
         raise ValueError("invalid Riesz patch policy")
     if type(config["graded"]) is not bool:
         raise ValueError("graded must be boolean")
-    for key, lo, hi in [("level", 0, 12), ("gap", 1, 8), ("ell", 1, 4), ("threads", 1, 64),
+    for key, lo, hi in [("level", 0, 12), ("gap", 1, 8), ("ell", 1, 4), ("threads", 0, 2147483647),
                         ("maximum_nodes", 1, 200000), ("ritz_iterations", 1, 10000), ("dense_threshold", 0, 512)]:
         if type(config[key]) is not int or not lo <= config[key] <= hi:
             raise ValueError(f"invalid {key}")
     for key in ("theta", "ritz_tolerance"):
         if type(config[key]) not in (int, float) or not math.isfinite(config[key]) or not 0 < config[key] <= 1:
             raise ValueError(f"invalid {key}")
+    if type(config["wavenumber"]) not in (int,float) or not math.isfinite(config["wavenumber"]) or config["wavenumber"] <= 0:
+        raise ValueError("wavenumber must be positive and finite")
     rows = json.loads((ROOT / "data/rhs" / f"rhs_{config['problem'].lower()}.json").read_text())
     table = {r["sample"]: r for r in rows}
     for key in ("member_ids", "training_ids"):
@@ -69,7 +72,7 @@ def main():
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--executable", type=Path, default=ROOT / "build/alod_fixed")
     args = parser.parse_args()
-    config = json.loads(args.config.read_text())
+    config = {"wavenumber":16, **json.loads(args.config.read_text())}
     rows = validate(config)
     args.output.mkdir(parents=True, exist_ok=False)
     table = args.output / "members.txt"
@@ -79,9 +82,8 @@ def main():
                     scope="P2 fixed state; no adaptive scheduler or production trajectory", status="running")
     start = time.monotonic()
     try:
-        env = {**os.environ, "OMP_NUM_THREADS": str(config["threads"]), "OPENBLAS_NUM_THREADS": "1",
-               "MKL_NUM_THREADS": "1", "BLIS_NUM_THREADS": "1", "OMP_PROC_BIND": "false"}
-        env.pop("OMP_PLACES", None)
+        from execution import runtime_environment
+        env = runtime_environment(config["threads"])
         with (args.output / "state.json").open("w") as out, (args.output / "stderr.log").open("w") as err:
             run = subprocess.run([str(args.executable.resolve()), *arguments(config, table.resolve())],
                                  stdout=out, stderr=err, env=env, timeout=3600)

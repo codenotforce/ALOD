@@ -91,6 +91,11 @@ LocalizationSpectrum reference_defect_spectrum_matrix_free(
     result.used_warm_start = valid_warm_block || valid_warm_vector;
     const auto append_orthonormal = [&](std::vector<ComplexVector> &basis,
                                         ComplexVector candidate) {
+        if(config.eigenvalue_relative_residual){
+            const double norm_squared=std::real(candidate.dot(multiply_real_sparse(energy,candidate)));
+            if(!(norm_squared>0)||!std::isfinite(norm_squared))return false;
+            candidate/=std::sqrt(norm_squared);
+        }
         for (int pass = 0; pass < 2; ++pass) {
             for (const ComplexVector &vector : basis) {
                 candidate -= vector * vector.dot(
@@ -130,9 +135,9 @@ LocalizationSpectrum reference_defect_spectrum_matrix_free(
     if (valid_warm_block) {
         for (int column = 0;
              column < warm_block.cols()
-             && static_cast<int>(initial.size()) < block_size; ++column) {
+             && static_cast<int>(initial.size()) < (config.eigenvalue_relative_residual?std::max(1,block_size-1):block_size); ++column) {
             (void)append_orthonormal(
-                initial, warm_block.col(column));
+                initial, warm_block.col(config.eigenvalue_relative_residual?warm_block.cols()-1-column:column));
         }
     }
     if (valid_warm_vector && static_cast<int>(initial.size()) < block_size)
@@ -176,7 +181,7 @@ LocalizationSpectrum reference_defect_spectrum_matrix_free(
         const double dual_squared = std::max(
             0.0, std::real(top_residual.dot(top_inverse_residual)));
         result.relative_residual = std::sqrt(dual_squared)
-            / std::max(1.0, std::abs(result.lambda_max));
+            / std::max(config.eigenvalue_relative_residual?1e-30:1.0, std::abs(result.lambda_max));
         result.iterations = iteration;
         if (result.relative_residual <= config.relative_tolerance) {
             result.converged = true;

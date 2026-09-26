@@ -6,7 +6,8 @@ namespace alod {
 // a member. The quadrature rule cache is thread-local; no shared factor is
 // solved concurrently. Outer batches provide the dense-memory bound.
 ComplexMatrix assemble_load_batch(const lod2d::TriMesh&,const std::vector<Problem>&,
-    const lod2d::helmholtz::QuadraturePolicy&,int threads);
+    const lod2d::helmholtz::QuadraturePolicy&,int threads,
+    std::vector<lod2d::helmholtz::SourceMomentData>* moments=nullptr);
 struct ErrorBatch { Eigen::VectorXd exact_norm,exact_error,energy,reference_error; };
 ErrorBatch integrate_error_batch(const lod2d::TriMesh&,const Sparse& energy,const ComplexMatrix&,
     const std::vector<Problem>&,const lod2d::helmholtz::QuadraturePolicy&,int threads);

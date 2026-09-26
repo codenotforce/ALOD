@@ -10,7 +10,7 @@ from tempfile import TemporaryDirectory
 class BaselineTools(unittest.TestCase):
     def config(self):return dict(schema_version=1,problem='E1',method='AFEM',initial_level=2,states=3,theta=.15,target=0,maximum_nodes=20000,threads=1,emit_solution=False)
     def test_invalid_presets(self):
-        for key,value in [('problem','E3'),('method','ALOD'),('states',True),('target',float('nan')),('theta',0),('threads',0),('extra',1),('emit_solution',1)]:
+        for key,value in [('problem','E3'),('method','ALOD'),('states',True),('target',float('nan')),('theta',0),('threads',-1),('extra',1),('emit_solution',1)]:
             c=self.config();c[key]=value
             with self.subTest(key=key),self.assertRaises(ValueError):validate(c)
     def test_explicit_arguments(self):

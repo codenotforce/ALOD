@@ -1,4 +1,4 @@
-"""Run or resume a checkpointed trajectory, then schedule independent audits."""
+"""Run or resume a checkpointed trajectory, with concurrent checkpoint-backed audits."""
 import argparse
 import hashlib
 import json
@@ -14,6 +14,7 @@ from run_fixed import DEFAULT as FIXED, validate as validate_fixed, write_member
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT = dict(FIXED, method="ALOD", cycles=1, m_ref=2, state_limit=0,
                minimum_gap=2, reference_theta=[0.3, 0.2], ell_mode="lazy",
+               ell_ratio_mode="raw", ell_threshold=0., ell_absolute_threshold=-1., enrichment_tests="kernel_lift",
                maximum_ell=4, extra_checks=[], force_promotions=[],
                radius=0.6, rank_cap=24, inherit=True, audit=False,
                emit_solution=False, maximum_patch_entries=8000000,
@@ -21,19 +22,27 @@ DEFAULT = dict(FIXED, method="ALOD", cycles=1, m_ref=2, state_limit=0,
 
 
 def validate(config):
+    if isinstance(config, dict): config = {"ell_absolute_threshold":-1.,"wavenumber":16,"ell_ratio_mode":"raw","ell_threshold":0.,"enrichment_tests":"adjoint", **config}
     if not isinstance(config, dict) or set(config) != set(DEFAULT):
         raise ValueError("adaptive configuration must have exactly the documented fields")
+    if config["ell_ratio_mode"] not in ("raw","solution_scaled") or config["enrichment_tests"] not in ("kernel_lift","adjoint"):
+        raise ValueError("invalid localization or enrichment policy")
+    if type(config["ell_threshold"]) not in (int,float) or not math.isfinite(config["ell_threshold"]) or config["ell_threshold"]<0:
+        raise ValueError("invalid ell_threshold")
+    tau=config["ell_absolute_threshold"]
+    if type(tau) not in (int,float) or not math.isfinite(tau) or (tau<0 and tau!=-1):
+        raise ValueError("ell_absolute_threshold must be nonnegative or -1 (disabled)")
     fixed = {key: config[key] for key in FIXED}
     # The common member/schema validator has a deliberately smaller P2 limit.
     cap = config["maximum_nodes"]
-    if type(cap) is not int or not 1 <= cap <= 2000000:
+    if type(cap) is not int or not 1 <= cap <= 4000000:
         raise ValueError("invalid maximum_nodes")
     fixed["maximum_nodes"] = min(cap, 200000)
     rows = validate_fixed(fixed)
     for key, lo, hi in [("cycles", 0, 1000), ("m_ref", 1, 16), ("state_limit", 0, 10001),
                         ("minimum_gap", 0, 8), ("rank_cap", 1, 24),
                         ("maximum_ell", config["ell"], 4),
-                        ("maximum_patch_entries", 1, 1000000000),
+                        ("maximum_patch_entries", 1, 64000000000),
                         ("maximum_dense_entries", 1, 1000000000)]:
         if type(config[key]) is not int or not lo <= config[key] <= hi:
             raise ValueError(f"invalid {key}")
@@ -71,12 +80,32 @@ def arguments(config, table):
         if key not in ("problem", "member_ids")]
 
 
-def run(config, output, executable, timeout=3600, *, resume=None, pause_state=None, pause_phase="accepted"):
+def run(config, output, executable, timeout=3600, *, resume=None, pause_state=None, pause_phase="accepted", audit_workers=1, audit_threads=None):
+    from execution import run_lease
+    with run_lease(output):
+        return _run(config,output,executable,timeout,resume=resume,pause_state=pause_state,pause_phase=pause_phase,audit_workers=audit_workers,audit_threads=audit_threads)
+
+
+def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=None, pause_phase="accepted", audit_workers=1, audit_threads=None):
+    config = {"ell_absolute_threshold":-1.,"wavenumber":16,"ell_ratio_mode":"raw","ell_threshold":0.,"enrichment_tests":"adjoint", **config}
     setup_start = time.monotonic()
     output, executable = Path(output), Path(executable)
     rows = validate(config)
+    if type(audit_workers) is not int or audit_workers<1:raise ValueError("audit workers must be positive")
+    if audit_threads is not None and (type(audit_threads) is not int or not 0<=audit_threads<=2147483647):raise ValueError("invalid audit threads")
     metadata = None
+    startup_recovery=False
+    if str(resume)=="auto" and not list((output/'checkpoints').rglob('*.bin')):
+        previous=json.loads((output/'run.json').read_text())
+        validate_resume_config(previous['config'],config)
+        if (output/'members.txt').read_text()!=member_text(rows):raise ValueError("startup recovery member table mismatch")
+        log=output/'solver.jsonl'
+        if log.exists() and log.stat().st_size:raise ValueError("nonempty numerical journal without a checkpoint")
+        startup_recovery=True;resume=None
     if resume is not None:
+        if str(resume)=="auto":
+            from checkpoint_io import recover_latest
+            resume=recover_latest(output,executable,config,member_text(rows))
         resume, metadata = inspect(resume, executable)
         validate_resume_config(metadata["config"], config)
         if metadata['members_text'] != member_text(rows):
@@ -84,7 +113,7 @@ def run(config, output, executable, timeout=3600, *, resume=None, pause_state=No
         if not output.is_dir():
             raise ValueError("resume requires the original run directory and its committed journal")
         recover_journal(output/"solver.jsonl", metadata)
-    else:
+    elif not startup_recovery:
         output.mkdir(parents=True, exist_ok=False)
     if pause_state is not None and (type(pause_state) is not int or pause_state < 0 or pause_phase not in ("accepted", "training", "ell")):
         raise ValueError("invalid checkpoint pause request")
@@ -98,6 +127,7 @@ def run(config, output, executable, timeout=3600, *, resume=None, pause_state=No
     manifest['experiment_id'] = hashlib.sha256((json.dumps(mathematical,sort_keys=True)+member_text(rows)).encode()).hexdigest()[:24]
     from runtime_provenance import provenance
     manifest['provenance'] = provenance(executable)
+    manifest['startup_recovery']=startup_recovery
     manifest['setup_seconds'] = time.monotonic()-setup_start
     if metadata is not None:
         manifest["resumed_from"] = dict(checkpoint=resume.name, sha256=digest(resume), state_id=metadata["state_id"], phase=metadata["phase"])
@@ -105,10 +135,15 @@ def run(config, output, executable, timeout=3600, *, resume=None, pause_state=No
         atomic_text(output / "run.json", json.dumps(manifest, indent=2) + "\n")
     save()
     start = time.monotonic()
+    queue=None;process=None
     try:
-        env = {**os.environ, "OMP_NUM_THREADS": str(config["threads"]), "OMP_PROC_BIND": "false",
-               "OPENBLAS_NUM_THREADS": "1", "MKL_NUM_THREADS": "1", "BLIS_NUM_THREADS": "1"}
-        env.pop("OMP_PLACES", None)
+        from execution import runtime_environment
+        env=runtime_environment(config["threads"])
+        env["ALOD_TIMING_FILE"]=str((output/"timings.jsonl").resolve())
+        if config["audit"]:
+            from async_audit import AuditQueue
+            queue=AuditQueue(output,executable,config["member_ids"],audit_workers,audit_threads)
+            queue.discover()
         effective = output / "effective.json"
         atomic_text(effective, json.dumps(config, indent=2)+"\n")
         runtime = [f"--checkpoint-dir={(output/'checkpoints').resolve()}", f"--config-file={effective.resolve()}"]
@@ -118,9 +153,16 @@ def run(config, output, executable, timeout=3600, *, resume=None, pause_state=No
             runtime += [f"--pause-state={pause_state}", f"--pause-phase={pause_phase}"]
         solver_start = time.monotonic()
         with (output / "solver.jsonl").open("a" if resume is not None else "w") as out, (output / "stderr.log").open("a" if resume is not None else "w") as err:
-            result = subprocess.run([str(executable.resolve()), *arguments(config, table.resolve()), *runtime],
-                                    stdout=out, stderr=err, env=env, timeout=timeout)
+            process = subprocess.Popen([str(executable.resolve()), *arguments(config, table.resolve()), *runtime],
+                                       stdout=out, stderr=err, env=env)
+            while process.poll() is None:
+                if queue:queue.discover()
+                if time.monotonic()-solver_start>timeout:raise subprocess.TimeoutExpired(process.args,timeout)
+                time.sleep(.1)
+            result=process
+            if queue:queue.discover()
         manifest['solver_wall_seconds'] = time.monotonic()-solver_start
+        manifest['solver_finished_at']=time.time()
         manifest["returncode"] = result.returncode
         if result.returncode:
             raise RuntimeError("adaptive run failed; see stderr.log and completed event prefix")
@@ -144,54 +186,39 @@ def run(config, output, executable, timeout=3600, *, resume=None, pause_state=No
         audit_failures = []
         audit_start = time.monotonic()
         if config["audit"]:
-            from run_audit import audit
-            for state in accepted:
-                checkpoint = output/"checkpoints"/f"state-{state['state_id']:06d}-phase-0-ell-{state['ell'] or config['ell']}.bin"
-                try:
-                    audit_output = output/"audits"/(digest(checkpoint)[:16]+"-shared")
-                    if audit_output.exists():
-                        prior = json.loads((audit_output/'run.json').read_text()) if (audit_output/'run.json').exists() else {}
-                        if not prior.get('audit_complete'):
-                            original = audit_output
-                            attempt = 1
-                            while audit_output.exists():
-                                audit_output = original.with_name(original.name+f'-retry-{attempt}')
-                                attempt += 1
-                    if not (audit_output/"run.json").exists():
-                        audit(checkpoint, audit_output, executable.with_name("alod_audit"), batch_size=8)
-                    audit_manifest = json.loads((audit_output/"run.json").read_text())
-                    if not audit_manifest["audit_complete"] or audit_manifest["checkpoint_sha256"] != digest(checkpoint):
-                        raise ValueError("cached audit did not pass validation")
-                    if audit_manifest['output_sha256'] != digest(audit_output/'samples.jsonl') or audit_manifest['member_ids'] != config['member_ids']:
-                        raise ValueError('cached audit content or coverage changed')
-                    state["audit"] = [json.loads(line) for line in (audit_output/"samples.jsonl").read_text().splitlines()
-                                      if json.loads(line)["kind"] == "sample"]
-                    if len(state['audit']) != len(config['member_ids']) or {row['sample'] for row in state['audit']} != set(config['member_ids']) or any(row['state_id'] != state['state_id'] for row in state['audit']):
-                        del state['audit']
-                        raise ValueError('cached audit state/sample mismatch')
-                except Exception as error:
-                    audit_failures.append(dict(state_id=state["state_id"], reason=str(error)))
+            if not paused:manifest["status"]="auditing"
+            save()
+            audit_failures = queue.finish(accepted)
+            if not paused:manifest["status"]="complete"
             manifest["audit_complete"] = not audit_failures and len(accepted)==expected
             manifest["audit_failures"] = audit_failures
             if audit_failures:
                 manifest["status"] = "audit_failed"
             atomic_text(output/"events.jsonl", "".join(json.dumps(event,separators=(",",":"))+"\n" for event in events))
-        manifest['audit_wall_seconds'] = time.monotonic()-audit_start if config['audit'] else 0
-        manifest['checkpoint_bytes'] = sum(path.stat().st_size for path in (output/'checkpoints').glob('*.bin'))
+        manifest['audit_drain_seconds'] = time.monotonic()-audit_start if config['audit'] else 0
+        manifest['audit_wall_seconds'] = time.monotonic()-start if config['audit'] else 0
+        manifest['audit_workers']=audit_workers;manifest['audit_threads']=audit_threads
+        manifest['audit_execution']='concurrent_same_executable'
+        manifest['checkpoint_bytes'] = sum(path.stat().st_size for path in (output/'checkpoints').rglob('*.bin'))
         from export_results import export
         try:
             manifest["canonical_tables"] = export(output)
         except Exception as error:
             manifest["status"] = "postprocess_failed"
             manifest["postprocess_error"] = str(error)
-        manifest["paper_complete"] = bool("canonical_tables" in manifest and manifest["solver_completed"] and manifest["validation_passed"] and manifest["audit_complete"] and manifest["complete_horizon"] and config["member_ids"] == list(range(48)) and len(accepted) >= (33 if config["problem"]=="E2" else 97 if config["method"]=="AFEM" else 51))
+        manifest["paper_complete"] = bool("canonical_tables" in manifest and manifest["solver_completed"] and manifest["validation_passed"] and manifest["audit_complete"] and manifest["complete_horizon"] and config["member_ids"] == list(range(48)) and len(accepted) >= (33 if config["problem"]=="E2" and config["enrichment_tests"]=="adjoint" else 97 if config["method"]=="AFEM" else 51))
     except BaseException:
         manifest["status"] = "failed"
         raise
     finally:
+        if process is not None and process.poll() is None:
+            process.terminate()
+            try:process.wait(timeout=5)
+            except subprocess.TimeoutExpired:process.kill();process.wait()
+        if queue:queue.close()
         # Preserve the last accepted cursor even when a later resource or
         # numerical gate stops the run; checkpoints remain independently usable.
-        log = output / "events.jsonl"
+        log = output / "solver.jsonl"
         accepted_prefix = []
         if log.exists():
             for line in log.read_text().splitlines():
@@ -211,18 +238,23 @@ def run(config, output, executable, timeout=3600, *, resume=None, pause_state=No
 
 
 def main():
+    import signal
+    def stop(signum,frame):raise KeyboardInterrupt("run interrupted; resume with --resume auto")
+    signal.signal(signal.SIGTERM,stop)
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--executable", type=Path, default=ROOT / "build/alod_run")
-    parser.add_argument("--resume", type=Path)
+    parser.add_argument("--resume", type=Path, help="checkpoint path or auto for validated crash recovery")
+    parser.add_argument("--audit-workers", type=int, default=1)
+    parser.add_argument("--audit-threads", type=int, help="0 inherits runtime; omitted inherits run threads")
     parser.add_argument("--pause-state", type=int)
     parser.add_argument("--pause-phase", choices=["accepted", "training", "ell"], default="accepted")
     parser.add_argument("--timeout", type=float, default=3600)
     args = parser.parse_args()
     if not math.isfinite(args.timeout) or args.timeout <= 0:
         parser.error("timeout must be positive and finite")
-    print(json.dumps(run(json.loads(args.config.read_text()), args.output, args.executable, args.timeout, resume=args.resume, pause_state=args.pause_state, pause_phase=args.pause_phase)))
+    print(json.dumps(run(json.loads(args.config.read_text()), args.output, args.executable, args.timeout, resume=args.resume, pause_state=args.pause_state, pause_phase=args.pause_phase,audit_workers=args.audit_workers,audit_threads=args.audit_threads)))
 
 
 if __name__ == "__main__":

@@ -1,5 +1,7 @@
 # P1 baseline contract
 
+Version 4 update (2026-09-22): see [the current implementation review](paper_v4_review.md). Numerical policies and performance statements below describe their original migration stage unless explicitly updated.
+
 `alod_run` implements nominal AFEM, UFEM and SLOD for E1/E2. `tools/run_baseline.py` validates JSON presets before execution and streams run artifacts. Neither entry point interprets historical build-hash tokens or family-control environment variables.
 
 | Field | Meaning |

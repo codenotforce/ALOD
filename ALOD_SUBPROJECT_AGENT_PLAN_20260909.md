@@ -1,5 +1,44 @@
 # ALOD 精简子项目迁移计划书
 
+
+## Execution update (2026-09-22)
+
+The user's current instruction supersedes earlier fixed physical-core/BLAS-one
+requirements for production execution. Production launchers now use no CPU
+binding, no hard 64-thread cap, and no forced BLAS thread count. Explicit test
+thread settings remain reproducibility controls. Memory and disk supervision
+remain in force.
+
+Implement manual `ell_absolute_threshold=tau(k)` as an additional OR promotion
+criterion on the existing lazy schedule. Integrate background audit workers
+through the same executable, with immutable snapshots and resumable audit work.
+Save training/ell/accepted boundaries automatically; recover interrupted output
+transactions and reject duplicate writers. See `docs/async_execution.md` for the
+exact contract and limitations. Full paper trajectories and remaining scientific
+diagnostics are still deferred; bounded server tests are not full reproduction.
+
+
+## Version 4 update (2026-09-22)
+
+This update supersedes conflicting historical numerical settings below; see
+`docs/paper_v4_review.md` for the complete English review and remaining work.
+Current enriched tests use `J_ell = I - T_ell I_H`, with the full coupled PG
+blocks. The current E1/E2 presets both have 25 cycles and two reference sweeps
+(51 accepted states), normalized nominal balance threshold 0.3, and ell 2–4.
+E3 adds k=128 and uses coarse levels 4/6/8/10/12 with reference gaps 3/4/5/6/7.
+Raw-ratio/AOT policies and the 33-state E2 campaigns are historical controls.
+Old AOT triangular optimizations do not apply to the kernel-lifted equations.
+
+P7 must integrate the remaining generic pre-training defect controller,
+exact-only/target-terminal audits, large-checkpoint and solver-memory recovery,
+remaining endpoint diagnostics and portable result import. P8 must validate
+current kernel-lifted E2, normalized E1, all E3 wavenumbers and complete audit
+coverage on the server. Long experiments remain explicitly deferred; supplied
+results must not be presented as reruns of this checkout. P9 release and the
+current manuscript figure/table pipeline remain open. Preserve the original
+PowerShell/SSH, tmux, physical-core and memory supervision requirements.
+
+
 初稿：2026-09-09；本次核对更新：2026-09-11。保留原文件名，避免既有任务链接失效。历史状态：计划已按最新版论文更新。2026-09-11 已完成 P0/P1 验收；当前执行状态以 `docs/migration_status.md` 为准。
 
 语言约定：本计划书按用户要求暂时保留中文；README、NOTICE 和 `docs/` 下的文档使用英文。所有提交内容（包括本计划书）仍不得包含本地绝对路径。

@@ -1,0 +1,363 @@
+{
+  "date": "2026-09-22",
+  "scope": "Integration optimization; alternating before/after runs with one excluded warmup per executable. Shared server, no imposed affinity or BLAS environment.",
+  "production_probe": {
+    "config": {
+      "wavenumber": 16,
+      "problem": "E2",
+      "level": 6,
+      "gap": 4,
+      "ell": 2,
+      "graded": false,
+      "riesz_patches": "n2",
+      "interpolation": "area",
+      "threads": 8,
+      "maximum_nodes": 4000000,
+      "theta": 0.15,
+      "ritz_tolerance": 0.0001,
+      "ritz_iterations": 750,
+      "dense_threshold": 64,
+      "member_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "training_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "method": "ALOD",
+      "cycles": 1,
+      "m_ref": 2,
+      "state_limit": 0,
+      "minimum_gap": 0,
+      "reference_theta": [
+        0.3,
+        0.2
+      ],
+      "ell_mode": "lazy",
+      "maximum_ell": 4,
+      "extra_checks": [],
+      "force_promotions": [],
+      "radius": 0.6,
+      "rank_cap": 24,
+      "inherit": true,
+      "audit": true,
+      "emit_solution": false,
+      "maximum_patch_entries": 64000000000,
+      "maximum_dense_entries": 1000000000,
+      "ell_ratio_mode": "solution_scaled",
+      "ell_threshold": 0.3,
+      "enrichment_tests": "kernel_lift",
+      "ell_absolute_threshold": 0.2
+    },
+    "repeats": 3,
+    "binary_sha256": {
+      "before": "2fc3fb06e1a7721bb321b168927d4c12f4f90da91e273e25087430bdcf2bfeaa",
+      "after": "1ae68717e22d25917ac24905256476783c76a5597d775521b789db240dec09aa"
+    },
+    "runs": [
+      {
+        "version": "before",
+        "warmup": true,
+        "solver_seconds": 6.241922318935394,
+        "workflow_seconds": 10.101272270083427,
+        "load_seconds": 2.225773762,
+        "strong_seconds": 2.41077055,
+        "error_seconds": 4.389644651999999
+      },
+      {
+        "version": "after",
+        "warmup": true,
+        "solver_seconds": 6.2370675802230835,
+        "workflow_seconds": 8.301618572324514,
+        "load_seconds": 2.231130741,
+        "strong_seconds": 2.384167266,
+        "error_seconds": 2.463692295
+      },
+      {
+        "version": "after",
+        "warmup": false,
+        "solver_seconds": 6.245916545391083,
+        "workflow_seconds": 8.269974261522293,
+        "load_seconds": 2.217122596,
+        "strong_seconds": 2.395527394,
+        "error_seconds": 2.470484013
+      },
+      {
+        "version": "before",
+        "warmup": false,
+        "solver_seconds": 6.242414448410273,
+        "workflow_seconds": 10.094958752393723,
+        "load_seconds": 2.223115904,
+        "strong_seconds": 2.417082658,
+        "error_seconds": 4.394816366
+      },
+      {
+        "version": "before",
+        "warmup": false,
+        "solver_seconds": 6.242618892341852,
+        "workflow_seconds": 10.09163136780262,
+        "load_seconds": 2.237228188,
+        "strong_seconds": 2.436125095,
+        "error_seconds": 4.389950711
+      },
+      {
+        "version": "after",
+        "warmup": false,
+        "solver_seconds": 6.244261834770441,
+        "workflow_seconds": 8.214561332017183,
+        "load_seconds": 2.2172995909999997,
+        "strong_seconds": 2.383962778,
+        "error_seconds": 2.459132281
+      },
+      {
+        "version": "after",
+        "warmup": false,
+        "solver_seconds": 6.242755893617868,
+        "workflow_seconds": 8.263394396752119,
+        "load_seconds": 2.225114968,
+        "strong_seconds": 2.398024037,
+        "error_seconds": 2.458999072
+      },
+      {
+        "version": "before",
+        "warmup": false,
+        "solver_seconds": 6.34332737326622,
+        "workflow_seconds": 10.189536027610302,
+        "load_seconds": 2.221173754,
+        "strong_seconds": 2.5388236739999996,
+        "error_seconds": 4.397621367999999
+      }
+    ],
+    "accepted_semantics_identical": true,
+    "audit_samples_identical": true,
+    "medians": {
+      "before": {
+        "solver_seconds": 6.242618892341852,
+        "workflow_seconds": 10.094958752393723,
+        "load_seconds": 2.223115904,
+        "strong_seconds": 2.436125095,
+        "error_seconds": 4.394816366
+      },
+      "after": {
+        "solver_seconds": 6.244261834770441,
+        "workflow_seconds": 8.263394396752119,
+        "load_seconds": 2.2172995909999997,
+        "strong_seconds": 2.395527394,
+        "error_seconds": 2.459132281
+      }
+    }
+  },
+  "recursive_probe": {
+    "config": {
+      "wavenumber": 16,
+      "problem": "E2",
+      "level": 3,
+      "gap": 2,
+      "ell": 2,
+      "graded": false,
+      "riesz_patches": "n2",
+      "interpolation": "area",
+      "threads": 8,
+      "maximum_nodes": 4000000,
+      "theta": 0.15,
+      "ritz_tolerance": 0.0001,
+      "ritz_iterations": 750,
+      "dense_threshold": 64,
+      "member_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "training_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "method": "ALOD",
+      "cycles": 1,
+      "m_ref": 2,
+      "state_limit": 0,
+      "minimum_gap": 0,
+      "reference_theta": [
+        0.3,
+        0.2
+      ],
+      "ell_mode": "lazy",
+      "maximum_ell": 4,
+      "extra_checks": [],
+      "force_promotions": [],
+      "radius": 0.6,
+      "rank_cap": 24,
+      "inherit": true,
+      "audit": true,
+      "emit_solution": false,
+      "maximum_patch_entries": 64000000000,
+      "maximum_dense_entries": 1000000000,
+      "ell_ratio_mode": "solution_scaled",
+      "ell_threshold": 0.3,
+      "enrichment_tests": "kernel_lift",
+      "ell_absolute_threshold": 0.2
+    },
+    "repeats": 3,
+    "binary_sha256": {
+      "before": "2fc3fb06e1a7721bb321b168927d4c12f4f90da91e273e25087430bdcf2bfeaa",
+      "after": "1ae68717e22d25917ac24905256476783c76a5597d775521b789db240dec09aa"
+    },
+    "runs": [
+      {
+        "version": "before",
+        "warmup": true,
+        "solver_seconds": 0.6209369860589504,
+        "workflow_seconds": 1.1526681408286095,
+        "load_seconds": 0.176674247,
+        "strong_seconds": 0.21719496100000002,
+        "error_seconds": 0.2949162839999999
+      },
+      {
+        "version": "after",
+        "warmup": true,
+        "solver_seconds": 0.6227386631071568,
+        "workflow_seconds": 1.0634587295353413,
+        "load_seconds": 0.157854441,
+        "strong_seconds": 0.21152838,
+        "error_seconds": 0.167429886
+      },
+      {
+        "version": "after",
+        "warmup": false,
+        "solver_seconds": 0.6204065531492233,
+        "workflow_seconds": 1.1745285838842392,
+        "load_seconds": 0.156989045,
+        "strong_seconds": 0.216453509,
+        "error_seconds": 0.164883042
+      },
+      {
+        "version": "before",
+        "warmup": false,
+        "solver_seconds": 0.6206260174512863,
+        "workflow_seconds": 1.1617561019957066,
+        "load_seconds": 0.176825936,
+        "strong_seconds": 0.215988439,
+        "error_seconds": 0.296547776
+      },
+      {
+        "version": "before",
+        "warmup": false,
+        "solver_seconds": 0.623524222522974,
+        "workflow_seconds": 1.1607423946261406,
+        "load_seconds": 0.177736577,
+        "strong_seconds": 0.22017785900000003,
+        "error_seconds": 0.294750836
+      },
+      {
+        "version": "after",
+        "warmup": false,
+        "solver_seconds": 0.6230362951755524,
+        "workflow_seconds": 1.0712404362857342,
+        "load_seconds": 0.157089602,
+        "strong_seconds": 0.211476724,
+        "error_seconds": 0.16689027299999998
+      },
+      {
+        "version": "after",
+        "warmup": false,
+        "solver_seconds": 0.6262361519038677,
+        "workflow_seconds": 1.0670634992420673,
+        "load_seconds": 0.15674594800000002,
+        "strong_seconds": 0.211561287,
+        "error_seconds": 0.164808603
+      },
+      {
+        "version": "before",
+        "warmup": false,
+        "solver_seconds": 0.6200272440910339,
+        "workflow_seconds": 1.15265504270792,
+        "load_seconds": 0.172568462,
+        "strong_seconds": 0.216944318,
+        "error_seconds": 0.294973847
+      }
+    ],
+    "accepted_semantics_identical": true,
+    "audit_samples_identical": true,
+    "medians": {
+      "before": {
+        "solver_seconds": 0.6206260174512863,
+        "workflow_seconds": 1.1607423946261406,
+        "load_seconds": 0.176825936,
+        "strong_seconds": 0.216944318,
+        "error_seconds": 0.294973847
+      },
+      "after": {
+        "solver_seconds": 0.6230362951755524,
+        "workflow_seconds": 1.0712404362857342,
+        "load_seconds": 0.156989045,
+        "strong_seconds": 0.211561287,
+        "error_seconds": 0.164883042
+      }
+    }
+  },
+  "validation": {
+    "ctest_passed": 39,
+    "ctest_failed": 0,
+    "ctest_wall_seconds": 44.73,
+    "server_validation_exit_code": 0,
+    "legacy_fixtures_modified": false,
+    "repository_integrity": "257 text files; 64 source hashes; no local absolute paths",
+    "scientific_tests": "Joint/scalar and fused/separate integrals, E1/E2 k=8/128, fallback callbacks, thread reproducibility, historical numerical oracles, lazy gates, asynchronous restart and checkpoint recovery."
+  }
+}

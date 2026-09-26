@@ -1,0 +1,263 @@
+{
+  "schema_version": 1,
+  "scope": "Version 4 source review; supplied results are external evidence, not reruns of this checkout.",
+  "sources": [
+    {
+      "label": "paper",
+      "relative_source": "version4/arxiv.tex",
+      "sha256": "6cd4194e28e0cd58ff0d0ff9e6c588e96377502b69e70fa09717f71a9b9026d0"
+    },
+    {
+      "label": "E1",
+      "relative_source": "paper-q03-update-20260914/README.md",
+      "sha256": "3fdb9d8ddf3f3fbcaeb0c430d74e9eb84eb45ffad84fc6af18fa9b8eae74984b"
+    },
+    {
+      "label": "E2",
+      "relative_source": "kernel-lift-260919/run.json",
+      "sha256": "4945035481459af38debdd05edf6d942b21d2c9647e98e52cf1dbcbaf12c5b96"
+    },
+    {
+      "label": "E2 figures",
+      "relative_source": "E1-E2-kernel-lift-figures-20260920/README.md",
+      "sha256": "e56802afd990792422ecbc67dc89f0c3383af2f4046fbc56cd88d172da2677fd"
+    },
+    {
+      "label": "E3",
+      "relative_source": "E3-k8-128-review-20260915/data.json",
+      "sha256": "eb6b502f20c61324444f0af35d9a62e51a13a08f91ad1b1d1b033590e53f220d"
+    },
+    {
+      "label": "Initial-state numerical fixture source",
+      "relative_source": "paper-q03-update-20260914/data/e1-production.json",
+      "sha256": "975f9141dae073b7318c973ca98a7830ca9c247964f2d129e41ef55f6bdb39ad"
+    },
+    {
+      "label": "Initial-state numerical fixture source",
+      "relative_source": "kernel-lift-260919/events.jsonl",
+      "sha256": "bb30e879741851639c27d2dcf0a2a402642411716f4b92a9b8ee3dfa893eab1a"
+    }
+  ],
+  "source_archive": {
+    "name": "ALOD-kernel-lift-src.tar.gz",
+    "sha256": "41420d79c338049eaa75dc83fd02d350b871082a0732202006aa9d3fae4746d8"
+  },
+  "e3_endpoints": [
+    {
+      "method": "ALOD",
+      "k": 8,
+      "raw_points": 55,
+      "plotted_points": 54,
+      "N": 985,
+      "reference_nodes": 175366,
+      "error": 0.008992100127845633,
+      "ell": 3,
+      "target_reached": true,
+      "status": "complete"
+    },
+    {
+      "method": "AFEM",
+      "k": 8,
+      "raw_points": 87,
+      "plotted_points": 87,
+      "N": 50288,
+      "reference_nodes": 50302,
+      "error": 0.00978572009224557,
+      "ell": 0,
+      "target_reached": true,
+      "status": "complete"
+    },
+    {
+      "method": "LOD",
+      "k": 8,
+      "raw_points": 13,
+      "plotted_points": 13,
+      "N": 65535,
+      "reference_nodes": 525313,
+      "error": 0.00822173668743024,
+      "ell": 3,
+      "target_reached": true,
+      "status": "complete"
+    },
+    {
+      "method": "ALOD",
+      "k": 16,
+      "raw_points": 51,
+      "plotted_points": 50,
+      "N": 1039,
+      "reference_nodes": 215619,
+      "error": 0.009007033851274056,
+      "ell": 3,
+      "target_reached": true,
+      "status": "complete"
+    },
+    {
+      "method": "AFEM",
+      "k": 16,
+      "raw_points": 82,
+      "plotted_points": 82,
+      "N": 54549,
+      "reference_nodes": 54567,
+      "error": 0.009595326122326504,
+      "ell": 0,
+      "target_reached": true,
+      "status": "complete"
+    },
+    {
+      "method": "LOD",
+      "k": 16,
+      "raw_points": 10,
+      "plotted_points": 10,
+      "N": 32767,
+      "reference_nodes": 525313,
+      "error": 0.009333023326108539,
+      "ell": 3,
+      "target_reached": true,
+      "status": "complete"
+    },
+    {
+      "method": "ALOD",
+      "k": 32,
+      "raw_points": 45,
+      "plotted_points": 41,
+      "N": 1220,
+      "reference_nodes": 274725,
+      "error": 0.009975135815072781,
+      "ell": 3,
+      "target_reached": true,
+      "status": "complete"
+    },
+    {
+      "method": "AFEM",
+      "k": 32,
+      "raw_points": 74,
+      "plotted_points": 74,
+      "N": 74239,
+      "reference_nodes": 74273,
+      "error": 0.009984353232579395,
+      "ell": 0,
+      "target_reached": true,
+      "status": "complete"
+    },
+    {
+      "method": "LOD",
+      "k": 32,
+      "raw_points": 8,
+      "plotted_points": 8,
+      "N": 32767,
+      "reference_nodes": 1050625,
+      "error": 0.00816718548929386,
+      "ell": 3,
+      "target_reached": true,
+      "status": "complete"
+    },
+    {
+      "method": "ALOD",
+      "k": 64,
+      "raw_points": 38,
+      "plotted_points": 36,
+      "N": 2549,
+      "reference_nodes": 825235,
+      "error": 0.009096481256507636,
+      "ell": 3,
+      "target_reached": true,
+      "status": "target_reached"
+    },
+    {
+      "method": "AFEM",
+      "k": 64,
+      "raw_points": 78,
+      "plotted_points": 78,
+      "N": 197070,
+      "reference_nodes": 197136,
+      "error": 0.009688195220654628,
+      "ell": 0,
+      "target_reached": true,
+      "status": "complete"
+    },
+    {
+      "method": "LOD",
+      "k": 64,
+      "raw_points": 7,
+      "plotted_points": 7,
+      "N": 65535,
+      "reference_nodes": 4198401,
+      "error": 0.006640193234138902,
+      "ell": 3,
+      "target_reached": true,
+      "status": "complete"
+    },
+    {
+      "method": "ALOD",
+      "k": 128,
+      "raw_points": 30,
+      "plotted_points": 30,
+      "N": 6478,
+      "reference_nodes": 2641429,
+      "error": 0.009700972841956562,
+      "ell": 3,
+      "target_reached": true,
+      "status": "complete"
+    },
+    {
+      "method": "AFEM",
+      "k": 128,
+      "raw_points": 83,
+      "plotted_points": 83,
+      "N": 817056,
+      "reference_nodes": 817186,
+      "error": 0.009730643469579848,
+      "ell": 0,
+      "target_reached": true,
+      "status": "complete"
+    },
+    {
+      "method": "LOD",
+      "k": 128,
+      "raw_points": 5,
+      "plotted_points": 5,
+      "N": 65535,
+      "reference_nodes": 8392705,
+      "error": 0.011535972439267638,
+      "ell": 3,
+      "target_reached": false,
+      "status": "resource_stopped"
+    }
+  ],
+  "reviewed_archive_components": [
+    {
+      "path": "src/enrichment/regional.cpp",
+      "archive_sha256": "e5db1c89ef1b4cac8498ced17aa9dbe90a9dc4b240a12ee516b419ebc3584c3b"
+    },
+    {
+      "path": "src/adaptive/schedule.cpp",
+      "archive_sha256": "92e1b36e92d42d9a0a78189f1d995178661341c679d7ae73f4fadf20ab62a079"
+    },
+    {
+      "path": "src/localization/theta.cpp",
+      "archive_sha256": "0aefa94f94ce737cf96b7df6186d0b80a029bd349e4b87e7d0568b0d3ccd7b68"
+    },
+    {
+      "path": "src/localization/dense.cpp",
+      "archive_sha256": "e556aa4dd0222805a97cda6f79d770bbac9bef21f8e211563a9f059978fbfab2"
+    },
+    {
+      "path": "src/estimator/riesz.cpp",
+      "archive_sha256": "aa8e649d15edea780b195cc514dbdc867bd4323d04864df83223f388c58b88bb"
+    },
+    {
+      "path": "src/helmholtz/patch_solver.cpp",
+      "archive_sha256": "0427cdf01e95b94cead593619d2c838d3450f99e1f0ca85e58433cb9b1c192ec"
+    },
+    {
+      "path": "include/helmholtz/patch_solver.h",
+      "archive_sha256": "4183bd23c35701215251dbd97dcc1113a5951ca99e83e97a2d6fcae3f6795ede"
+    }
+  ],
+  "notes": [
+    "Kernel lifting is computed from the trial basis and interpolation rather than trusting a separately supplied raw dictionary.",
+    "The supplied archive projects kernel tests against the base test space; using the raw kernel tests spans the same total test space and is checked against supplied initial numerical data.",
+    "The normalized default threshold is 0.3; archive-compatible raw thresholds remain problem-specific.",
+    "Preexisting variable-wavenumber and campaign changes were preserved; this review did not create a branch or submit unrelated work."
+  ]
+}

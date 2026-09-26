@@ -39,7 +39,7 @@ public:
         const std::vector<Eigen::SparseMatrix<double>> &element_level_prolongations,
         const HelmholtzOperators &operators);
 
-    HelmholtzPatchSystem assemble(int target) const;
+    HelmholtzPatchSystem assemble(int target, bool retain_components = true) const;
     // Exact fine-element support of a coarse patch.  Equal supports imply an
     // equal local Helmholtz energy block and are used only to schedule
     // DirectSchur solves with factorization affinity.
@@ -57,7 +57,7 @@ private:
     std::vector<std::vector<int>> children_;
     std::vector<int> fine_incidence_;
     std::vector<char> fine_dirichlet_;
-    std::unordered_map<std::uint64_t, int> fine_edge_counts_;
+    std::vector<char> fine_natural_boundary_;
     const std::vector<TriMesh> &hierarchy_meshes_;
     const std::vector<Eigen::SparseMatrix<double>> &node_level_prolongations_;
     const std::vector<Eigen::SparseMatrix<double>> &element_level_prolongations_;

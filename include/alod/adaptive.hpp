@@ -13,10 +13,14 @@ struct EllPolicy {
     std::string problem="E1";
     EllMode mode=EllMode::Lazy;
     int maximum=4, last_check=-1;
+    bool solution_scaled=false;
+    double absolute_threshold=-1.; // negative disables the optional manual tau(k) gate
+    double ratio_threshold=0.; // zero retains the archived problem-specific threshold
+    double threshold() const;
     std::set<int> extra_checks;
     bool due(int state_id, int ell, bool terminal) const;
-    // E1 promotes once per scheduled check. E2 repeats at the new ell.
-    std::string decision(double theta, double eta, int ell) const;
+    // Solution-scaled policies recheck on the same mesh after every promotion.
+    std::string decision(double theta, double eta, int ell, double scale=1.) const;
 };
 lod2d::RefineOutput build_nested_mesh_embedding(const lod2d::TriMesh&,const lod2d::TriMesh&);
 std::vector<int> fine_element_parents(const Sparse&,int,int);

@@ -109,7 +109,9 @@ with tempfile.TemporaryDirectory() as temp:
     h16_manifest=run(h16,root/'h16',exe)
     source,metadata=inspect(root/'h16',exe)
     assert metadata['state_id']==16
-    isolated=root/'isolated';isolated.mkdir();shutil.copyfile(source,isolated/'state16.bin')
+    from checkpoint_io import pack
+    portable=pack(source,root/'portable',exe)
+    isolated=root/'isolated';isolated.mkdir();shutil.copyfile(portable,isolated/'state16.bin')
     report=audit(isolated/'state16.bin',isolated/'fresh',audit_exe,member_ids=[1],fresh=True,batch_size=1)
     assert report['audit_complete'] and report['timing']['state_id']==16
     print(json.dumps(dict(test='P5 checkpoint acceptance',pause_boundaries=3,maximum_resume_absolute_difference=maximum_resume_difference,

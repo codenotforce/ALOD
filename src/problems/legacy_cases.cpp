@@ -100,7 +100,8 @@ SmoothWaveEnvelope boundary_weight(const Point2 &point) {
     return result;
 }
 SmoothWaveEnvelope boundary_gaussian_wave_envelope(
-    const Point2 &point, const double alpha, const Point2 &center) {
+    const Point2 &point, const double alpha, const Point2 &center,
+    const double normalization) {
     const SmoothWaveEnvelope weight = boundary_weight(point);
     const double x = point.x();
     const double y = point.y();
@@ -123,12 +124,6 @@ SmoothWaveEnvelope boundary_gaussian_wave_envelope(
         (4.0 * alpha * alpha
              * offset.squaredNorm()
          - 4.0 * alpha) * gaussian;
-    const SmoothWaveEnvelope center_weight =
-        boundary_weight(center);
-    const double normalization = 1.0 /
-        (center.x() * center.y()
-         * center_weight.value);
-
     SmoothWaveEnvelope result;
     result.value = normalization * weighted_polynomial * gaussian;
     result.gradient = normalization * (
@@ -182,6 +177,13 @@ PaperCaseData make_r1(double wavenumber, const Point2 &center) {
             * amplitude.gradient.cast<Complex>();
         gradient.x() += phase * Complex(0.0, wavenumber * amplitude.value);
         return gradient;
+    };
+    result.exact_jet = [=](const Point2 &point) {
+        const SmoothWaveEnvelope amplitude = localized_r1_amplitude(point, center);
+        const Complex phase = std::exp(Complex(0.0, wavenumber * point.x()));
+        Eigen::Vector2cd gradient = phase * amplitude.gradient.cast<Complex>();
+        gradient.x() += phase * Complex(0.0, wavenumber * amplitude.value);
+        return std::make_pair(amplitude.value * phase, gradient);
     };
     result.exact_laplacian = [=](const Point2 &point) {
         const SmoothWaveEnvelope amplitude = localized_r1_amplitude(point, center);
@@ -243,11 +245,14 @@ PaperCaseData make_parameterized_boundary_gaussian_s_paper_case(
     const double singular_scale = singular_coefficient;
     const Complex wave_coefficient = smooth_wave_amplitude * std::exp(Complex(0.0, wave_phase));
     const Point2 wave_center = center;
+    // Parameter-only normalization is shared by every quadrature point.
+    const double wave_normalization = 1.0 /
+        (wave_center.x() * wave_center.y() * boundary_weight(wave_center).value);
     result.exact = [=](const Point2 &point) {
         const SingularAmplitude corner = corner_singularity(point);
         const SmoothWaveEnvelope weight = boundary_weight(point);
         const SmoothWaveEnvelope wave =
-            boundary_gaussian_wave_envelope(point, wave_alpha, wave_center);
+            boundary_gaussian_wave_envelope(point, wave_alpha, wave_center, wave_normalization);
         const Complex phase = std::exp(Complex(
             0.0, wavenumber * (point.x() - wave_center.x())));
         return singular_scale * weight.value * corner.value
@@ -257,7 +262,7 @@ PaperCaseData make_parameterized_boundary_gaussian_s_paper_case(
         const SingularAmplitude corner = corner_singularity(point);
         const SmoothWaveEnvelope weight = boundary_weight(point);
         const SmoothWaveEnvelope wave =
-            boundary_gaussian_wave_envelope(point, wave_alpha, wave_center);
+            boundary_gaussian_wave_envelope(point, wave_alpha, wave_center, wave_normalization);
         const Complex phase = std::exp(Complex(
             0.0, wavenumber * (point.x() - wave_center.x())));
         Eigen::Vector2cd gradient =
@@ -269,11 +274,27 @@ PaperCaseData make_parameterized_boundary_gaussian_s_paper_case(
             * Complex(0.0, wavenumber * wave.value);
         return gradient;
     };
+    result.exact_jet = [=](const Point2 &point) {
+        const SingularAmplitude corner = corner_singularity(point);
+        const SmoothWaveEnvelope weight = boundary_weight(point);
+        const SmoothWaveEnvelope wave =
+            boundary_gaussian_wave_envelope(point, wave_alpha, wave_center, wave_normalization);
+        const Complex phase = std::exp(Complex(
+            0.0, wavenumber * (point.x() - wave_center.x())));
+        const Complex value = singular_scale * weight.value * corner.value
+            + wave_coefficient * wave.value * phase;
+        Eigen::Vector2cd gradient = singular_scale * (weight.value * corner.gradient
+            + corner.value * weight.gradient).cast<Complex>();
+        gradient += wave_coefficient * phase * wave.gradient.cast<Complex>();
+        gradient.x() += wave_coefficient * phase
+            * Complex(0.0, wavenumber * wave.value);
+        return std::make_pair(value, gradient);
+    };
     result.exact_laplacian = [=](const Point2 &point) {
         const SingularAmplitude corner = corner_singularity(point);
         const SmoothWaveEnvelope weight = boundary_weight(point);
         const SmoothWaveEnvelope wave =
-            boundary_gaussian_wave_envelope(point, wave_alpha, wave_center);
+            boundary_gaussian_wave_envelope(point, wave_alpha, wave_center, wave_normalization);
         const Complex phase = std::exp(Complex(
             0.0, wavenumber * (point.x() - wave_center.x())));
         const double singular_laplacian =
@@ -289,7 +310,7 @@ PaperCaseData make_parameterized_boundary_gaussian_s_paper_case(
         const SingularAmplitude corner = corner_singularity(point);
         const SmoothWaveEnvelope weight = boundary_weight(point);
         const SmoothWaveEnvelope wave =
-            boundary_gaussian_wave_envelope(point, wave_alpha, wave_center);
+            boundary_gaussian_wave_envelope(point, wave_alpha, wave_center, wave_normalization);
         const Complex phase = std::exp(Complex(
             0.0, wavenumber * (point.x() - wave_center.x())));
         const double singular_laplacian =

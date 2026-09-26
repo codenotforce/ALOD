@@ -1,49 +1,150 @@
 #include "alod/batch.hpp"
+#include "alod/mesh_state.hpp"
+#include <cstdlib>
 #include <Eigen/UmfPackSupport>
 #include <omp.h>
 #include <mutex>
 #include <chrono>
 namespace alod {
 namespace {
-template<class F> void parallel(int n,int threads,F f){if(threads<1)throw std::invalid_argument("batch threads must be positive");if(n==1){f(0);return;}threads=std::min(n,threads);std::exception_ptr failure;std::mutex mutex;
+template<class F> void parallel(int n,int threads,F f){if(threads<1)throw std::invalid_argument("batch threads must be positive");if(n==0)return;if(n==1){f(0);return;}threads=std::min(n,threads);std::exception_ptr failure;std::mutex mutex;
 #pragma omp parallel for schedule(static) num_threads(threads)
     for(int i=0;i<n;++i){try{f(i);}catch(...){std::lock_guard<std::mutex> lock(mutex);if(!failure)failure=std::current_exception();}}
     if(failure)std::rethrow_exception(failure);
 }
+// Only share points when every quadrature context is exactly identical.
+// Distinct localized features must retain their own adaptive quadrature.
+bool shared_quadrature(const std::vector<Problem>& problems){
+    if(problems.empty())return false;
+    const auto& a=problems.front().quadrature_context;
+    for(const auto& p:problems){const auto& b=p.quadrature_context;
+        if(a.integrand_class!=b.integrand_class||a.feature_point!=b.feature_point||a.feature_scale!=b.feature_scale)return false;}
+    return true;
+}
 using Clock=std::chrono::steady_clock;
 double seconds(Clock::time_point t){return std::chrono::duration<double>(Clock::now()-t).count();}
 }
-ComplexMatrix assemble_load_batch(const lod2d::TriMesh& mesh,const std::vector<Problem>& problems,const lod2d::helmholtz::QuadraturePolicy& q,int threads){
-    ComplexMatrix loads(mesh.nodes.size(),problems.size());parallel(problems.size(),threads,[&](int j){loads.col(j)=lod2d::helmholtz::assemble_helmholtz_load(mesh,problems[j].source,q,problems[j].quadrature_context);});return loads;
+ComplexMatrix assemble_load_batch(const lod2d::TriMesh& mesh,const std::vector<Problem>& problems,const lod2d::helmholtz::QuadraturePolicy& q,int threads,std::vector<lod2d::helmholtz::SourceMomentData>* moments){
+    if(threads<1)throw std::invalid_argument("batch threads must be positive");
+    const int n=problems.size(),elements=mesh.elems.size();
+    ComplexMatrix loads=ComplexMatrix::Zero(mesh.nodes.size(),n);
+    if(moments){
+        moments->clear();const bool shared=shared_quadrature(problems);
+        std::size_t budget=768ULL*1024*1024;
+        if(const char* value=std::getenv("ALOD_SOURCE_MOMENT_BYTES")){std::string text(value);if(text.empty()||text.find_first_not_of("0123456789")!=std::string::npos)throw std::invalid_argument("invalid ALOD_SOURCE_MOMENT_BYTES");budget=std::stoull(text);}
+        const long double needed=static_cast<long double>(elements)*(56.L*n+72.L*(shared?1:n));
+        if(n&&needed<=budget){
+            moments->resize(n);const auto identity=mesh_fingerprint(mesh);
+            for(int j=0;j<n;++j){auto& m=(*moments)[j];if(!problems[j].source)throw std::invalid_argument("empty batch source");
+                m.mesh_identity=identity;m.policy=q;m.context=problems[j].quadrature_context;
+                m.squared.resize(elements);m.load.resize(elements);
+                m.mass=shared&&j?(*moments)[0].mass:std::make_shared<std::vector<std::array<double,9>>>(elements);
+            }
+            parallel(threads,threads,[&](int part){
+                std::vector<lod2d::helmholtz::PhysicalTriangleQuadraturePoint> points;
+                for(int e=static_cast<long long>(elements)*part/threads;e<static_cast<long long>(elements)*(part+1)/threads;++e)
+                    for(int j=0;j<n;++j){auto& m=(*moments)[j];
+                        if(!j||!shared){
+                            lod2d::helmholtz::triangle_quadrature_points_into(mesh,e,q,m.context,points);
+                            auto& mass=(*m.mass)[e];
+                            for(const auto& point:points)for(int a=0;a<3;++a)for(int b=0;b<3;++b)
+                                mass[3*a+b]+=point.weight*point.barycentric[a]*point.barycentric[b];
+                        }
+                        for(const auto& point:points){const auto value=problems[j].source(point.point);
+                            m.squared[e]+=point.weight*std::norm(value);
+                            for(int i=0;i<3;++i)m.load[e][i]+=point.weight*value*point.barycentric[i];}
+                    }
+            });
+            parallel(n,threads,[&](int j){for(int e=0;e<elements;++e)for(int i=0;i<3;++i)
+                loads(mesh.elems[e][i],j)+=(*moments)[j].load[e][i];});
+            return loads;
+        }
+    }
+    if(n>1&&mesh.elems.size()>=static_cast<std::size_t>(threads)&&shared_quadrature(problems)){
+        for(const auto& problem:problems)if(!problem.source)throw std::invalid_argument("empty batch source");
+        std::vector<std::array<Complex,3>> local(static_cast<std::size_t>(n)*elements);
+        parallel(threads,threads,[&](int part){
+            std::vector<lod2d::helmholtz::PhysicalTriangleQuadraturePoint> points;
+            for(int e=static_cast<long long>(elements)*part/threads;e<static_cast<long long>(elements)*(part+1)/threads;++e){
+                lod2d::helmholtz::triangle_quadrature_points_into(mesh,e,q,problems.front().quadrature_context,points);
+                for(int j=0;j<n;++j){auto& values=local[static_cast<std::size_t>(j)*elements+e];
+                    for(const auto& point:points){const Complex value=problems[j].source(point.point);
+                        for(int i=0;i<3;++i)values[i]+=point.weight*value*point.barycentric[i];}}
+            }
+        });
+        parallel(n,threads,[&](int j){for(int e=0;e<elements;++e)for(int i=0;i<3;++i)
+            loads(mesh.elems[e][i],j)+=local[static_cast<std::size_t>(j)*elements+e][i];});
+        return loads;
+    }
+    if(n>=threads||n==0){parallel(n,threads,[&](int j){loads.col(j)=lod2d::helmholtz::assemble_helmholtz_load(mesh,problems[j].source,q,problems[j].quadrature_context);});return loads;}
+    const int blocks=(threads+n-1)/n;
+    std::vector<std::array<Complex,3>> local(static_cast<std::size_t>(n)*elements);
+    parallel(n*blocks,threads,[&](int task){
+        int j=task/blocks,part=task%blocks;
+        if(!problems[j].source)throw std::invalid_argument("empty batch source");
+        std::vector<lod2d::helmholtz::PhysicalTriangleQuadraturePoint> points;
+        for(int e=static_cast<long long>(elements)*part/blocks;e<static_cast<long long>(elements)*(part+1)/blocks;++e){
+            lod2d::helmholtz::triangle_quadrature_points_into(mesh,e,q,problems[j].quadrature_context,points);
+            auto& values=local[static_cast<std::size_t>(j)*elements+e];
+            for(const auto& point:points){const Complex value=problems[j].source(point.point);
+                for(int i=0;i<3;++i)values[i]+=point.weight*value*point.barycentric[i];}
+        }
+    });
+    parallel(n,threads,[&](int j){for(int e=0;e<elements;++e)for(int i=0;i<3;++i)
+        loads(mesh.elems[e][i],j)+=local[static_cast<std::size_t>(j)*elements+e][i];});
+    return loads;
 }
-ErrorBatch integrate_error_batch(const lod2d::TriMesh& mesh,const Sparse& E,const ComplexMatrix& values,const std::vector<Problem>& problems,const lod2d::helmholtz::QuadraturePolicy& q,int threads){
+static ErrorBatch integrate_error_separate(const lod2d::TriMesh& mesh,const Sparse& E,const ComplexMatrix& values,const std::vector<Problem>& problems,const lod2d::helmholtz::QuadraturePolicy& q,int threads){
     if(values.rows()!=mesh.nodes.size()||values.cols()!=problems.size())throw std::invalid_argument("error batch dimensions invalid");
     ErrorBatch result;int n=problems.size();result.exact_norm.resize(n);result.exact_error.resize(n);result.energy.resize(n);
     parallel(n,threads,[&](int j){auto& p=problems[j];result.exact_error[j]=lod2d::helmholtz::compute_helmholtz_error(mesh,values.col(j),p.wavenumber,p.exact,p.exact_gradient,q,p.quadrature_context).energy;
         result.exact_norm[j]=lod2d::helmholtz::compute_helmholtz_error(mesh,ComplexVector::Zero(values.rows()),p.wavenumber,p.exact,p.exact_gradient,q,p.quadrature_context).energy;
         result.energy[j]=std::sqrt(std::max(0.,values.col(j).dot(E.cast<Complex>()*values.col(j)).real()));});return result;
 }
+ErrorBatch integrate_error_batch(const lod2d::TriMesh& mesh,const Sparse& E,const ComplexMatrix& values,const std::vector<Problem>& problems,const lod2d::helmholtz::QuadraturePolicy& q,int threads){
+    auto result=integrate_audit_batch(mesh,E,values,values,problems,q,threads,true);
+    result.reference_error.resize(0);
+    return result;
+}
 ErrorBatch integrate_audit_batch(const lod2d::TriMesh& mesh,const Sparse& E,const ComplexMatrix& values,const ComplexMatrix& reference,const std::vector<Problem>& problems,const lod2d::helmholtz::QuadraturePolicy& q,int threads,bool fused){
     if(values.rows()!=mesh.nodes.size()||values.cols()!=problems.size()||reference.rows()!=values.rows()||reference.cols()!=values.cols())throw std::invalid_argument("audit integration dimensions invalid");
     ErrorBatch result;int n=problems.size();result.exact_norm.resize(n);result.exact_error.resize(n);result.reference_error.resize(n);result.energy.resize(n);
-    if(!fused){result=integrate_error_batch(mesh,E,values,problems,q,threads);result.reference_error.resize(n);parallel(n,threads,[&](int j){auto& p=problems[j];result.reference_error[j]=lod2d::helmholtz::compute_helmholtz_error(mesh,reference.col(j),p.wavenumber,p.exact,p.exact_gradient,q,p.quadrature_context).energy;});return result;}
-    parallel(n,threads,[&](int j){auto& p=problems[j];std::array<double,3> energy_sum{};
-        for(int element=0;element<static_cast<int>(mesh.elems.size());++element){auto tri=mesh.elems[element];auto a=mesh.nodes[tri[0]],b=mesh.nodes[tri[1]],c=mesh.nodes[tri[2]];
+    if(!fused){result=integrate_error_separate(mesh,E,values,problems,q,threads);result.reference_error.resize(n);parallel(n,threads,[&](int j){auto& p=problems[j];result.reference_error[j]=lod2d::helmholtz::compute_helmholtz_error(mesh,reference.col(j),p.wavenumber,p.exact,p.exact_gradient,q,p.quadrature_context).energy;});return result;}
+    if(threads<1)throw std::invalid_argument("batch threads must be positive");
+    if(n==0)return result;
+    const bool shared=n>1&&mesh.elems.size()>=static_cast<std::size_t>(threads)&&shared_quadrature(problems);
+    const int blocks=shared?threads:std::max(1,(threads+n-1)/n),elements=mesh.elems.size();
+    const bool staged=shared||blocks>1;
+    std::vector<std::array<double,3>> element_energy(staged?static_cast<std::size_t>(n)*elements:0);
+    auto finish=[&](int j,const std::array<double,3>& energy_sum){
+        result.exact_error[j]=std::sqrt(std::max(0.,energy_sum[0]));result.reference_error[j]=std::sqrt(std::max(0.,energy_sum[1]));result.exact_norm[j]=std::sqrt(std::max(0.,energy_sum[2]));
+        result.energy[j]=std::sqrt(std::max(0.,values.col(j).dot(E.cast<Complex>()*values.col(j)).real()));
+    };
+    parallel(shared?blocks:n*blocks,threads,[&](int task){int first=shared?0:task/blocks,last=shared?n:first+1,part=task%blocks;std::array<double,3> energy_sum{};
+        std::vector<lod2d::helmholtz::PhysicalTriangleQuadraturePoint> points;
+        for(int element=static_cast<long long>(elements)*part/blocks;element<static_cast<long long>(elements)*(part+1)/blocks;++element){auto tri=mesh.elems[element];auto a=mesh.nodes[tri[0]],b=mesh.nodes[tri[1]],c=mesh.nodes[tri[2]];
             double det=(b.x()-a.x())*(c.y()-a.y())-(b.y()-a.y())*(c.x()-a.x());if(std::abs(det)<=1e-15)throw std::invalid_argument("degenerate audit triangle");
             std::array<Eigen::Vector2d,3> gradients{Eigen::Vector2d(b.y()-c.y(),c.x()-b.x())/det,Eigen::Vector2d(c.y()-a.y(),a.x()-c.x())/det,Eigen::Vector2d(a.y()-b.y(),b.x()-a.x())/det};
+            lod2d::helmholtz::triangle_quadrature_points_into(mesh,element,q,problems[first].quadrature_context,points);
+            for(int j=first;j<last;++j){auto& p=problems[j];
             std::array<Eigen::Vector2cd,3> discrete_gradient{Eigen::Vector2cd::Zero(),Eigen::Vector2cd::Zero(),Eigen::Vector2cd::Zero()};
             for(int k=0;k<3;++k){discrete_gradient[0]+=values(tri[k],j)*gradients[k].cast<Complex>();discrete_gradient[1]+=reference(tri[k],j)*gradients[k].cast<Complex>();}
             std::array<double,3> l2{},gradient{};
-            for(const auto& point:lod2d::helmholtz::triangle_quadrature_points(mesh,element,q,p.quadrature_context)){
+            for(const auto& point:points){
                 std::array<Complex,3> discrete{};for(int k=0;k<3;++k){discrete[0]+=point.barycentric[k]*values(tri[k],j);discrete[1]+=point.barycentric[k]*reference(tri[k],j);}
-                const Complex exact=p.exact(point.point);const Eigen::Vector2cd exact_gradient=p.exact_gradient(point.point);
+                const auto jet=p.exact_jet?p.exact_jet(point.point):std::make_pair(p.exact(point.point),p.exact_gradient(point.point));
+                const Complex exact=jet.first;const Eigen::Vector2cd& exact_gradient=jet.second;
                 for(int k=0;k<3;++k){l2[k]+=point.weight*std::norm(exact-discrete[k]);gradient[k]+=point.weight*(exact_gradient-discrete_gradient[k]).squaredNorm();}
             }
-            for(int k=0;k<3;++k)energy_sum[k]+=gradient[k]+p.wavenumber*p.wavenumber*l2[k];
+            for(int k=0;k<3;++k){double v=gradient[k]+p.wavenumber*p.wavenumber*l2[k];
+                if(!staged)energy_sum[k]+=v;else element_energy[static_cast<std::size_t>(j)*elements+element][k]=v;}
         }
-        result.exact_error[j]=std::sqrt(std::max(0.,energy_sum[0]));result.reference_error[j]=std::sqrt(std::max(0.,energy_sum[1]));result.exact_norm[j]=std::sqrt(std::max(0.,energy_sum[2]));
-        result.energy[j]=std::sqrt(std::max(0.,values.col(j).dot(E.cast<Complex>()*values.col(j)).real()));
-    });return result;
+        }
+        if(!staged)finish(first,energy_sum);
+    });
+    if(staged)parallel(n,threads,[&](int j){std::array<double,3> sum{};
+        for(int e=0;e<elements;++e)for(int k=0;k<3;++k)sum[k]+=element_energy[static_cast<std::size_t>(j)*elements+e][k];finish(j,sum);});
+    return result;
 }
 struct ReferenceFemContext::Impl {
     ComplexSparseMatrix matrix;std::vector<int> free;int full_size=0;

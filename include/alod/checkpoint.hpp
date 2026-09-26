@@ -9,6 +9,9 @@ enum class CheckpointPhase { Accepted=0, BeforeTraining=1, AfterEll=2 };
 struct Checkpoint {
     MeshState coarse{lod2d::TriMesh{}}, fine{lod2d::TriMesh{}};
     Sparse P_node,P_elem,P_dg;
+    ComplexSparseMatrix lod_trial,lod_reduced;
+    int format_version=0;
+    std::string geometry_file;
     ComplexMatrix raw_kernel,phi,values,warm_full;
     std::vector<int> coarse_marks,reference_marks,computed_ids;
     AdaptiveCursor cursor;
@@ -23,9 +26,12 @@ struct Checkpoint {
 std::string json_string(const std::string&);
 std::uint64_t journal_hash(const std::string&,std::uint64_t prefix=14695981039346656037ULL);
 std::string matrix_hash(const ComplexMatrix&);
-std::string checkpoint_metadata(const Checkpoint&);
+std::string checkpoint_metadata(const Checkpoint&, bool has_basis=false,int format=0);
 // Immutable, checksummed little-endian files. A temporary is verified before
 // rename; latest is replaced only after the new checkpoint is committed.
-std::filesystem::path save_checkpoint(const std::filesystem::path& directory,const Checkpoint&);
-Checkpoint load_checkpoint(const std::filesystem::path& file,std::uint64_t maximum_bytes=1073741824);
+std::filesystem::path save_checkpoint(const std::filesystem::path& directory,const Checkpoint&, const ComplexSparseMatrix* accepted_trial=nullptr,
+    const ComplexSparseMatrix* accepted_reduced=nullptr,bool share_geometry=false);
+// Check the complete checksum while reading only the metadata into memory.
+std::string inspect_checkpoint(const std::filesystem::path&,std::uint64_t maximum_bytes=UINT64_MAX);
+Checkpoint load_checkpoint(const std::filesystem::path& file,std::uint64_t maximum_bytes=UINT64_MAX);
 }

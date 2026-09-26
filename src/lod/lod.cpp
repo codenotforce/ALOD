@@ -1,4 +1,6 @@
+#include "alod/timing.hpp"
 #include "alod/lod.hpp"
+#include "alod/patch_cache.hpp"
 #include "fingerprint.hpp"
 #include "alod/mesh_state.hpp"
 #include "helmholtz/boundary.h"
@@ -35,7 +37,10 @@ LodSpace::LodSpace(TriMesh coarse, RefineOutput reference, double k, int ell,
 LodSpace::LodSpace(const LodSpace& previous,int ell)
     :LodSpace(previous.coarse(),previous.impl_->reference,previous.operators().wavenumber,ell,previous.impl_->policy,previous.limits(),&previous){}
 LodSpace::LodSpace(TriMesh coarse,RefineOutput reference,double k,int ell,
-                   InterpolationPolicy policy,LodLimits limits,const LodSpace* reused) : impl_(std::make_unique<Impl>()) {
+                   InterpolationPolicy policy,LodLimits limits,const ComplexSparseMatrix& trial,const ComplexSparseMatrix* reduced)
+    :LodSpace(std::move(coarse),std::move(reference),k,ell,policy,limits,nullptr,&trial,reduced){}
+LodSpace::LodSpace(TriMesh coarse,RefineOutput reference,double k,int ell,
+                   InterpolationPolicy policy,LodLimits limits,const LodSpace* reused,const ComplexSparseMatrix* accepted_trial,const ComplexSparseMatrix* accepted_reduced) : impl_(std::make_unique<Impl>()) {
     auto& p = *impl_;
     const int nh = reference.mesh.nodes.size(), nH = coarse.nodes.size();
     if (!std::isfinite(k) || k <= 0 || ell < 1 || ell > 16 || limits.threads < 1
@@ -51,6 +56,7 @@ LodSpace::LodSpace(TriMesh coarse,RefineOutput reference,double k,int ell,
     if(static_cast<std::size_t>(nh)*nH>limits.maximum_patch_entries)
         throw std::runtime_error("LOD constraint workspace bound exceeds resource limit");
     int column=0;
+    {PhaseTimer timing("lod_hierarchy_operators",-1);
     if(reused){
         const auto& old=*reused->impl_;
         p.interpolation=old.interpolation;p.coarse_basis=old.coarse_basis;
@@ -92,6 +98,18 @@ LodSpace::LodSpace(TriMesh coarse,RefineOutput reference,double k,int ell,
     p.reference_identity=mesh_fingerprint(p.coarse)+":"+mesh_fingerprint(p.reference.mesh)+":"+embeddings.finish()
         +":"+std::to_string(std::bit_cast<std::uint64_t>(k))+":"+std::to_string(static_cast<int>(policy));
     }
+    }
+    if(accepted_trial){
+        PhaseTimer timing("lod_basis_restore",-1);
+        if(accepted_trial->rows()!=nh||accepted_trial->cols()!=column)
+            throw std::invalid_argument("accepted LOD basis dimensions mismatch");
+        for(int c=0;c<accepted_trial->outerSize();++c)for(ComplexSparseMatrix::InnerIterator it(*accepted_trial,c);it;++it)
+            if(!std::isfinite(it.value().real())||!std::isfinite(it.value().imag()))throw std::invalid_argument("nonfinite accepted LOD basis");
+        p.trial=*accepted_trial;
+        const ComplexSparseMatrix defect=p.interpolation.cast<Complex>()*(p.trial-p.coarse_basis.cast<Complex>());
+        if(defect.norm()>1e-8*std::max(1.,p.trial.norm()))throw std::invalid_argument("accepted LOD interpolation invariant failed");
+    }else{
+    if(limits.patch_cache)limits.patch_cache->begin_generation();
     auto patches=build_patches(p.coarse,ell);
     const std::vector<TriMesh> no_meshes;
     const std::vector<Sparse> no_prolongations;
@@ -101,15 +119,24 @@ LodSpace::LodSpace(TriMesh coarse,RefineOutput reference,double k,int ell,
     // Assembly is shared and immutable; independent target factors are thread-local.
     std::vector<double> residuals(correctors.size()), constraints(correctors.size());
     std::vector<std::string> errors(correctors.size());
-#pragma omp parallel for schedule(dynamic,1) num_threads(limits.threads)
+{PhaseTimer timing("lod_local_correctors",-1);
+#pragma omp parallel num_threads(limits.threads)
+    {
+#pragma omp for schedule(dynamic,1)
     for (int target=0;target<static_cast<int>(correctors.size());++target) {
         try {
-            auto system=assembler.assemble(target);
+            auto system=assembler.assemble(target,false);
             if (static_cast<std::size_t>(system.constraints.size())>limits.maximum_patch_entries
                 || static_cast<std::size_t>(system.helmholtz.rows())*(system.constraints.rows()+3)>limits.maximum_dense_entries)
                 throw std::runtime_error("LOD patch resource limit exceeded");
             HelmholtzPatchSolverConfig config; config.symbolic_cache_slots=1;
-            auto solved=solve_helmholtz_patch(system,config);
+            HelmholtzPatchSolveResult solved;std::string cache_key;
+            const bool cacheable=limits.patch_cache&&limits.patch_cache->fits(system);
+            if(cacheable)cache_key=LodPatchCache::key(system,p.reference.mesh);
+            if(!cacheable||!limits.patch_cache->find(cache_key,solved)){
+                solved=solve_helmholtz_patch(system,config);
+            }
+            if(cacheable)limits.patch_cache->insert(std::move(cache_key),solved);
             residuals[target]=std::max(solved.diagnostics.primal_residual,solved.diagnostics.adjoint_residual);
             constraints[target]=solved.diagnostics.constraint_residual;
             for(int row=0;row<solved.corrector.rows();++row)
@@ -118,18 +145,41 @@ LodSpace::LodSpace(TriMesh coarse,RefineOutput reference,double k,int ell,
                         correctors[target].push_back({system.local_vertices[row],col,solved.corrector(row,col)});
         } catch(const std::exception& e) { errors[target]=e.what(); }
     }
+    release_helmholtz_patch_cache();
+    }
+    }
     for(const auto& error:errors) if(!error.empty())throw std::runtime_error(error);
     p.patch_residual=*std::max_element(residuals.begin(),residuals.end());
     p.constraint_residual=*std::max_element(constraints.begin(),constraints.end());
     if(p.patch_residual>1e-8 || p.constraint_residual>1e-8)throw std::runtime_error("LOD local residual gate failed");
-    auto full=build_helmholtz_corrected_basis(p.reference.P_node,p.coarse,nh,correctors);
-    std::vector<ComplexTriplet> values;
-    for(int c=0;c<column;++c)
-        for(ComplexSparseMatrix::InnerIterator it(full,p.coarse_nodes[c]);it;++it)values.emplace_back(it.row(),c,it.value());
-    p.trial.resize(nh,column);p.trial.setFromTriplets(values.begin(),values.end());
+    {
+        PhaseTimer timing("lod_basis_assembly",-1);
+        auto full=build_helmholtz_corrected_basis(p.reference.P_node,p.coarse,nh,correctors);
+        // Element correctors are no longer needed. Release their potentially
+        // large storage before allocating the extracted trial/test bases.
+        std::vector<HelmholtzElementCorrector>().swap(correctors);
+        std::vector<ComplexTriplet> values;
+        for(int c=0;c<column;++c)
+            for(ComplexSparseMatrix::InnerIterator it(full,p.coarse_nodes[c]);it;++it)values.emplace_back(it.row(),c,it.value());
+        p.trial.resize(nh,column);p.trial.setFromTriplets(values.begin(),values.end());
+    } // Full basis and triplets must not overlap the reduced factorization.
+    }
     p.test=p.trial.conjugate();
+    if(accepted_reduced&&accepted_reduced->cols()){
+        PhaseTimer timing("lod_reduced_restore",-1);
+        if(!accepted_trial||accepted_reduced->rows()!=column||accepted_reduced->cols()!=column)
+            throw std::invalid_argument("accepted reduced matrix dimensions invalid");
+        p.reduced=*accepted_reduced;
+        for(int c=0;c<p.reduced.outerSize();++c)for(ComplexSparseMatrix::InnerIterator it(p.reduced,c);it;++it)
+            if(!std::isfinite(it.value().real())||!std::isfinite(it.value().imag()))throw std::invalid_argument("nonfinite reduced matrix");
+        ComplexMatrix probe(column,3);
+        for(int r=0;r<column;++r){probe(r,0)=1.;probe(r,1)=double((r*17)%29)/29.;probe(r,2)=Complex(double((r*7)%31)/31.,double((r*11)%23)/23.);}
+        const ComplexMatrix expected=p.test.adjoint()*(p.operators.system*(p.trial*probe));
+        if((p.reduced*probe-expected).norm()>1e-9*std::max(1.,expected.norm()))throw std::invalid_argument("accepted reduced operator invariant failed");
+    }else {PhaseTimer timing("lod_reduced_assembly",-1);
     p.reduced=p.test.adjoint()*p.operators.system*p.trial;
-    p.reduced.prune(Complex(0,0),1e-14);p.reduced.makeCompressed();p.solver.compute(p.reduced);
+    p.reduced.prune(Complex(0,0),1e-14);p.reduced.makeCompressed();}
+    {PhaseTimer timing("lod_reduced_factor",-1);p.solver.compute(p.reduced);}
     if(p.solver.info()!=Eigen::Success)throw std::runtime_error("LOD coarse factorization failed");
     p.identity=p.reference_identity+":ell="+std::to_string(ell);
 }
@@ -157,6 +207,7 @@ const Sparse& LodSpace::energy()const{return impl_->energy;}
 const HelmholtzOperators& LodSpace::operators()const{return impl_->operators;}
 const ComplexSparseMatrix& LodSpace::trial()const{return impl_->trial;}
 const ComplexSparseMatrix& LodSpace::test()const{return impl_->test;}
+const ComplexSparseMatrix& LodSpace::reduced()const{return impl_->reduced;}
 const std::vector<int>& LodSpace::coarse_nodes()const{return impl_->coarse_nodes;}
 const std::string& LodSpace::reference_identity()const{return impl_->reference_identity;}
 const std::string& LodSpace::identity()const{return impl_->identity;}

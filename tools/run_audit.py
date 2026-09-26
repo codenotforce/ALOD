@@ -12,14 +12,20 @@ from run_fixed import DEFAULT as FIXED, arguments, validate, write_members
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def audit(checkpoint, output, executable, *, member_ids=None, batch_size=8, fresh=False, rank_zero=True, threads=None, pure=False):
+def audit(checkpoint, output, executable, *, member_ids=None, batch_size=8, fresh=False, rank_zero=True, threads=None, pure=False, ell_override=0, quadrature_boost=0, refinement_steps=0, timeout=604800, cancel=None, reuse_basis=True):
+    setup_start=time.monotonic()
+    if type(ell_override) is not int or not 0<=ell_override<=4 or type(quadrature_boost) is not int or not 0<=quadrature_boost<=8:
+        raise ValueError("invalid diagnostic override")
+    if type(refinement_steps) is not int or not 0<=refinement_steps<=3: raise ValueError("invalid refinement steps")
+    if type(reuse_basis) is not bool:raise ValueError("reuse_basis must be boolean")
+    if timeout<=0: raise ValueError("invalid audit timeout")
     output, executable = Path(output), Path(executable)
     checkpoint, metadata = inspect(checkpoint, executable.with_name("alod_run"))
     if metadata["phase"] != 0:
         raise ValueError("only accepted checkpoints may be audited")
     if type(batch_size) is not int or not 1 <= batch_size <= 50:
         raise ValueError("audit batch_size must be in 1..50")
-    config = metadata["config"]
+    config = {"wavenumber":16, **metadata["config"]}
     fixed = {key: config[key] for key in FIXED}
     fixed["maximum_nodes"] = min(fixed["maximum_nodes"], 200000)
     rows = validate(fixed)
@@ -46,7 +52,7 @@ def audit(checkpoint, output, executable, *, member_ids=None, batch_size=8, fres
     if not set(member_ids) <= {r["sample"] for r in rows}:
         raise ValueError("audit cannot invent members outside the frozen table")
     if threads is not None:
-        if type(threads) is not int or not 1 <= threads <= 64:
+        if type(threads) is not int or not 0 <= threads <= 2147483647:
             raise ValueError("invalid audit threads")
         fixed["threads"] = threads
     fixed["maximum_nodes"] = config["maximum_nodes"]
@@ -55,24 +61,27 @@ def audit(checkpoint, output, executable, *, member_ids=None, batch_size=8, fres
     write_members(table, rows)
     manifest = dict(status="running", checkpoint=checkpoint.name, checkpoint_sha256=digest(checkpoint),
                     executable_sha256=digest(executable), config=config, member_ids=member_ids,
-                    batch_size=batch_size, fresh=fresh, rank_zero=rank_zero, threads=fixed["threads"],
+                    ell_override=ell_override, quadrature_boost=quadrature_boost, refinement_steps=refinement_steps, batch_size=batch_size, reuse_basis=reuse_basis, fresh=fresh, rank_zero=rank_zero, threads=fixed["threads"],
                     solver_completed=False, validation_passed=False, audit_complete=False, paper_complete=False)
     from runtime_provenance import provenance
     manifest['provenance'] = provenance(executable.with_name('alod_run'))
+    manifest['setup_seconds']=time.monotonic()-setup_start
     save = lambda: atomic_text(output/"run.json", json.dumps(manifest, indent=2)+"\n")
     save()
     start = time.monotonic()
     try:
-        env = {**os.environ, "OMP_NUM_THREADS": str(fixed["threads"]), "OMP_PROC_BIND": "false",
-               "OPENBLAS_NUM_THREADS": "1", "MKL_NUM_THREADS": "1", "BLIS_NUM_THREADS": "1"}
-        env.pop("OMP_PLACES", None)
-        runtime = [f"--checkpoint={checkpoint.resolve()}", f"--batch-size={batch_size}",
+        from execution import runtime_environment
+        env = runtime_environment(fixed["threads"])
+        env["ALOD_TIMING_FILE"]=str((output/"timings.jsonl").resolve())
+
+        runtime = [f"--reuse-basis={int(reuse_basis)}", f"--enrichment-tests={config.get('enrichment_tests','adjoint')}", f"--refinement-steps={refinement_steps}", f"--ell-override={ell_override}", f"--quadrature-boost={quadrature_boost}", f"--checkpoint={checkpoint.resolve()}", f"--batch-size={batch_size}",
                    "--audit-ids="+",".join(map(str, member_ids)), f"--fresh={int(fresh)}", f"--rank-zero={int(rank_zero)}",
                    f"--method={config['method']}", f"--radius={config['radius']}", f"--rank-cap={config['rank_cap']}",
                    f"--maximum-patch-entries={config['maximum_patch_entries']}", f"--maximum-dense-entries={config['maximum_dense_entries']}"]
         with (output/"samples.jsonl").open("w") as out, (output/"stderr.log").open("w") as err:
-            result = subprocess.run([str(executable.resolve()), *arguments(fixed, table.resolve()), *runtime],
-                                    stdout=out, stderr=err, env=env, timeout=3600)
+            from execution import cancellable_run
+            result = cancellable_run([str(executable.resolve()), *(["audit"] if executable.stem=="alod_run" else []), *arguments(fixed, table.resolve()), *runtime],
+                                    stdout=out, stderr=err, env=env, timeout=timeout, cancel=cancel)
         manifest["returncode"] = result.returncode
         if result.returncode:
             raise RuntimeError("independent audit failed; see stderr.log")
@@ -110,15 +119,20 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--checkpoint", type=Path, required=True)
     p.add_argument("--output", type=Path, required=True)
-    p.add_argument("--executable", type=Path, default=ROOT/"build/alod_audit")
+    p.add_argument("--executable", type=Path, default=ROOT/"build/alod_run")
     p.add_argument("--member-ids", help="comma-separated frozen member IDs")
     p.add_argument("--batch-size", type=int, default=8)
     p.add_argument("--threads", type=int)
+    p.add_argument("--refinement-steps",type=int,default=0)
+    p.add_argument("--ell-override",type=int,default=0)
+    p.add_argument("--quadrature-boost",type=int,default=0)
+    p.add_argument("--timeout",type=float,default=604800)
     p.add_argument("--fresh", action="store_true")
     p.add_argument("--pure", action="store_true")
     p.add_argument("--no-rank-zero", action="store_true")
+    p.add_argument("--rebuild-lod", action="store_true", help="independently rebuild patches instead of restoring the accepted basis")
     a = p.parse_args()
-    print(json.dumps(audit(a.checkpoint, a.output, a.executable, member_ids=None if a.member_ids is None else [int(i) for i in a.member_ids.split(',')], batch_size=a.batch_size, fresh=a.fresh, rank_zero=not a.no_rank_zero, threads=a.threads, pure=a.pure)))
+    print(json.dumps(audit(a.checkpoint, a.output, a.executable, member_ids=None if a.member_ids is None else [int(i) for i in a.member_ids.split(',')], batch_size=a.batch_size, fresh=a.fresh, rank_zero=not a.no_rank_zero, threads=a.threads, pure=a.pure, ell_override=a.ell_override, quadrature_boost=a.quadrature_boost, refinement_steps=a.refinement_steps, timeout=a.timeout, reuse_basis=not a.rebuild_lod)))
 
 
 if __name__ == "__main__":

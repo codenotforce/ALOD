@@ -438,7 +438,7 @@ AdditiveKernelRieszContext::Result AdditiveKernelRieszContext::apply_selected(
     ComplexMatrix rhs = input;
     for (int node : p.dirichlet) rhs.row(node).setZero();
     Result result;
-    result.values = ComplexMatrix::Zero(p.full_size,input.cols());
+    if(full_estimator)result.values = ComplexMatrix::Zero(p.full_size,input.cols());
     result.node_eta_squared = Eigen::MatrixXd::Zero(p.coarse_size,input.cols());
     result.selected_values = ComplexMatrix::Zero(p.full_size,input.cols());
     result.selected_eta = Eigen::VectorXd::Zero(input.cols());
@@ -454,6 +454,13 @@ AdditiveKernelRieszContext::Result AdditiveKernelRieszContext::apply_selected(
         const auto &dofs = g.patch.discrete_dofs;
         const auto &c = g.patch.constraints;
         const int n = dofs.size(), m = c.rows();
+        // Constraints are already reduced to independent rows. When m == n,
+        // the admissible space is exactly {0}; its Riesz solution is zero.
+        // Do not subtract Schur terms and test relative roundoff against zero.
+        if (m == n) {
+            local_values[index] = ComplexMatrix::Zero(n,input.cols());
+            return;
+        }
         ComplexMatrix r(n,input.cols()), x(n,input.cols());
         for (int i=0;i<n;++i) r.row(i)=rhs.row(dofs[i]);
         ComplexMatrix multipliers = ComplexMatrix::Zero(m,input.cols());
@@ -488,14 +495,17 @@ AdditiveKernelRieszContext::Result AdditiveKernelRieszContext::apply_selected(
         const auto &g=*p.groups[k];
         if(!full_estimator && selected_counts[k]==0) continue;
         for (int i=0;i<static_cast<int>(g.patch.discrete_dofs.size());++i) {
-            result.values.row(g.patch.discrete_dofs[i]) +=
-                static_cast<double>(full_estimator?g.nodes.size():selected_counts[k]) * local_values[k].row(i);
+            if(full_estimator)result.values.row(g.patch.discrete_dofs[i]) +=
+                static_cast<double>(g.nodes.size()) * local_values[k].row(i);
             result.selected_values.row(g.patch.discrete_dofs[i]) +=
                 static_cast<double>(selected_counts[k]) * local_values[k].row(i);
         }
         result.local_relative_residual=std::max(result.local_relative_residual,local_errors[k]);
         result.constraint_relative_residual=std::max(result.constraint_relative_residual,kernel_errors[k]);
     }
+    // For selected-only training both fields represent exactly the same sum.
+    // Scatter once in the original deterministic order, then copy contiguously.
+    if(!full_estimator)result.values=result.selected_values;
     result.eta.resize(input.cols());
     for (int j=0;j<input.cols();++j) {
         const double sq=result.node_eta_squared.col(j).sum();

@@ -7,12 +7,13 @@
 #include <Eigen/SparseLU>
 #include <algorithm>
 #include <stdexcept>
+#include <exception>
 
 namespace alod {
 SlodSolution solve_slod(const lod2d::TriMesh& coarse,const Problem& problem,
                        const lod2d::helmholtz::QuadraturePolicy& quad,int ell,int reference_gap) {
     using namespace lod2d;using namespace lod2d::helmholtz;
-    if(ell!=3 || reference_gap!=4) throw std::invalid_argument("P1 SLOD requires ell=3 and reference gap=4");
+    if(ell!=3 || reference_gap<1 || reference_gap>8) throw std::invalid_argument("uniform LOD requires ell=3 and reference gap in 1..8");
     auto areas=compute_area(coarse);
     if(*std::max_element(areas.begin(),areas.end())>*std::min_element(areas.begin(),areas.end())*(1+1e-12))
         throw std::invalid_argument("P1 SLOD requires a uniform coarse mesh");
@@ -40,16 +41,22 @@ SlodSolution solve_slod(const lod2d::TriMesh& coarse,const Problem& problem,
         no_meshes,no_prolongations,no_prolongations,operators);
     std::vector<HelmholtzElementCorrector> correctors(coarse.elems.size());
     SlodSolution result;
-    for(int target=0;target<static_cast<int>(correctors.size());++target) {
+    std::vector<double> patch_errors(correctors.size()),constraint_errors(correctors.size());
+    std::vector<std::exception_ptr> failures(correctors.size());
+    #pragma omp parallel for schedule(dynamic,1)
+    for(int target=0;target<static_cast<int>(correctors.size());++target) {try{
         auto system=assembler.assemble(target);
         auto solved=solve_helmholtz_patch(system);
-        result.patch_residual=std::max({result.patch_residual,solved.diagnostics.primal_residual,solved.diagnostics.adjoint_residual});
-        result.constraint_residual=std::max(result.constraint_residual,solved.diagnostics.constraint_residual);
+        patch_errors[target]=std::max(solved.diagnostics.primal_residual,solved.diagnostics.adjoint_residual);
+        constraint_errors[target]=solved.diagnostics.constraint_residual;
         for(int row=0;row<solved.corrector.rows();++row)
             for(int col=0;col<solved.corrector.cols();++col)
                 if(std::abs(solved.corrector(row,col))>1e-14)
                     correctors[target].push_back({system.local_vertices[row],col,solved.corrector(row,col)});
-    }
+    }catch(...){failures[target]=std::current_exception();}}
+    for(std::size_t i=0;i<failures.size();++i){if(failures[i])std::rethrow_exception(failures[i]);
+        result.patch_residual=std::max(result.patch_residual,patch_errors[i]);
+        result.constraint_residual=std::max(result.constraint_residual,constraint_errors[i]);}
     if(result.patch_residual>1e-8 || result.constraint_residual>1e-8)
         throw std::runtime_error("SLOD local equation/constraint residual gate failed");
     auto full=build_helmholtz_corrected_basis(fine.P_node,coarse,fine.mesh.nodes.size(),correctors);

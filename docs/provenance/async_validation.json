@@ -1,0 +1,352 @@
+{
+  "date": "2026-09-22",
+  "scope": "Bounded SSH server verification under tmux; not a full paper campaign.",
+  "deployment": "ALOD/async-20260922",
+  "executable_sha256": "2fc3fb06e1a7721bb321b168927d4c12f4f90da91e273e25087430bdcf2bfeaa",
+  "canonical_source_fingerprint": "bf26214c4a84b2ea58500f54e846b53f513436a6bcfd9130c4765f232dfbe8b9",
+  "ctest_runs": [
+    {
+      "count": 37,
+      "passed": true,
+      "tests": [
+        {
+          "name": "v4_zero_kernel",
+          "seconds": 0.02
+        },
+        {
+          "name": "v4_patch_recovery",
+          "seconds": 0.0
+        },
+        {
+          "name": "v4_kernel_lift",
+          "seconds": 0.16
+        },
+        {
+          "name": "v4_relative_theta",
+          "seconds": 0.23
+        },
+        {
+          "name": "asynchronous_restart",
+          "seconds": 8.95
+        },
+        {
+          "name": "v4_geometry",
+          "seconds": 9.31
+        },
+        {
+          "name": "v4_initial_evidence",
+          "seconds": 37.84
+        },
+        {
+          "name": "p34_mathematics",
+          "seconds": 1.16
+        },
+        {
+          "name": "v4_normalized_ell",
+          "seconds": 39.26
+        },
+        {
+          "name": "p2_mathematics",
+          "seconds": 0.23
+        },
+        {
+          "name": "variable_wavenumber",
+          "seconds": 4.03
+        },
+        {
+          "name": "p34_cli",
+          "seconds": 17.16
+        },
+        {
+          "name": "p34_e1_prefix",
+          "seconds": 1.62
+        },
+        {
+          "name": "p56_checkpoint_audit",
+          "seconds": 32.1
+        },
+        {
+          "name": "p2_E1_uniform",
+          "seconds": 0.18
+        },
+        {
+          "name": "p2_E1_graded",
+          "seconds": 0.25
+        },
+        {
+          "name": "p2_E1_ritz",
+          "seconds": 0.21
+        },
+        {
+          "name": "p2_E2_uniform",
+          "seconds": 0.92
+        },
+        {
+          "name": "p2_E2_graded",
+          "seconds": 1.01
+        },
+        {
+          "name": "p2_E2_ritz",
+          "seconds": 1.73
+        },
+        {
+          "name": "p2_thread_reproducibility",
+          "seconds": 0.57
+        },
+        {
+          "name": "p2_cli",
+          "seconds": 1.52
+        },
+        {
+          "name": "quasi_average_discrepancy",
+          "seconds": 0.0
+        },
+        {
+          "name": "mathematical_regression",
+          "seconds": 0.4
+        },
+        {
+          "name": "repository_integrity",
+          "seconds": 0.5
+        },
+        {
+          "name": "tooling_regression",
+          "seconds": 0.87
+        },
+        {
+          "name": "baseline_E1_AFEM",
+          "seconds": 0.27
+        },
+        {
+          "name": "baseline_E1_UFEM",
+          "seconds": 0.19
+        },
+        {
+          "name": "baseline_E1_SLOD",
+          "seconds": 0.19
+        },
+        {
+          "name": "fem_E1",
+          "seconds": 0.09
+        },
+        {
+          "name": "baseline_E2_AFEM",
+          "seconds": 0.74
+        },
+        {
+          "name": "baseline_E2_UFEM",
+          "seconds": 0.53
+        },
+        {
+          "name": "baseline_E2_SLOD",
+          "seconds": 1.41
+        },
+        {
+          "name": "fem_E2",
+          "seconds": 0.26
+        },
+        {
+          "name": "baseline_thread_reproducibility",
+          "seconds": 0.76
+        },
+        {
+          "name": "baseline_cli",
+          "seconds": 0.5
+        },
+        {
+          "name": "p34_e2_initial",
+          "seconds": 33.52
+        }
+      ],
+      "wall_seconds": 100.42
+    },
+    {
+      "count": 5,
+      "passed": true,
+      "tests": [
+        {
+          "name": "asynchronous_restart",
+          "seconds": 10.2
+        },
+        {
+          "name": "tooling_regression",
+          "seconds": 0.86
+        },
+        {
+          "name": "repository_integrity",
+          "seconds": 0.51
+        },
+        {
+          "name": "v4_kernel_lift",
+          "seconds": 0.16
+        },
+        {
+          "name": "p56_checkpoint_audit",
+          "seconds": 32.0
+        }
+      ],
+      "wall_seconds": 32.0
+    },
+    {
+      "count": 2,
+      "passed": true,
+      "tests": [
+        {
+          "name": "campaign_resume",
+          "seconds": 5.24
+        },
+        {
+          "name": "tooling_regression",
+          "seconds": 0.84
+        }
+      ],
+      "wall_seconds": 6.09
+    }
+  ],
+  "distinct_ctest_cases": 38,
+  "python_unit_tests": 23,
+  "large_checkpoint": {
+    "bytes": 1552584656,
+    "nodes": 1050625,
+    "columns": 48,
+    "prepare_seconds": 20.6933,
+    "write_verify_seconds": 12.4256,
+    "inspect_seconds": 7.31953,
+    "load_seconds": 8.5502,
+    "passed": true,
+    "maximum_rss_kib": 1911996
+  },
+  "benchmark": {
+    "config": {
+      "wavenumber": 16,
+      "problem": "E2",
+      "level": 6,
+      "gap": 4,
+      "ell": 2,
+      "graded": false,
+      "riesz_patches": "n2",
+      "interpolation": "area",
+      "threads": 8,
+      "maximum_nodes": 4000000,
+      "theta": 0.15,
+      "ritz_tolerance": 0.0001,
+      "ritz_iterations": 750,
+      "dense_threshold": 64,
+      "member_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "training_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "method": "ALOD",
+      "cycles": 1,
+      "m_ref": 2,
+      "state_limit": 0,
+      "minimum_gap": 0,
+      "reference_theta": [
+        0.3,
+        0.2
+      ],
+      "ell_mode": "lazy",
+      "maximum_ell": 4,
+      "extra_checks": [],
+      "force_promotions": [],
+      "radius": 0.6,
+      "rank_cap": 24,
+      "inherit": true,
+      "audit": true,
+      "emit_solution": false,
+      "maximum_patch_entries": 64000000000,
+      "maximum_dense_entries": 1000000000,
+      "ell_ratio_mode": "solution_scaled",
+      "ell_threshold": 0.3,
+      "enrichment_tests": "kernel_lift",
+      "ell_absolute_threshold": 0.2
+    },
+    "accepted_states": 3,
+    "solver_seconds": 6.242489896714687,
+    "audit_drain_seconds": 3.7291334345936775,
+    "workflow_seconds": 10.088614482432604,
+    "solver_phases": {
+      "prepare_seconds": 0.490918865,
+      "load_seconds": 2.2233365259999998,
+      "training_seconds": 0.391724662,
+      "estimate_seconds": 0.04578611,
+      "theta_seconds": 0.266665006,
+      "strong_seconds": 2.436314468,
+      "wall_seconds": 5.973711941
+    },
+    "audit_phases": {
+      "prepare_seconds": 0.56844152,
+      "reference_factor_seconds": 0.02027547,
+      "reference_solve_seconds": 0.050984685999999994,
+      "coupled_seconds": 0.06837590800000015,
+      "error_seconds": 4.391756794000001,
+      "wall_seconds": 7.351101741
+    },
+    "audits_started_before_solver_end": 2,
+    "audit_complete": true,
+    "allowed_cpu_count": 128,
+    "applied_cpu_binding": false,
+    "blas_environment": {
+      "OPENBLAS_NUM_THREADS": null,
+      "MKL_NUM_THREADS": null,
+      "BLIS_NUM_THREADS": null
+    },
+    "maximum_child_rss_kib": 97456
+  },
+  "recovery_verified": [
+    "absolute-only lazy promotion and same-mesh recheck",
+    "solver finishes while audit is deliberately blocked",
+    "completed audit checksum reuse",
+    "startup interruption before first checkpoint",
+    "missing latest pointer and torn uncommitted journal",
+    "corrupt latest snapshot quarantine and regeneration",
+    "audit failure retry without solver prefix replay",
+    "exclusive supervisor lease",
+    "real supervisor SIGKILL and child termination",
+    "training/ell/accepted boundary continuation",
+    "campaign completed-job resume"
+  ],
+  "thread_policy": {
+    "no_hard_64_thread_cap": true,
+    "cli_128_threads_passed": true,
+    "no_cpu_binding": true,
+    "no_forced_blas_limit": true
+  },
+  "portability": {
+    "local_absolute_paths_found": 0,
+    "historical_e1_rows_preserved": 14208,
+    "historical_e2_rows_preserved": 1650
+  }
+}

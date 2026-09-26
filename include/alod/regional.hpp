@@ -15,16 +15,20 @@ public:
 private:
     struct Impl;std::unique_ptr<Impl> impl_;
 };
-struct RegionalConfig { double radius=.6; int rank_cap=24; bool inherit=true; };
+enum class EnrichmentTests { KernelLift, ArchivedAdjoint };
+struct RegionalConfig { double radius=.6; int rank_cap=24; bool inherit=true; EnrichmentTests tests=EnrichmentTests::KernelLift; };
 struct RegionalEvaluation {
     ComplexMatrix values, seeds, raw_tests, tests;
     Eigen::VectorXd eta;
+    double kernel_lift_residual=0;
     double pg_residual=0, aot_residual=0, raw_base_block=0, raw_dictionary_block=0;
 };
 class RegionalEvaluator {
 public:
-    RegionalEvaluator(const LodSpace&,AdditiveKernelRieszContext&,AdjointTestCache&,bool reuse=true);
+    RegionalEvaluator(const LodSpace&,AdditiveKernelRieszContext&,AdjointTestCache&,bool reuse=true,EnrichmentTests=EnrichmentTests::KernelLift);
+    RegionalEvaluator(const LodSpace&,AdjointTestCache&,bool reuse=true,EnrichmentTests=EnrichmentTests::KernelLift);
     ~RegionalEvaluator();
+    RegionalEvaluation evaluate_frozen(const ComplexMatrix& loads,const ComplexMatrix& phi);
     RegionalEvaluation evaluate(const ComplexMatrix& loads,const ComplexMatrix& phi,const std::vector<int>& mask);
     // Accounted persistent dense Eigen buffers; excludes solver internals,
     // sparse storage and temporary expression allocations.
@@ -47,5 +51,5 @@ RegionalResult train_regional(LodSpace&,AdditiveKernelRieszContext&,AdjointTestC
     const ComplexMatrix& training_loads,const RegionalConfig& = {},
     const ComplexMatrix& incoming_raw = {},bool mesh_changed=false);
 RegionalEvaluation evaluate_regional(const LodSpace&,AdditiveKernelRieszContext&,AdjointTestCache&,
-    const ComplexMatrix& loads,const ComplexMatrix& phi,const std::vector<int>& selected_mask);
+    const ComplexMatrix& loads,const ComplexMatrix& phi,const std::vector<int>& selected_mask,EnrichmentTests=EnrichmentTests::KernelLift);
 }

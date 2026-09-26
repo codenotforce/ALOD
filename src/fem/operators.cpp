@@ -193,12 +193,17 @@ ComplexVector assemble_helmholtz_load(
         element_count, std::array<Complex, 3>{});
     std::vector<std::exception_ptr> element_errors(element_count);
 #if defined(_OPENMP)
-#pragma omp parallel for schedule(static) if(element_count >= 64)
+#pragma omp parallel if(element_count >= 64)
+#endif
+    {
+    std::vector<PhysicalTriangleQuadraturePoint> points;
+#if defined(_OPENMP)
+#pragma omp for schedule(static)
 #endif
     for (int element = 0; element < element_count; ++element) {
         try {
-            for (const auto &point : triangle_quadrature_points(
-                     mesh, element, quadrature, quadrature_context)) {
+            triangle_quadrature_points_into(mesh, element, quadrature, quadrature_context, points);
+            for (const auto &point : points) {
                 const Complex value = source(point.point);
                 for (int i = 0; i < 3; ++i) {
                     element_loads[element][i] +=
@@ -208,6 +213,7 @@ ComplexVector assemble_helmholtz_load(
         } catch (...) {
             element_errors[element] = std::current_exception();
         }
+    }
     }
     for (const std::exception_ptr &error : element_errors)
         if (error) std::rethrow_exception(error);

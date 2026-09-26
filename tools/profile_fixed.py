@@ -1,7 +1,6 @@
-"""Run one fixed-state profile on explicitly selected physical Linux cores.
+"""Run one fixed-state profile without changing CPU affinity.
 
-This bounded P2 probe is not a production scheduler. It requires a fresh output
-directory and enforces affinity before starting the numerical process.
+This bounded probe requires a fresh output directory and observes resources.
 """
 import argparse
 import json
@@ -31,22 +30,15 @@ def main():
     p.add_argument("--config", type=Path, required=True)
     p.add_argument("--executable", type=Path, default=ROOT/"build/alod_fixed")
     p.add_argument("--output", type=Path, required=True)
-    p.add_argument("--cpus", required=True, help="comma-separated logical CPUs, one per physical core")
+    p.add_argument("--cpus", default="", help="optional descriptive CPU list; no affinity is applied")
     p.add_argument("--reserve-gib", type=float, default=80)
     p.add_argument("--maximum-rss-gib", type=float, default=4)
     p.add_argument("--maximum-seconds", type=int, default=1800)
     a = p.parse_args()
     config = json.loads(a.config.read_text())
     rows = validate(config)
-    cpus = [int(c) for c in a.cpus.split(",")]
-    if len(set(cpus)) != len(cpus) or len(cpus) != config["threads"] or not set(cpus) <= os.sched_getaffinity(0):
-        raise ValueError("CPU set must be allowed, unique and match configured threads")
+    cpus = [int(c) for c in a.cpus.split(",") if c]
     physical = []
-    for cpu in cpus:
-        topology = SYS_CPU / f"cpu{cpu}" / "topology"
-        physical.append((int((topology / "physical_package_id").read_text()), int((topology / "core_id").read_text())))
-    if len(set(physical)) != len(physical):
-        raise ValueError("selected CPUs share physical cores")
     mem = fields(PROC / "meminfo")
     reserve = max(a.reserve_gib * 2**20, .2 * kib(mem["MemTotal"]))
     if not math.isfinite(a.maximum_rss_gib) or not math.isfinite(a.reserve_gib) or a.maximum_rss_gib <= 0 or a.maximum_seconds <= 0 or a.reserve_gib < 0:
@@ -62,10 +54,8 @@ def main():
                   worker_affinity={}, worker_cpu_ticks={}, status="running")
     report.update(maximum_live_workers=0, maximum_cpu_active_workers=0)
     previous_ticks = {}
-    os.sched_setaffinity(0, cpus)
-    env = {**os.environ, "OMP_NUM_THREADS": str(config["threads"]), "OPENBLAS_NUM_THREADS": "1",
-           "MKL_NUM_THREADS": "1", "BLIS_NUM_THREADS": "1", "OMP_PROC_BIND": "false"}
-    env.pop("OMP_PLACES", None)
+    from execution import runtime_environment
+    env=runtime_environment(config["threads"])
     start = time.monotonic()
     child = None
     try:
@@ -91,8 +81,6 @@ def main():
                             stat = (worker / "stat").read_text().rsplit(")", 1)[1].split()
                             report["worker_cpu_ticks"][worker.name] = int(stat[11]) + int(stat[12])
                             live_ticks[worker.name] = int(stat[11]) + int(stat[12])
-                            if not os.sched_getaffinity(int(worker.name)) <= set(cpus):
-                                raise RuntimeError("worker affinity escaped the selected physical cores")
                     except (FileNotFoundError, ProcessLookupError):
                         continue
                 mem = fields(PROC / "meminfo")

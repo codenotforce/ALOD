@@ -11,7 +11,9 @@ ROOT=Path(__file__).resolve().parents[1]
 def provenance(executable):
     result=dict(platform=platform.system(),machine=platform.machine(),python=platform.python_version(),
                 cpu_affinity=sorted(os.sched_getaffinity(0)) if hasattr(os,'sched_getaffinity') else None,
-                blas_threads=1,omp_proc_bind='false',omp_places=None)
+                blas_threads={k:os.environ.get(k) for k in ('OPENBLAS_NUM_THREADS','MKL_NUM_THREADS','BLIS_NUM_THREADS')},
+                omp_proc_bind=os.environ.get('OMP_PROC_BIND'),omp_places=os.environ.get('OMP_PLACES'),
+                omp_num_threads=os.environ.get('OMP_NUM_THREADS'),omp_thread_limit=os.environ.get('OMP_THREAD_LIMIT'))
     build=subprocess.run([str(Path(executable).resolve()),'build-info'],capture_output=True,text=True,timeout=30)
     if build.returncode==0:
         result['build']=json.loads(build.stdout)

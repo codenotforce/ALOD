@@ -11,7 +11,7 @@ int main(int argc,char** argv) {
     auto input=fixed::parse(argc,argv);auto coarse=fixed::coarse_mesh(input);
     auto fine=lod2d::refine_mesh_nvb(coarse,input.gap);
     alod::LodLimits limits;limits.threads=input.threads;limits.maximum_reference_nodes=input.cap;
-    alod::LodSpace space(coarse,std::move(fine),16,input.ell,input.policy=="area"
+    alod::LodSpace space(coarse,std::move(fine),input.wavenumber,input.ell,input.policy=="area"
         ?alod::InterpolationPolicy::ManuscriptAreaWeighted:alod::InterpolationPolicy::ArchivedArithmetic,limits);
     using namespace alod;
     const auto quad=paper_quadrature(input.problem);

@@ -12,6 +12,8 @@
 #include <string>
 #include <cstdint>
 #include <vector>
+#include <limits>
+#include <sstream>
 
 namespace lod2d::helmholtz {
 namespace {
@@ -211,6 +213,52 @@ void compute_final_residuals(
     result.diagnostics.adjoint_residual = adjoint_residual.norm() / rhs_scale;
 }
 
+double maximum_residual(const HelmholtzPatchSolveResult& result) {
+    const auto& d=result.diagnostics;
+    if(!result.corrector.allFinite() || !result.multipliers.allFinite()
+       || !std::isfinite(d.primal_residual) || !std::isfinite(d.adjoint_residual)
+       || !std::isfinite(d.constraint_residual))return std::numeric_limits<double>::infinity();
+    return std::max({d.primal_residual,d.adjoint_residual,d.constraint_residual});
+}
+
+HelmholtzPatchSolveResult solve_saddle_system(const HelmholtzPatchSystem& system,
+                                            HelmholtzPatchSolveDiagnostics diagnostics) {
+    // A can be nearly singular outside ker(C), even when the constrained
+    // corrector problem is stable. Solve the same equations without A^{-1}
+    // and the cancellation in y - Z lambda in this exceptional case.
+    const int n=system.helmholtz.rows(),m=system.constraints.rows();
+    std::vector<ComplexTriplet> entries;
+    for(int col=0;col<n;++col)
+        for(ComplexSparseMatrix::InnerIterator it(system.helmholtz,col);it;++it)
+            entries.emplace_back(it.row(),col,it.value());
+    for(int row=0;row<m;++row)for(int col=0;col<n;++col)
+        if(system.constraints(row,col)!=0) {
+            entries.emplace_back(n+row,col,system.constraints(row,col));
+            entries.emplace_back(col,n+row,system.constraints(row,col));
+        }
+    ComplexSparseMatrix saddle(n+m,n+m);saddle.setFromTriplets(entries.begin(),entries.end());
+    saddle.makeCompressed();std::vector<ComplexTriplet>().swap(entries);
+    ComplexSparseLu solver;solver.compute(saddle);
+    if(solver.info()!=Eigen::Success)throw std::runtime_error("Helmholtz patch saddle factorization failed");
+    ComplexMatrix rhs=ComplexMatrix::Zero(n+m,system.rhs.cols());rhs.topRows(n)=system.rhs;
+    ComplexMatrix solution=solver.solve(rhs);
+    if(solver.info()!=Eigen::Success || !solution.allFinite())throw std::runtime_error("Helmholtz patch saddle solve failed");
+    HelmholtzPatchSolveResult result;result.diagnostics=diagnostics;result.diagnostics.saddle_fallback=true;
+    auto update=[&] {result.corrector=solution.topRows(n);result.multipliers=solution.bottomRows(m);compute_final_residuals(system,result);};
+    update();
+    for(int iteration=0;iteration<3 && maximum_residual(result)>1e-10;++iteration) {
+        ComplexMatrix correction=solver.solve((rhs-saddle*solution).eval());
+        if(solver.info()!=Eigen::Success || !correction.allFinite())break;
+        solution+=correction;++result.diagnostics.refinement_steps;update();
+    }
+    if(maximum_residual(result)>1e-8) {
+        std::ostringstream message;message<<"Helmholtz patch saddle residual gate failed: target="<<system.target_element
+            <<" n="<<n<<" m="<<m<<" residual="<<maximum_residual(result);
+        throw std::runtime_error(message.str());
+    }
+    return result;
+}
+
 } // namespace
 
 HelmholtzPatchSolveResult solve_helmholtz_patch(
@@ -227,8 +275,18 @@ HelmholtzPatchSolveResult solve_helmholtz_patch(
         throw std::invalid_argument(
             "Helmholtz symbolic cache slots must be positive");
 
-    auto result = recover_schur_solution(system, solve_direct_helmholtz_blocks(system, config));
-    compute_final_residuals(system, result);
+    HelmholtzPatchSolveResult result;
+    try {
+        result = recover_schur_solution(system, solve_direct_helmholtz_blocks(system, config));
+        compute_final_residuals(system, result);
+    } catch(const std::runtime_error&) {
+        result.diagnostics.original_residual=std::numeric_limits<double>::infinity();
+        return solve_saddle_system(system,result.diagnostics);
+    }
+    result.diagnostics.original_residual=maximum_residual(result);
+    if(result.diagnostics.original_residual>1e-10)return solve_saddle_system(system,result.diagnostics);
     return result;
 }
+void release_helmholtz_patch_cache(){helmholtz_cache.entries.clear();helmholtz_cache.clock=0;}
+
 }

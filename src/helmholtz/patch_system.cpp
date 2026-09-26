@@ -6,6 +6,7 @@
 #include <cmath>
 #include <limits>
 #include <stdexcept>
+#include <type_traits>
 
 namespace lod2d::helmholtz {
 namespace {
@@ -90,21 +91,21 @@ std::unordered_map<std::uint64_t, int> edge_counts(const TriMesh &mesh) {
     return counts;
 }
 
-template <typename LocalIndex>
-Eigen::SparseMatrix<double> restrict_matrix(
-    const Eigen::SparseMatrix<double> &global,
+template <typename LocalIndex, typename Scalar>
+Eigen::SparseMatrix<Scalar> restrict_matrix(
+    const Eigen::SparseMatrix<Scalar> &global,
     const std::vector<int> &local_vertices,
     LocalIndex local_index_of) {
-    std::vector<Eigen::Triplet<double>> triplets;
+    std::vector<Eigen::Triplet<Scalar>> triplets;
     for (int local_col = 0; local_col < static_cast<int>(local_vertices.size()); ++local_col) {
         const int global_col = local_vertices[local_col];
-        for (Eigen::SparseMatrix<double>::InnerIterator it(global, global_col); it; ++it) {
+        for (typename Eigen::SparseMatrix<Scalar>::InnerIterator it(global, global_col); it; ++it) {
             const int local_row = local_index_of(it.row());
-            if (local_row >= 0 && it.value() != 0.0)
+            if (local_row >= 0 && (it.value() != Scalar(0) || std::is_same_v<Scalar,Complex>))
                 triplets.emplace_back(local_row, local_col, it.value());
         }
     }
-    Eigen::SparseMatrix<double> local(
+    Eigen::SparseMatrix<Scalar> local(
         static_cast<int>(local_vertices.size()),
         static_cast<int>(local_vertices.size()));
     local.setFromTriplets(triplets.begin(), triplets.end());
@@ -208,13 +209,33 @@ HelmholtzPatchAssembler::HelmholtzPatchAssembler(
           fine_element_prolongation, static_cast<int>(coarse.elems.size()))),
       fine_incidence_(node_incidence(fine)),
       fine_dirichlet_(fine.nodes.size(), false),
-      fine_edge_counts_(edge_counts(fine)),
+      fine_natural_boundary_(fine.elems.size(), false),
       hierarchy_meshes_(hierarchy_meshes),
       node_level_prolongations_(node_level_prolongations),
       element_level_prolongations_(element_level_prolongations) {
     for (int node : dirichlet_nodes(fine_)) {
         if (node >= 0 && node < static_cast<int>(fine_dirichlet_.size()))
             fine_dirichlet_[node] = true;
+    }
+    // Boundary geometry is immutable across target patches. Classify once and
+    // release the edge table before parallel patch assembly starts.
+    if (fine_.boundary_edges.empty() || std::any_of(
+            fine_.boundary_edges.begin(), fine_.boundary_edges.end(),
+            [](const BoundaryEdge& edge){
+                return edge.tag==BoundaryTag::Robin||edge.tag==BoundaryTag::Neumann;
+            })) {
+        const auto counts = edge_counts(fine_);
+        for(int element=0;element<static_cast<int>(fine_.elems.size());++element){
+            const auto& tri=fine_.elems[element];
+            for(int edge=0;edge<3;++edge){
+                const Edge nodes=canonical_edge(tri[edge],tri[(edge+1)%3]);
+                if(counts.at(edge_key(nodes[0],nodes[1]))!=1)continue;
+                const auto tag=boundary_tag(fine_,nodes);
+                if(tag==BoundaryTag::Robin||tag==BoundaryTag::Neumann){
+                    fine_natural_boundary_[element]=true;break;
+                }
+            }
+        }
     }
     const int coarse_element_count = static_cast<int>(coarse_.elems.size());
     if (patches_.rows() != coarse_element_count
@@ -273,7 +294,7 @@ std::vector<int> HelmholtzPatchAssembler::patch_fine_elements(
     return result;
 }
 
-HelmholtzPatchSystem HelmholtzPatchAssembler::assemble(int target) const {
+HelmholtzPatchSystem HelmholtzPatchAssembler::assemble(int target, bool retain_components) const {
     if (target < 0 || target >= patch_count())
         throw std::out_of_range("Helmholtz patch target is out of range");
 
@@ -356,24 +377,13 @@ HelmholtzPatchSystem HelmholtzPatchAssembler::assemble(int target) const {
     }
 
 
-    static constexpr int local_edges[3][2] = {{0, 1}, {1, 2}, {2, 0}};
     for (int element : system.patch_elements) {
-        const Triangle &triangle = fine_.elems[element];
-        for (const auto &edge : local_edges) {
-            const Edge physical_edge = canonical_edge(
-                triangle[edge[0]], triangle[edge[1]]);
-            if (fine_edge_counts_.at(edge_key(
-                    physical_edge[0], physical_edge[1])) != 1)
-                continue;
-            const BoundaryTag tag = boundary_tag(fine_, physical_edge);
-            if (tag == BoundaryTag::Robin || tag == BoundaryTag::Neumann) {
-                system.touches_physical_boundary = true;
-                break;
-            }
+        if (fine_natural_boundary_[element]) {
+            system.touches_physical_boundary = true;break;
         }
-        if (system.touches_physical_boundary) break;
     }
 
+    if(retain_components){
     system.stiffness = restrict_matrix(
         operators_.stiffness, system.local_vertices, local_index_of);
     system.mass = restrict_matrix(
@@ -385,6 +395,11 @@ HelmholtzPatchSystem HelmholtzPatchAssembler::assemble(int target) const {
         * system.mass.cast<Complex>();
     system.helmholtz -= Complex(0.0, system.wavenumber)
         * system.robin.cast<Complex>();
+    }else{
+        // The direct corrector solver only needs A, already assembled globally.
+        // Keep explicit cancellation zeros to preserve its symbolic pattern.
+        system.helmholtz=restrict_matrix(operators_.system,system.local_vertices,local_index_of);
+    }
     system.helmholtz.makeCompressed();
 
     const int local_size = static_cast<int>(system.local_vertices.size());
@@ -392,6 +407,11 @@ HelmholtzPatchSystem HelmholtzPatchAssembler::assemble(int target) const {
     for (int element : children_[target]) {
         const Triangle &triangle = fine_.elems[element];
         const Eigen::Matrix3cd &block = operators_.element_blocks[element];
+        Eigen::Matrix3d embedding;
+        for(int trial_local=0;trial_local<3;++trial_local)
+            for(int coarse_local=0;coarse_local<3;++coarse_local)
+                embedding(trial_local,coarse_local)=fine_dg_prolongation_.coeff(
+                    3*element+trial_local,3*target+coarse_local);
         for (int i = 0; i < 3; ++i) {
             const int row = local_index_of(triangle[i]);
             if (row < 0) continue;
@@ -399,9 +419,7 @@ HelmholtzPatchSystem HelmholtzPatchAssembler::assemble(int target) const {
                 Complex value = 0.0;
                 for (int trial_local = 0; trial_local < 3; ++trial_local) {
                     value += block(i, trial_local)
-                        * fine_dg_prolongation_.coeff(
-                            3 * element + trial_local,
-                            3 * target + coarse_local);
+                        * embedding(trial_local,coarse_local);
                 }
                 system.rhs(row, coarse_local) += value;
             }

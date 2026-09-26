@@ -1,5 +1,7 @@
 # Migration status
 
+Version 4 update (2026-09-22): see [the current implementation review](paper_v4_review.md). Numerical policies and performance statements below describe their original migration stage unless explicitly updated.
+
 Updated: 2026-09-12. **P0-P6 implementation and bounded acceptance are complete.** Full production experiments remain deferred to P8; P7-P9 remain open. Historical full campaigns remain imported evidence; this repository has not generated new 51-state E1 or 33-state E2 production trajectories.
 
 ## P0: source discovery and old replay

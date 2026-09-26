@@ -1,0 +1,46 @@
+{
+  "wavenumber": 128,
+  "problem": "E1",
+  "level": 12,
+  "gap": 7,
+  "ell": 2,
+  "graded": false,
+  "riesz_patches": "n2",
+  "interpolation": "area",
+  "threads": 0,
+  "maximum_nodes": 4000000,
+  "theta": 0.15,
+  "ritz_tolerance": 0.0001,
+  "ritz_iterations": 750,
+  "dense_threshold": 64,
+  "member_ids": [
+    0
+  ],
+  "training_ids": [
+    0
+  ],
+  "method": "ALOD",
+  "cycles": 100,
+  "m_ref": 2,
+  "state_limit": 30,
+  "minimum_gap": 2,
+  "reference_theta": [
+    0.3,
+    0.2
+  ],
+  "ell_mode": "lazy",
+  "maximum_ell": 4,
+  "extra_checks": [],
+  "force_promotions": [],
+  "radius": 0.6,
+  "rank_cap": 24,
+  "inherit": true,
+  "audit": true,
+  "emit_solution": false,
+  "maximum_patch_entries": 64000000000,
+  "maximum_dense_entries": 1000000000,
+  "ell_ratio_mode": "solution_scaled",
+  "ell_threshold": 0.3,
+  "enrichment_tests": "kernel_lift",
+  "ell_absolute_threshold": 0.2
+}

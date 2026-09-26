@@ -1,6 +1,7 @@
 #pragma once
 #include "helmholtz/operators.h"
 #include <array>
+#include <memory>
 namespace lod2d::helmholtz::adaptive {
 namespace diagnostics {
 struct ResidualEdgeContribution {
@@ -31,6 +32,18 @@ struct HelmholtzP1ResidualEstimate {
     std::vector<double> element_squared;
     double eta = 0.0;
     double algebraic_relative_difference = 0.0;
+};
+// Scoped to an immutable mesh; destroy before that mesh is changed or released.
+class ResidualMeshContext {
+public:
+    explicit ResidualMeshContext(const TriMesh& mesh);
+    ~ResidualMeshContext();
+    HelmholtzP1ResidualEstimate estimate(const HelmholtzOperators&,const ComplexVector&,
+        const ComplexVector&,const ComplexFunction&,const QuadraturePolicy& = {},
+        const QuadratureContext& = {},const SourceMomentData* moments=nullptr) const;
+private:
+    struct Impl;
+    std::unique_ptr<Impl> impl_;
 };
 HelmholtzP1ResidualEstimate estimate_conforming_p1_residual(
     const TriMesh &mesh,

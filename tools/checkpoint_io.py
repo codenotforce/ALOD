@@ -79,6 +79,9 @@ def recover_journal(path, metadata):
 
 
 def validate_resume_config(old, new):
+    defaults = dict(ell_absolute_threshold=-1.,wavenumber=16,ell_ratio_mode="raw",ell_threshold=0.,enrichment_tests="adjoint")
+    old, new = {**defaults, **old}, {**defaults, **new}
+    if set(old)!=set(new):raise ValueError("resume configuration fields differ")
     increases = {"cycles", "state_limit", "maximum_nodes", "maximum_patch_entries", "maximum_dense_entries"}
     operational = {"audit", "emit_solution", "threads"}
     for key in old:
@@ -93,3 +96,43 @@ def validate_resume_config(old, new):
                 raise ValueError(f"resume may only increase {key}")
         elif old[key] != new[key]:
             raise ValueError(f"resume cannot change mathematical field {key}; create an explicit new experiment")
+
+
+def recover_latest(output, executable, expected_config=None, expected_members=None):
+    """Choose the newest complete transaction, checking its full checksum."""
+    output=Path(output);directory=output/'checkpoints'
+    def order(path):
+        parts=path.stem.split('-')
+        return int(parts[1]),int(parts[3]=='0'),int(parts[5]),int(parts[3])
+    invalid=[];chosen=None
+    for path in sorted(directory.glob('state-*-phase-*-ell-*.bin'),key=order,reverse=True):
+        try:
+            _,metadata=inspect(path,executable);chosen=path;break
+        except (ValueError,OSError) as error:
+            invalid.append(dict(checkpoint=path.name,reason=str(error)))
+    if chosen is None:raise ValueError('no valid checkpoint is available for automatic recovery')
+    if expected_config is not None:validate_resume_config(metadata['config'],expected_config)
+    if expected_members is not None and metadata['members_text']!=expected_members:
+        raise ValueError('resume member table differs from frozen checkpoint')
+    # A valid newer transaction with a bad committed prefix fails closed.
+    recover_journal(output/'solver.jsonl',metadata)
+    if invalid:
+        quarantine=directory/'recovery';quarantine.mkdir(exist_ok=True)
+        for item in invalid:
+            path=directory/item['checkpoint'];target=quarantine/path.name;index=0
+            while target.exists():index+=1;target=quarantine/(path.name+f'.{index}')
+            path.replace(target)
+    atomic_text(directory/'latest',chosen.name+'\n')
+    atomic_text(output/'recovery.json',json.dumps(dict(checkpoint=chosen.name,invalid=invalid),indent=2)+'\n')
+    return chosen
+
+
+def pack(path, directory, executable):
+    """Export one self-contained checkpoint, resolving shared geometry first."""
+    path = resolve_checkpoint(path)
+    result = subprocess.run([str(Path(executable).resolve()), 'pack-checkpoint',
+                             str(path.resolve()), str(Path(directory).resolve())],
+                            capture_output=True, text=True, timeout=600)
+    if result.returncode:
+        raise ValueError('checkpoint packing failed: ' + result.stderr.strip())
+    return Path(directory) / json.loads(result.stdout)

@@ -1,0 +1,253 @@
+{
+  "date": "2026-09-22",
+  "scope": "Bounded local verification only; no full production campaign launched.",
+  "environment": {
+    "platform": "Ubuntu 22.04 under WSL",
+    "build": "Release",
+    "compiler_jobs": 2,
+    "blas_threads": 1
+  },
+  "ctest_runs": [
+    {
+      "tests": [
+        {
+          "name": "v4_zero_kernel",
+          "seconds": 0.04
+        },
+        {
+          "name": "v4_patch_recovery",
+          "seconds": 0.01
+        },
+        {
+          "name": "v4_kernel_lift",
+          "seconds": 0.21
+        },
+        {
+          "name": "v4_initial_evidence",
+          "seconds": 39.61
+        },
+        {
+          "name": "p34_mathematics",
+          "seconds": 1.16
+        },
+        {
+          "name": "v4_normalized_ell",
+          "seconds": 46.15
+        },
+        {
+          "name": "p2_mathematics",
+          "seconds": 0.24
+        },
+        {
+          "name": "variable_wavenumber",
+          "seconds": 34.3
+        },
+        {
+          "name": "p34_cli",
+          "seconds": 48.67
+        },
+        {
+          "name": "p34_e1_prefix",
+          "seconds": 15.36
+        },
+        {
+          "name": "p56_checkpoint_audit",
+          "seconds": 55.06
+        },
+        {
+          "name": "p2_E1_uniform",
+          "seconds": 0.22
+        },
+        {
+          "name": "p34_e2_initial",
+          "seconds": 31.52
+        },
+        {
+          "name": "p2_E1_graded",
+          "seconds": 0.25
+        },
+        {
+          "name": "p2_E1_ritz",
+          "seconds": 0.23
+        },
+        {
+          "name": "p2_E2_uniform",
+          "seconds": 0.79
+        },
+        {
+          "name": "p2_E2_graded",
+          "seconds": 0.87
+        },
+        {
+          "name": "p2_thread_reproducibility",
+          "seconds": 0.52
+        },
+        {
+          "name": "p2_E2_ritz",
+          "seconds": 1.47
+        },
+        {
+          "name": "quasi_average_discrepancy",
+          "seconds": 0.01
+        },
+        {
+          "name": "mathematical_regression",
+          "seconds": 0.36
+        },
+        {
+          "name": "p2_cli",
+          "seconds": 1.59
+        },
+        {
+          "name": "baseline_E1_AFEM",
+          "seconds": 0.25
+        },
+        {
+          "name": "baseline_E1_UFEM",
+          "seconds": 0.18
+        },
+        {
+          "name": "baseline_E1_SLOD",
+          "seconds": 0.2
+        },
+        {
+          "name": "tooling_regression",
+          "seconds": 1.13
+        },
+        {
+          "name": "fem_E1",
+          "seconds": 0.09
+        },
+        {
+          "name": "baseline_E2_UFEM",
+          "seconds": 0.48
+        },
+        {
+          "name": "baseline_E2_AFEM",
+          "seconds": 0.71
+        },
+        {
+          "name": "fem_E2",
+          "seconds": 0.27
+        },
+        {
+          "name": "baseline_thread_reproducibility",
+          "seconds": 0.7
+        },
+        {
+          "name": "baseline_E2_SLOD",
+          "seconds": 1.27
+        },
+        {
+          "name": "baseline_cli",
+          "seconds": 0.69
+        }
+      ],
+      "count": 33,
+      "passed": true,
+      "wall_seconds": 142.75
+    },
+    {
+      "tests": [
+        {
+          "name": "v4_normalized_ell",
+          "seconds": 45.43
+        },
+        {
+          "name": "p56_checkpoint_audit",
+          "seconds": 53.43
+        },
+        {
+          "name": "p34_mathematics",
+          "seconds": 1.19
+        },
+        {
+          "name": "v4_kernel_lift",
+          "seconds": 0.28
+        },
+        {
+          "name": "v4_zero_kernel",
+          "seconds": 0.03
+        },
+        {
+          "name": "v4_patch_recovery",
+          "seconds": 0.01
+        },
+        {
+          "name": "v4_relative_theta",
+          "seconds": 0.28
+        },
+        {
+          "name": "v4_geometry",
+          "seconds": 11.26
+        },
+        {
+          "name": "repository_integrity",
+          "seconds": 1.59
+        },
+        {
+          "name": "v4_initial_evidence",
+          "seconds": 39.83
+        }
+      ],
+      "count": 10,
+      "passed": true,
+      "wall_seconds": 85.32
+    }
+  ],
+  "distinct_ctest_cases": 36,
+  "python_unit_tests": {
+    "count": 20,
+    "passed": true
+  },
+  "initial_evidence": {
+    "problems": [
+      "E1",
+      "E2"
+    ],
+    "relative_tolerance": 2e-07,
+    "absolute_tolerance": 1e-10,
+    "independent_audits": true,
+    "wrong_enrichment_audit_rejected": true
+  },
+  "kernel_profile": {
+    "threads": 2,
+    "rhs": 2,
+    "rank": 2,
+    "maximum_relative_difference": 2.1537629079723955e-15,
+    "aot_solved_columns": {
+      "cached": [
+        0,
+        0,
+        0
+      ],
+      "uncached": [
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "geometry": {
+    "kappa": [
+      8,
+      16,
+      32,
+      64,
+      128
+    ],
+    "kH0": "2*sqrt(2)",
+    "k_cubed_h0_squared": 8,
+    "actual_mesh_diameters_verified": true
+  },
+  "prepared_campaign": {
+    "adaptive_jobs": 7,
+    "launched": false
+  },
+  "portability": {
+    "absolute_local_paths_found": 0,
+    "imported_hashes_checked": 64,
+    "legacy_e1_rows": 14208,
+    "legacy_e2_rows": 1650
+  }
+}

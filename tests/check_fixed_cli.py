@@ -31,7 +31,7 @@ with tempfile.TemporaryDirectory() as tmp:
     write_members(table, validate(DEFAULT))
     base = arguments(DEFAULT, table)
     for replacement in ("--theta=nan", "--training-ids=16", "--training-ids=0,0", "--maximum-nodes=1",
-                        "--riesz-patches=unknown", "--threads=0"):
+                        "--riesz-patches=unknown", "--threads=-1"):
         key = replacement.split("=", 1)[0] + "="
         args = [arg for arg in base if not arg.startswith(key)] + [replacement]
         run = subprocess.run([str(exe), *args], capture_output=True, text=True, env=env)

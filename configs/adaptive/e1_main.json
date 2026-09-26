@@ -1,4 +1,5 @@
 {
+  "wavenumber": 16,
   "problem": "E1",
   "level": 6,
   "gap": 4,
@@ -6,8 +7,8 @@
   "graded": false,
   "riesz_patches": "n2",
   "interpolation": "area",
-  "threads": 16,
-  "maximum_nodes": 500000,
+  "threads": 0,
+  "maximum_nodes": 4000000,
   "theta": 0.15,
   "ritz_tolerance": 0.0001,
   "ritz_iterations": 750,
@@ -101,6 +102,10 @@
   "inherit": true,
   "audit": true,
   "emit_solution": false,
-  "maximum_patch_entries": 256000000,
-  "maximum_dense_entries": 64000000
+  "maximum_patch_entries": 64000000000,
+  "maximum_dense_entries": 1000000000,
+  "ell_ratio_mode": "solution_scaled",
+  "ell_threshold": 0.3,
+  "enrichment_tests": "kernel_lift",
+  "ell_absolute_threshold": 0.2
 }

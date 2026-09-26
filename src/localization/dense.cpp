@@ -45,6 +45,21 @@ LocalizationSpectrum largest_generalized_eigenvalue_dense(
         result.converged = true;
         return result;
     }
+    // This path already formed the dense whitened matrix. For the scaled
+    // policy use its actual largest eigenpair instead of an early power Ritz
+    // value accepted against an absolute unit-scale tolerance.
+    if(config.eigenvalue_relative_residual){
+        Eigen::SelfAdjointEigenSolver<ComplexMatrix> dense_solver(whitened);
+        if(dense_solver.info()!=Eigen::Success)throw std::runtime_error("relative dense localization eigensolve failed");
+        result.lambda_max=std::max(0.,dense_solver.eigenvalues()(dimension-1));
+        const ComplexVector v=dense_solver.eigenvectors().col(dimension-1);
+        result.relative_residual=(whitened*v-result.lambda_max*v).norm()/std::max(1e-30,result.lambda_max);
+        result.dominant_vector=inverse_lower.adjoint()*v;
+        result.dominant_subspace=result.dominant_vector;
+        result.converged=true;result.iterations=1;result.dense_cross_checked=true;
+        result.dense_lambda_max=result.lambda_max;result.dense_relative_difference=0;
+        return result;
+    }
 
     const ComplexVector warm_vector=config.warm_start?ComplexVector(config.warm_start->block.col(config.warm_start->block.cols()-1)):ComplexVector();
     ComplexVector iterate;

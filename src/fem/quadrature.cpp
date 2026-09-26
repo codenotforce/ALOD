@@ -124,7 +124,10 @@ void append_duffy_points(
     const int first = singular_vertex;
     const int second = (singular_vertex + 1) % 3;
     const int third = (singular_vertex + 2) % 3;
-    result.reserve(result.size() + gauss.size() * gauss.size());
+    const auto required = result.size() + gauss.size() * gauss.size();
+    // Geometric growth avoids a full copy at every recursive leaf.
+    if (required > result.capacity())
+        result.reserve(std::max(required, 2 * result.capacity()));
     for (const GaussPoint &radial : gauss) {
         for (const GaussPoint &angular : gauss) {
             const std::array<double, 3> local{{
@@ -225,9 +228,18 @@ std::vector<PhysicalTriangleQuadraturePoint> triangle_quadrature_points(
     int element,
     const QuadraturePolicy &policy,
     const QuadratureContext &context) {
+    std::vector<PhysicalTriangleQuadraturePoint> result;
+    triangle_quadrature_points_into(mesh, element, policy, context, result);
+    return result;
+}
+
+void triangle_quadrature_points_into(
+    const TriMesh &mesh, int element, const QuadraturePolicy &policy,
+    const QuadratureContext &context,
+    std::vector<PhysicalTriangleQuadraturePoint> &result) {
     validate_quadrature_policy(policy);
     Subtriangle triangle = initial_triangle(mesh, element);
-    std::vector<PhysicalTriangleQuadraturePoint> result;
+    result.clear();
     if (context.integrand_class == QuadratureClass::LocalizedGaussian) {
         if (!(context.feature_scale > 0.0))
             throw std::invalid_argument("Gaussian quadrature requires a positive feature scale");
@@ -239,7 +251,6 @@ std::vector<PhysicalTriangleQuadraturePoint> triangle_quadrature_points(
     } else {
         append_duffy_points(triangle, policy.base_triangle_order, 0, result);
     }
-    return result;
 }
 
 double integrate_scalar_function(

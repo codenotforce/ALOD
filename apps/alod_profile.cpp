@@ -8,7 +8,7 @@ double elapsed(Clock::time_point start){return std::chrono::duration<double>(Clo
 int main(int argc,char** argv){try{
     auto input=fixed::parse(argc,argv);auto H=fixed::coarse_mesh(input);auto h=lod2d::refine_mesh_nvb(H,input.gap);
     LodLimits limits;limits.threads=input.threads;limits.maximum_reference_nodes=input.cap;
-    LodSpace space(H,h,16,input.ell,input.policy=="area"?InterpolationPolicy::ManuscriptAreaWeighted:InterpolationPolicy::ArchivedArithmetic,limits);
+    LodSpace space(H,h,input.wavenumber,input.ell,input.policy=="area"?InterpolationPolicy::ManuscriptAreaWeighted:InterpolationPolicy::ArchivedArithmetic,limits);
     AdditiveKernelRieszContext riesz(space);AdjointTestCache training_cache;
     std::vector<Problem> problems;for(auto& m:input.members)problems.push_back(m.problem);
     auto q=paper_quadrature(input.problem);auto loads=assemble_load_batch(h.mesh,problems,q,input.threads);
@@ -34,19 +34,18 @@ int main(int argc,char** argv){try{
         measure("error_fused",[&]{fused=integrate_audit_batch(h.mesh,space.energy(),trained.accepted.values,ref,problems,q,input.threads,true);});
         for(auto pair:{std::pair{baseline.exact_error,fused.exact_error},std::pair{baseline.exact_norm,fused.exact_norm},std::pair{baseline.reference_error,fused.reference_error}}){
             double d=(pair.first-pair.second).norm()/std::max(1.,pair.first.norm());maximum_difference=std::max(maximum_difference,d);if(d>1e-12)throw std::runtime_error("fused integration changed numerical results");}
-        // Candidate only: compare raw triangular and actual projected PG blocks.
-        measure("raw_triangular_candidate",[&]{
-            const auto& raw=trained.accepted.raw_tests;const auto& phi=trained.phi;
-            ComplexMatrix lower=raw.adjoint()*space.operators().system*space.trial();
-            if(lower.norm()/std::max(1.,space.trial().norm())>1e-8)throw std::runtime_error("raw triangular gate");
-            ComplexMatrix d=(raw.adjoint()*space.operators().system*phi).fullPivLu().solve(raw.adjoint()*loads);
-            auto adjusted=space.solve(loads-space.operators().system*phi*d).values;
-            compare(trained.accepted.values,(adjusted+phi*d).eval());
+        // Kernel-lifted tests generally have a nonzero lower-left block.
+        measure("full_kernel_pg_check",[&]{
+            ComplexMatrix X(space.trial().rows(),space.trial().cols()+trained.phi.cols());
+            X<<ComplexMatrix(space.trial()),trained.phi;
+            ComplexMatrix Y(X.rows(),X.cols());Y<<ComplexMatrix(space.test()),trained.raw_kernel;
+            ComplexMatrix block=Y.adjoint()*space.operators().system*X;
+            compare(trained.accepted.values,(X*block.fullPivLu().solve(Y.adjoint()*loads)).eval());
         });
         ComplexMatrix rhs=space.energy().cast<Complex>()*trained.phi,z;
         measure("separate_forward_adjoint_factors",[&]{ReferenceFemContext f(space.operators());AdjointTestCache a;compare(ref,f.solve(loads));z=a.solve(space.operators(),rhs);});
         measure("unified_symmetric_factor_candidate",[&]{ReferenceFemContext f(space.operators());compare(ref,f.solve(loads));ComplexMatrix candidate=f.solve(rhs.conjugate()).conjugate();compare(z,candidate);});
-        measure("ell_rebuild",[&]{LodSpace rebuilt(H,h,16,input.ell+1,input.policy=="area"?InterpolationPolicy::ManuscriptAreaWeighted:InterpolationPolicy::ArchivedArithmetic,limits);});
+        measure("ell_rebuild",[&]{LodSpace rebuilt(H,h,input.wavenumber,input.ell+1,input.policy=="area"?InterpolationPolicy::ManuscriptAreaWeighted:InterpolationPolicy::ArchivedArithmetic,limits);});
         measure("ell_reference_reuse",[&]{LodSpace reused(space,input.ell+1);if(reused.reference_identity()!=space.reference_identity())throw std::runtime_error("reference reuse identity");});
     }
     // Batched load assembly must agree with the existing sequential RHS path.
