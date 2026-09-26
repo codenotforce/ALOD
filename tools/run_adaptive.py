@@ -80,19 +80,23 @@ def arguments(config, table):
         if key not in ("problem", "member_ids")]
 
 
-def run(config, output, executable, timeout=3600, *, resume=None, pause_state=None, pause_phase="accepted", audit_workers=1, audit_threads=None):
+def run(config, output, executable, timeout=3600, *, resume=None, pause_state=None, pause_phase="accepted", audit_workers=1, audit_threads=None, audit_drain_workers=None):
     from execution import run_lease
     with run_lease(output):
-        return _run(config,output,executable,timeout,resume=resume,pause_state=pause_state,pause_phase=pause_phase,audit_workers=audit_workers,audit_threads=audit_threads)
+        return _run(config,output,executable,timeout,resume=resume,pause_state=pause_state,pause_phase=pause_phase,audit_workers=audit_workers,audit_threads=audit_threads,audit_drain_workers=audit_drain_workers)
 
 
-def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=None, pause_phase="accepted", audit_workers=1, audit_threads=None):
+def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=None, pause_phase="accepted", audit_workers=1, audit_threads=None, audit_drain_workers=None):
     config = {"ell_absolute_threshold":-1.,"wavenumber":16,"ell_ratio_mode":"raw","ell_threshold":0.,"enrichment_tests":"adjoint", **config}
     setup_start = time.monotonic()
     output, executable = Path(output), Path(executable)
     rows = validate(config)
     if type(audit_workers) is not int or audit_workers<1:raise ValueError("audit workers must be positive")
     if audit_threads is not None and (type(audit_threads) is not int or not 0<=audit_threads<=2147483647):raise ValueError("invalid audit threads")
+    effective_audit_threads=config["threads"] if audit_threads is None else audit_threads
+    if audit_drain_workers is None:
+        audit_drain_workers=audit_workers+(min(audit_workers,config["threads"]//effective_audit_threads) if effective_audit_threads>0 and config["threads"]>0 else 0)
+    if type(audit_drain_workers) is not int or audit_drain_workers<audit_workers:raise ValueError("audit drain workers must be at least active workers")
     metadata = None
     startup_recovery=False
     if str(resume)=="auto" and not list((output/'checkpoints').rglob('*.bin')):
@@ -142,7 +146,7 @@ def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=N
         env["ALOD_TIMING_FILE"]=str((output/"timings.jsonl").resolve())
         if config["audit"]:
             from async_audit import AuditQueue
-            queue=AuditQueue(output,executable,config["member_ids"],audit_workers,audit_threads)
+            queue=AuditQueue(output,executable,config["member_ids"],audit_workers,audit_threads,drain_workers=audit_drain_workers)
             queue.discover()
         effective = output / "effective.json"
         atomic_text(effective, json.dumps(config, indent=2)+"\n")
@@ -166,6 +170,7 @@ def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=N
         manifest["returncode"] = result.returncode
         if result.returncode:
             raise RuntimeError("adaptive run failed; see stderr.log and completed event prefix")
+        if queue:queue.begin_drain()
         latest, last_metadata = inspect(output/"checkpoints/latest", executable)
         recover_journal(output/"solver.jsonl", last_metadata)
         atomic_text(output/"events.jsonl", (output/"solver.jsonl").read_text())
@@ -198,6 +203,7 @@ def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=N
         manifest['audit_drain_seconds'] = time.monotonic()-audit_start if config['audit'] else 0
         manifest['audit_wall_seconds'] = time.monotonic()-start if config['audit'] else 0
         manifest['audit_workers']=audit_workers;manifest['audit_threads']=audit_threads
+        manifest['audit_drain_workers']=audit_drain_workers
         manifest['audit_execution']='concurrent_same_executable'
         manifest['checkpoint_bytes'] = sum(path.stat().st_size for path in (output/'checkpoints').rglob('*.bin'))
         from export_results import export
@@ -247,6 +253,7 @@ def main():
     parser.add_argument("--executable", type=Path, default=ROOT / "build/alod_run")
     parser.add_argument("--resume", type=Path, help="checkpoint path or auto for validated crash recovery")
     parser.add_argument("--audit-workers", type=int, default=1)
+    parser.add_argument("--audit-drain-workers", type=int, help="workers after solver exit; default reuses its explicit thread budget; set equal to --audit-workers to keep memory demand unchanged")
     parser.add_argument("--audit-threads", type=int, help="0 inherits runtime; omitted inherits run threads")
     parser.add_argument("--pause-state", type=int)
     parser.add_argument("--pause-phase", choices=["accepted", "training", "ell"], default="accepted")
@@ -254,7 +261,7 @@ def main():
     args = parser.parse_args()
     if not math.isfinite(args.timeout) or args.timeout <= 0:
         parser.error("timeout must be positive and finite")
-    print(json.dumps(run(json.loads(args.config.read_text()), args.output, args.executable, args.timeout, resume=args.resume, pause_state=args.pause_state, pause_phase=args.pause_phase,audit_workers=args.audit_workers,audit_threads=args.audit_threads)))
+    print(json.dumps(run(json.loads(args.config.read_text()), args.output, args.executable, args.timeout, resume=args.resume, pause_state=args.pause_state, pause_phase=args.pause_phase,audit_workers=args.audit_workers,audit_threads=args.audit_threads,audit_drain_workers=args.audit_drain_workers)))
 
 
 if __name__ == "__main__":

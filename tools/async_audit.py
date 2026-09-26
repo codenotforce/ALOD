@@ -1,17 +1,20 @@
 """Durable checkpoint-backed audit queue; workers never mutate solver state."""
 import json, threading, time
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 from pathlib import Path
 from checkpoint_io import atomic_text, digest
 
 class AuditQueue:
-    def __init__(self, output, executable, members, workers=1, threads=None):
+    def __init__(self, output, executable, members, workers=1, threads=None, *, drain_workers=None):
         if type(workers) is not int or workers<1:raise ValueError('audit workers must be positive')
+        drain_workers=workers if drain_workers is None else drain_workers
+        if type(drain_workers) is not int or drain_workers<workers:raise ValueError("invalid audit drain workers")
+        self.limit=workers;self.drain_workers=drain_workers;self.pending={}
         self.output=Path(output);self.executable=Path(executable);self.members=members
         from run_audit import AuditExecutionContext
         self.execution_context=AuditExecutionContext(executable)
         self.threads=threads;self.cancel=threading.Event();self.jobs={};self.futures={}
-        self.pool=ThreadPoolExecutor(max_workers=workers,thread_name_prefix='alod-audit')
+        self.pool=ThreadPoolExecutor(max_workers=drain_workers,thread_name_prefix='alod-audit')
         self.lock=threading.Lock();self.stopped=False
 
     def persist(self):
@@ -20,10 +23,21 @@ class AuditQueue:
     def discover(self):
         for checkpoint in sorted((self.output/'checkpoints').glob('state-*-phase-0-ell-*.bin')):
             name=checkpoint.name
-            if name in self.futures:continue
+            if name in self.jobs:continue
             with self.lock:
                 self.jobs[name]=dict(status='pending',checkpoint=name,queued_at=time.time());self.persist()
-            self.futures[name]=self.pool.submit(self.work,checkpoint)
+            self.pending[name]=checkpoint
+        self.pump()
+
+    def pump(self):
+        # Only running snapshots enter the executor: queued geometry remains on disk.
+        available=self.limit-sum(not f.done() for f in self.futures.values())
+        for name in list(self.pending)[:max(0,available)]:
+            self.futures[name]=self.pool.submit(self.work,self.pending.pop(name))
+
+    def begin_drain(self):
+        self.limit=self.drain_workers
+        self.pump()
 
     def work(self, checkpoint):
         from run_audit import audit
@@ -59,7 +73,12 @@ class AuditQueue:
             raise
 
     def finish(self, accepted):
-        self.discover();self.pool.shutdown(wait=True);self.stopped=True
+        self.discover();self.begin_drain()
+        while self.pending or any(not f.done() for f in self.futures.values()):
+            self.pump()
+            active=[f for f in self.futures.values() if not f.done()]
+            if active:wait(active,timeout=.1,return_when=FIRST_COMPLETED)
+        self.pool.shutdown(wait=True);self.stopped=True
         failures=[]
         for state in accepted:
             candidates=[key for key in self.futures if key.startswith(f"state-{state['state_id']:06d}-phase-0-")]

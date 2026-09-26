@@ -50,3 +50,43 @@ class AuditContextTests(unittest.TestCase):
                 exe.write_bytes(b'replacement')
                 with self.assertRaises(ValueError):
                     context.verify(exe)
+
+
+class AuditSchedulingTests(unittest.TestCase):
+    def test_bounded_active_then_parallel_drain(self):
+        import tempfile, threading, time
+        from async_audit import AuditQueue
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);(root/'checkpoints').mkdir()
+            for i in range(4):(root/'checkpoints'/f'state-{i:06d}-phase-0-ell-2.bin').write_bytes(b'x')
+            gate=threading.Event();lock=threading.Lock();running=0;peak=0;started=threading.Event()
+            def work(queue, checkpoint):
+                nonlocal running,peak
+                with lock:running+=1;peak=max(peak,running);started.set()
+                gate.wait(5)
+                with lock:running-=1
+                return []
+            with patch('run_audit.AuditExecutionContext'),patch.object(AuditQueue,'work',work):
+                queue=AuditQueue(root,root/'exe',[0],workers=1,threads=32,drain_workers=2)
+                try:
+                    queue.discover();self.assertTrue(started.wait(2));queue.discover()
+                    self.assertEqual(len(queue.futures),1);self.assertEqual(len(queue.pending),3)
+                    queue.begin_drain()
+                    deadline=time.monotonic()+2
+                    while peak<2 and time.monotonic()<deadline:time.sleep(.01)
+                    self.assertEqual(peak,2);self.assertEqual(len(queue.futures),2)
+                    gate.set();accepted=[{'state_id':i} for i in range(4)]
+                    self.assertEqual(queue.finish(accepted),[])
+                    self.assertTrue(all(state['audit']==[] for state in accepted))
+                finally:gate.set();queue.close()
+
+    def test_close_does_not_start_pending_snapshots(self):
+        import tempfile
+        from async_audit import AuditQueue
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);(root/'checkpoints').mkdir()
+            for i in range(3):(root/'checkpoints'/f'state-{i:06d}-phase-0-ell-2.bin').write_bytes(b'x')
+            def work(queue, checkpoint):queue.cancel.wait(5)
+            with patch('run_audit.AuditExecutionContext'),patch.object(AuditQueue,'work',work):
+                queue=AuditQueue(root,root/'exe',[0]);queue.discover();queue.close()
+                self.assertEqual(len(queue.futures),1);self.assertEqual(len(queue.pending),2)

@@ -152,7 +152,7 @@
       "origin_scope": "initial_project_input",
       "origin": "ALOD_SUBPROJECT_AGENT_PLAN_20260909.md",
       "origin_sha256": "5e4544f14cf014a4732477283ec5ea64cb28e2506d8cb13162c768597c3c9ae2",
-      "sha256": "26f379b690a6f62aedd9ef1fee685ff64ae8025535f70f96d95523d75510cd29",
+      "sha256": "6b9fa400890e2b8ea51022e07b2f7632d025c321c781f1405195b33c4c89f7ba",
       "snapshot": "initial-user-plan",
       "modification": "Plan retained in Chinese at user request; portable paths and P0/P1/P2 completion status recorded, including both verified manuscript/archive definition differences. P3/P4 phase status, user-selected E2 lazy timing, discovered source differences and explicit deferred campaigns updated. P5/P6 completion, bounded validation and explicit P7/P8 follow-up scope recorded; plan remains in Chinese. Version 4 review: explicit kernel/archived policies, normalized localization, numerical recovery, variable-wavenumber support or updated documentation; see docs/paper_v4_review.md.",
       "copyright": "Inherited; no repository license found. See NOTICE.md."
@@ -588,7 +588,7 @@
       "origin_scope": "legacy",
       "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/adaptive/certificates.cpp",
       "origin_sha256": "e939ee9638c41cfc630e79136878859109a3c4703eb3d77e737c288fc4c7ec49",
-      "sha256": "0aefa94f94ce737cf96b7df6186d0b80a029bd349e4b87e7d0568b0d3ccd7b68",
+      "sha256": "5e14a8a82e4bae8467ed017ec7e0ccf461490435fa48b2cdc41cb0506de655e7",
       "snapshot": "E2-production",
       "modification": "Extracted reference_defect_spectrum_matrix_free block Ritz iteration and corrector defect/coarse-energy construction. Reuses prepared additive Riesz factors; strict warm-start identities, explicit nonconvergence, no strict certification driver. Version 4 review: explicit kernel/archived policies, normalized localization, numerical recovery, variable-wavenumber support or updated documentation; see docs/paper_v4_review.md.",
       "copyright": "Inherited; no repository license found. See NOTICE.md."
@@ -598,7 +598,7 @@
       "origin_scope": "legacy",
       "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/adaptive/reference_retraction.cpp",
       "origin_sha256": "4d12c090573ef1614165a14ecf83491541e22f8c34c4469c7ec354120da6b154",
-      "sha256": "e556aa4dd0222805a97cda6f79d770bbac9bef21f8e211563a9f059978fbfab2",
+      "sha256": "bc27912b5d2d7a0e1d348e7664243a00851a5954315cb25c1162678e79977cf9",
       "snapshot": "E2-production",
       "modification": "Extracted whitened_matrix and largest_generalized_eigenvalue_dense only, retaining the archived power iteration and optional dense cross-check/fallback; omits retraction and sparse scalar iterations. Version 4 review: explicit kernel/archived policies, normalized localization, numerical recovery, variable-wavenumber support or updated documentation; see docs/paper_v4_review.md.",
       "copyright": "Inherited; no repository license found. See NOTICE.md."
@@ -628,7 +628,7 @@
       "origin_scope": "legacy",
       "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/benchmarks/reference_epoch_paper_runner.cpp",
       "origin_sha256": "2e7317978ebe3673431b35e13c129d437466150d044751de42c4a3844ff440d2",
-      "sha256": "a56217fd06886c713c582e3ae2e8367817a4e2813abf016655fc9af7ba93aa21",
+      "sha256": "9e908e4135bf0f6daad51a2453b32b7e579cc1db962d92831e441cd091c2b138",
       "snapshot": "E2-production",
       "modification": "Regional training extracted into typed API; follows required normalized phi recurrence and empty/inherited-first budget evaluation, tracks raw representatives through projection/POD, keeps actual coupled blocks. Extraction used the P0 resource-only replay copy; its separate hash is retained. P6 caches base solves, growing products/AOT responses, explicit POD combinations and prepared projected PG factors; free-DOF adjoint residual gates remain active. Version 4 review: explicit kernel/archived policies, normalized localization, numerical recovery, variable-wavenumber support or updated documentation; see docs/paper_v4_review.md. Avoid unused energy factors and sparse copies; share enrichment products or immutable patch boundary classification and local embedding lookups. Incremental energy products with refresh/fallback and reuse of the existing LOD reduced matrix.",
       "copyright": "Inherited; no repository license found. See NOTICE.md.",

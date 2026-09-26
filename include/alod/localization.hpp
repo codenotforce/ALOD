@@ -5,7 +5,7 @@ namespace alod {
 struct LocalizationWarmStart { std::string identity; ComplexMatrix block; };
 struct LocalizationEigenConfig {
     int maximum_iterations=750;
-    double relative_tolerance=1e-4;
+    double relative_tolerance=1e-9;
     bool eigenvalue_relative_residual=false; // archived mode used max(1,lambda)
     int dense_cross_check_max_dimension=64;
     int dense_fallback_max_dimension=0;

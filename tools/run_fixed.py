@@ -11,7 +11,7 @@ import time
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT = dict(wavenumber=16, problem="E1", level=2, gap=3, ell=1, graded=False, riesz_patches="n2",
                interpolation="area", threads=0, maximum_nodes=20000,
-               theta=0.15, ritz_tolerance=1e-4, ritz_iterations=750,
+               theta=0.15, ritz_tolerance=1e-9, ritz_iterations=750,
                dense_threshold=64, member_ids=list(range(16)), training_ids=list(range(16)))
 
 

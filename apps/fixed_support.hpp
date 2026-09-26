@@ -17,7 +17,7 @@ struct Input {
     std::string problem,policy,riesz_policy,members_path;
     int level=2,gap=3,ell=1,threads=0,cap=20000;
     bool graded=false;
-    double theta=.15,tolerance=1e-4,wavenumber=16;
+    double theta=.15,tolerance=1e-9,wavenumber=16;
     int iterations=750,dense=64;
     std::vector<int> ids;
     std::vector<Member> members;
@@ -27,7 +27,7 @@ inline Input parse(int argc,char** argv) {
     Input in;in.problem=argv[1];(void)alod::make_problem(in.problem);
     std::map<std::string,std::string> options{{"wavenumber","16"},{"level","2"},{"gap","3"},{"ell","1"},{"graded","0"},
         {"threads","0"},{"maximum-nodes","20000"},{"interpolation","area"},{"members",""},
-        {"training-ids","0"},{"theta","0.15"},{"ritz-tolerance","0.0001"},{"ritz-iterations","750"},{"dense-threshold","64"},{"riesz-patches","n2"}};
+        {"training-ids","0"},{"theta","0.15"},{"ritz-tolerance","1e-9"},{"ritz-iterations","750"},{"dense-threshold","64"},{"riesz-patches","n2"}};
     std::set<std::string> seen;
     for(int i=2;i<argc;++i){std::string arg=argv[i];auto equal=arg.find('=');
         if(!arg.starts_with("--")||equal==std::string::npos)throw std::invalid_argument("expected --name=value");

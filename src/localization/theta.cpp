@@ -91,7 +91,7 @@ LocalizationSpectrum reference_defect_spectrum_matrix_free(
     result.used_warm_start = valid_warm_block || valid_warm_vector;
     const auto append_orthonormal = [&](std::vector<ComplexVector> &basis,
                                         ComplexVector candidate) {
-        if(config.eigenvalue_relative_residual){
+        {
             const double norm_squared=std::real(candidate.dot(multiply_real_sparse(energy,candidate)));
             if(!(norm_squared>0)||!std::isfinite(norm_squared))return false;
             candidate/=std::sqrt(norm_squared);
@@ -239,7 +239,8 @@ LocalizationSpectrum reference_defect_spectrum_matrix_free(
                << "dimension=" << dimension
                << ", iterations=" << result.iterations
                << ", relative_residual=" << result.relative_residual
-               << ", tolerance=" << config.relative_tolerance;
+               << ", tolerance=" << config.relative_tolerance
+               << ", lambda=" << result.lambda_max;
         throw std::runtime_error(detail.str());
     }
     result.dominant_vector = iterate.col(block_size - 1);
@@ -265,6 +266,14 @@ LocalizationResult localization_theta(const LodSpace& space,AdditiveKernelRieszC
     denominator=0.5*(denominator+Sparse(denominator.transpose()));denominator.makeCompressed();
     ComplexSparseMatrix defect=adjoint?ComplexSparseMatrix(space.operators().system.adjoint()*space.test())
         :ComplexSparseMatrix(space.operators().system*space.trial());
+    if(config.relative_tolerance<1e-6){
+        // R annihilates range(I_H^*). Remove that component before applying R
+        // and before the dual dot product to avoid cancellation at small Theta.
+        // I_H P_H = I on free coarse nodes, so this leaves D^* R D unchanged.
+        ComplexSparseMatrix coarse_action=space.prolongation().transpose().cast<Complex>()*defect;
+        defect-=space.interpolation().transpose().cast<Complex>()*coarse_action;
+        defect.makeCompressed();
+    }
     LocalizationResult result;result.identity=identity;
     result.spectrum=reference_defect_spectrum_matrix_free(riesz,defect,denominator,config,space.limits().maximum_dense_entries);
     result.theta=std::sqrt(result.spectrum.lambda_max);

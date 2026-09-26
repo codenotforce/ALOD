@@ -105,7 +105,7 @@ void run(const std::string& id,bool graded) {
     auto dense_warm=exact;dense_warm.warm_start=cold.warm_start;
     close(localization_theta(space,riesz,dense_warm).spectrum.lambda_max,theta.spectrum.lambda_max,1e-7);
     iterative.warm_start->identity+="stale";rejects([&]{localization_theta(space,riesz,iterative);});
-    iterative.warm_start.reset();iterative.maximum_iterations=1;iterative.relative_tolerance=1e-30;
+    iterative.warm_start.reset();iterative.maximum_iterations=0;iterative.relative_tolerance=1e-30;
     rejects([&]{localization_theta(space,riesz,iterative);});
     if(theta.theta>0)close(*localization_ratio(theta.theta,estimate.eta(1)).value*std::sqrt(5.0),*localization_ratio(theta.theta,estimate.eta(0)).value);
     std::cout<<id<<" graded="<<graded<<" theta="<<theta.theta<<" eta="<<estimate.eta(0)<<" checked\n";

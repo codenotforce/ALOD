@@ -33,7 +33,7 @@ Theta_ell = sqrt(lambda_max(G, M_H))
 
 For dimensions at most the configured dense threshold (normally 64), the code assembles the Gram matrix in blocks of 16 and solves the dense generalized Hermitian eigenproblem. Larger problems use a matrix-free, energy-orthonormal block Ritz iteration with four vectors, inverse-energy residual preconditioning, and previous search directions. Its expanded search space contains current Ritz vectors, preconditioned residuals and history directions. The coarse energy preconditioner is a sparse LDLT factorization. Warm blocks are transported between states through coarse nodal injection and reorthogonalized.
 
-Current normalized configurations use the relative residual `sqrt(r^* M_H^{-1} r) / max(1e-30, abs(lambda))`, with tolerance `1e-4` and at most 750 iterations. The archived residual normalization uses `max(1, abs(lambda))`. Dense fallback is subject to its configured dimension/resource limit and is disabled by default for larger problems. Failure to converge is reported, not silently accepted. A converged Ritz value is an approximation, not a certified upper bound. Lazy scheduling controls when this computation runs; the absolute threshold and normalized balance check use the resulting value.
+Current normalized configurations use the relative residual `sqrt(r^* M_H^{-1} r) / max(1e-30, abs(lambda))`, with tolerance `1e-9` and at most 750 iterations. The archived residual normalization uses `max(1, abs(lambda))`. Dense fallback is subject to its configured dimension/resource limit and is disabled by default for larger problems. Failure to converge is reported, not silently accepted. A converged Ritz value is an approximation, not a certified upper bound. Lazy scheduling controls when this computation runs; the absolute threshold and normalized balance check use the resulting value.
 
 ## Asynchronous work still worth considering
 
@@ -54,3 +54,7 @@ For E2, total wall time changed from 27.7031 to 25.6323 seconds (7.5% lower). Au
 E1 wall time was effectively unchanged (11.0214 to 10.9972 seconds). With a 256 MiB patch cache enabled in both binaries, the local-corrector phase changed from 0.9669 to 0.4873 seconds, but the new cache still had zero hits in this workload and remained slower than the new no-cache phase (0.4315 seconds). The redesign reduces cache overhead; it does not establish useful cross-state reuse for this refinement sequence. The default remains disabled.
 
 Individual measurements, configurations and binary hashes are retained in [validation evidence](provenance/structural_validation.json). The new binary was tested in an isolated server directory; the completed production E2 deployment was not replaced or rerun.
+
+See [asynchronous audit and training updates](async_training_optimization.md) for the tighter tolerance, bordered solves, audit drain scheduling, and global-solve inventory.
+
+See [asynchronous audits and training updates](async_training_optimization.md) for current scheduling, bordered solves, and the global-solve inventory.

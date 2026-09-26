@@ -54,6 +54,8 @@ LocalizationSpectrum largest_generalized_eigenvalue_dense(
         result.lambda_max=std::max(0.,dense_solver.eigenvalues()(dimension-1));
         const ComplexVector v=dense_solver.eigenvectors().col(dimension-1);
         result.relative_residual=(whitened*v-result.lambda_max*v).norm()/std::max(1e-30,result.lambda_max);
+        if(!std::isfinite(result.relative_residual)||result.relative_residual>config.relative_tolerance)
+            throw std::runtime_error("relative dense localization residual exceeds tolerance");
         result.dominant_vector=inverse_lower.adjoint()*v;
         result.dominant_subspace=result.dominant_vector;
         result.converged=true;result.iterations=1;result.dense_cross_checked=true;

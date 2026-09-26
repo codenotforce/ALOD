@@ -102,3 +102,5 @@ See [workflow reuse and E1 timing](docs/workflow_reuse.md) for accepted-basis au
 See [five workflow optimizations](docs/five_optimizations.md) for bounded cross-state reuse, shared checkpoint geometry, and portable checkpoint export.
 
 See [structural optimizations and remaining work](docs/structural_optimization.md) for shared state ownership, POD screening, early patch reuse, and the localization eigensolver.
+
+See [audit scheduling, training updates, and global solve inventory](docs/async_training_optimization.md) for current runtime behavior.

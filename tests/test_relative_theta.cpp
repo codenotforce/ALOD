@@ -12,11 +12,19 @@ int main(){try{
     LodSpace s(H,h,16,3,InterpolationPolicy::ManuscriptAreaWeighted,limits);
     AdditiveKernelRieszContext r(s,RieszPatchPolicy::ManuscriptN2);
     LocalizationEigenConfig cfg;cfg.eigenvalue_relative_residual=true;cfg.dense_cross_check_max_dimension=0;
+    auto insufficient=cfg;insufficient.maximum_iterations=1;
+    bool rejected=false;try{(void)localization_theta(s,r,insufficient);}catch(const std::runtime_error&){rejected=true;}
+    if(!rejected)throw std::runtime_error("unconverged nontrivial Ritz problem was accepted");
     auto cold=localization_theta(s,r,cfg);
+    if(cold.spectrum.relative_residual>1e-9)throw std::runtime_error("cold residual exceeds 1e-9");
     cfg.warm_start=cold.warm_start;
     auto warm=localization_theta(s,r,cfg);
+    if(warm.spectrum.relative_residual>1e-9)throw std::runtime_error("warm residual exceeds 1e-9");
     cfg.dense_cross_check_max_dimension=1024;
     auto dense=localization_theta(s,r,cfg);
+    cfg.relative_tolerance=1e-4;
+    auto unprojected=localization_theta(s,r,cfg);
+    if(std::abs(dense.theta/unprojected.theta-1)>1e-7)throw std::runtime_error("dual kernel projection changed Theta");
     double err=std::abs(cold.theta/dense.theta-1),err2=std::abs(warm.theta/dense.theta-1);
     std::cout<<std::setprecision(17)<<"{\"cold\":"<<cold.theta<<",\"warm\":"<<warm.theta<<",\"dense\":"<<dense.theta
              <<",\"cold_iterations\":"<<cold.spectrum.iterations<<",\"warm_iterations\":"<<warm.spectrum.iterations

@@ -1,5 +1,6 @@
 #include "alod/regional.hpp"
 #include "alod/timing.hpp"
+#include "alod/bordered_solve.hpp"
 #include <Eigen/SparseLU>
 #include <Eigen/SVD>
 #include <stdexcept>
@@ -25,8 +26,8 @@ struct Coupled {
     void clear_riesz(){riesz_base.resize(0,0);riesz_phi.resize(0,0);riesz_images.resize(0,0);riesz_mask.clear();}
     ComplexMatrix last_loads,last_f0,last_base,root_phi,root_ephi,root_aphi,root_raw;
     ComplexMatrix root_as0,root_response,root_test_block;
-    ComplexMatrix prepared_phi,prepared_raw,prepared_tests,prepared_response,prepared_as0;
-    Eigen::FullPivLU<ComplexMatrix> prepared_lu;
+    ComplexMatrix prepared_phi,prepared_raw,prepared_tests,prepared_response,prepared_as0,prepared_schur;
+    BorderedSolve prepared_lu;
     double prepared_residual=0,prepared_raw_base=0,prepared_raw_dictionary=0;
     bool trial_energy_ready=false;
     ComplexMatrix orth_phi,orth_images;
@@ -119,7 +120,12 @@ struct Coupled {
                             prepared_as0.bottomRows(extra)=new_test_A*B;
                             prepared_response.rightCols(extra)=solve_base(C.adjoint()*aphi.rightCols(extra));
                         }
-                        test_block=prepared_tests.adjoint()*aphi;
+                        test_block.resize(phi.cols(),phi.cols());
+                        if(appended_from)test_block.topLeftCorner(appended_from,appended_from)=root_test_block;
+                        if(extra){
+                            test_block.rightCols(extra)=prepared_tests.adjoint()*aphi.rightCols(extra);
+                            if(appended_from)test_block.bottomLeftCorner(extra,appended_from)=prepared_tests.rightCols(extra).adjoint()*aphi.leftCols(appended_from);
+                        }
                         if(!transformed){root_as0=prepared_as0;root_response=prepared_response;root_test_block=test_block;}
                     }
                     prepared_raw_base=prepared_as0.norm()/std::max(1.,B.norm());
@@ -137,8 +143,14 @@ struct Coupled {
                     prepared_response=solve_base(C.adjoint()*aphi);
                     test_block=prepared_tests.adjoint()*aphi;
                 }
-                prepared_lu.compute(test_block-prepared_as0*prepared_response);
-                if(!prepared_lu.isInvertible())throw std::runtime_error("regional coupled Schur block is singular");
+                ComplexMatrix schur=test_block-prepared_as0*prepared_response;
+                const int previous=prepared_phi.cols();
+                const bool growing=reuse&&!independent_factor&&!transformed && previous>0
+                    && previous<phi.cols() && same(prepared_phi,phi.leftCols(previous));
+                if(growing)schur.topLeftCorner(previous,previous)=prepared_schur;
+                {PhaseTimer timing(growing?"training_schur_border":"training_schur_factor",-1);
+                    prepared_lu.compute(schur,growing);}
+                prepared_schur=std::move(schur);
                 prepared_phi=phi;
             }
             out.raw_tests=prepared_raw;out.tests=prepared_tests;if(policy==EnrichmentTests::ArchivedAdjoint)out.aot_residual=prepared_residual;
@@ -242,8 +254,9 @@ RegionalEvaluator::~RegionalEvaluator()=default;
 std::size_t RegionalEvaluator::dense_cache_bytes()const{
     const auto& m=impl_->model;std::size_t entries=0;
     for(const auto* matrix:{&m.last_loads,&m.last_f0,&m.last_base,&m.root_phi,&m.root_ephi,&m.root_aphi,&m.root_raw,
-        &m.prepared_phi,&m.prepared_raw,&m.prepared_tests,&m.prepared_response,&m.prepared_as0,&m.orth_phi,&m.orth_images})entries+=matrix->size();
-    return sizeof(Complex)*(entries+(m.prepared_phi.cols()?m.prepared_lu.matrixLU().size():0));
+        &m.root_as0,&m.root_response,&m.root_test_block,&m.prepared_schur,
+        &m.riesz_base,&m.riesz_phi,&m.riesz_images,&m.prepared_phi,&m.prepared_raw,&m.prepared_tests,&m.prepared_response,&m.prepared_as0,&m.orth_phi,&m.orth_images})entries+=matrix->size();
+    return sizeof(Complex)*(entries+(m.prepared_phi.cols()?m.prepared_lu.entries():0));
 }
 RegionalEvaluation RegionalEvaluator::evaluate(const ComplexMatrix& loads,const ComplexMatrix& phi,const std::vector<int>& mask){return impl_->model.evaluate(loads,phi,mask);}
 RegionalEvaluation evaluate_regional(const LodSpace& s,AdditiveKernelRieszContext& r,AdjointTestCache& aot,
@@ -394,6 +407,8 @@ RegionalResult train_regional(LodSpace& s,AdditiveKernelRieszContext& r,AdjointT
     out.base_orthogonality=(model.B.adjoint()*model.E*phi).norm()/std::max(1.,model.B.norm());
     out.gram_residual=(phi.adjoint()*model.E*phi-ComplexMatrix::Identity(phi.cols(),phi.cols())).norm();
     if(out.kernel_residual>1e-8||out.base_orthogonality>1e-8||out.gram_residual>1e-8)throw std::runtime_error("regional dictionary invariant failed");
+    PhaseTimer::counter("training_schur_updates",model.prepared_lu.updates(),PhaseTimer::current_state);
+    PhaseTimer::counter("training_schur_rebuilds",model.prepared_lu.rebuilds(),PhaseTimer::current_state);
     return out;
 }
 }
