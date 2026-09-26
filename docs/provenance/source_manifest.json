@@ -152,7 +152,7 @@
       "origin_scope": "initial_project_input",
       "origin": "ALOD_SUBPROJECT_AGENT_PLAN_20260909.md",
       "origin_sha256": "5e4544f14cf014a4732477283ec5ea64cb28e2506d8cb13162c768597c3c9ae2",
-      "sha256": "9a01cdf02ec7f958b394a6ab70797a313123727a5ae4cbe9cfeda9cf115a59c3",
+      "sha256": "26f379b690a6f62aedd9ef1fee685ff64ae8025535f70f96d95523d75510cd29",
       "snapshot": "initial-user-plan",
       "modification": "Plan retained in Chinese at user request; portable paths and P0/P1/P2 completion status recorded, including both verified manuscript/archive definition differences. P3/P4 phase status, user-selected E2 lazy timing, discovered source differences and explicit deferred campaigns updated. P5/P6 completion, bounded validation and explicit P7/P8 follow-up scope recorded; plan remains in Chinese. Version 4 review: explicit kernel/archived policies, normalized localization, numerical recovery, variable-wavenumber support or updated documentation; see docs/paper_v4_review.md.",
       "copyright": "Inherited; no repository license found. See NOTICE.md."
@@ -442,7 +442,7 @@
       "origin_scope": "legacy",
       "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/patch_system.cpp",
       "origin_sha256": "dd542ecd526bfa1ba70b49fa4b8bc6f90d27fe35d49bed7efbc3c049011d72a7",
-      "sha256": "7e813f188c48dcca1d8f3554fe2ceb25ee8de26faa2d277f513842d62437a882",
+      "sha256": "bde906579b1c26f558efd2e5dea5ea75ccce024590eb9eb9db972ac820d1bdbf",
       "snapshot": "E2-production",
       "modification": "Numerical implementation unchanged; normalized line endings. Avoid unused energy factors and sparse copies; share enrichment products or immutable patch boundary classification and local embedding lookups. Added direct restriction of the global complex patch operator for consumers that do not need component matrices.",
       "copyright": "Inherited; see NOTICE.md."
@@ -452,7 +452,7 @@
       "origin_scope": "legacy",
       "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/include/helmholtz/patch_system.h",
       "origin_sha256": "83216462eceb15de61a8adcd8dd8b0d6748586672b81a58e83668f707a1ec0f0",
-      "sha256": "c7a7f800f155895d6513610fb6bb7458cbdfdb3902ab7503a3db2ed74c12db47",
+      "sha256": "82a1d76cfb2f703793caa8bb66042b5f09dd054fba52311e5026cf69cbc6e82e",
       "snapshot": "E2-production",
       "modification": "Numerical implementation unchanged; normalized line endings. Avoid unused energy factors and sparse copies; share enrichment products or immutable patch boundary classification and local embedding lookups. Optional component retention; default behavior remains compatible.",
       "copyright": "Inherited; see NOTICE.md."
@@ -522,7 +522,7 @@
       "origin_scope": "legacy",
       "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/benchmarks/paper_cases.cpp",
       "origin_sha256": "8c9a17647d2ae6275ca49f4de53cb1e01407dce76b3098b403d1fb6bf3abed20",
-      "sha256": "2512f8b2fce8d6422061160d16712e6979b190ff953137c445f165f32ef8e94a",
+      "sha256": "6d4d5b8161683419fcb5e4cec6db4c6ba1e3868d613e8f7bbbfdb2ed21182250",
       "snapshot": "E2-production",
       "modification": "Retained E1 translated packet and alpha80 E2 family only; unchanged retained formulas. Removed R2, cutoff and alternate profiles. Reusable quadrature storage with geometric growth, parameter-only normalization, or joint exact evaluation; numerical formulas and quadrature policies unchanged.",
       "copyright": "Inherited; see NOTICE.md."
@@ -532,7 +532,7 @@
       "origin_scope": "legacy",
       "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/include/helmholtz/benchmarks/paper_cases.h",
       "origin_sha256": "90c72800b51efba45e69e1c95d97123b2b387eaac3dcdbaf898b2358511536cb",
-      "sha256": "ff6917e72f4e470e9d0f97ba700a98cc99b99a0b47bc2a603446d2b47397137c",
+      "sha256": "015604e283a428383a4fa742d45cf1e2c50ede5f98d0218a97d5b3f74d6d6119",
       "snapshot": "E2-production",
       "modification": "Production E1/E2 interfaces only. Reusable quadrature storage with geometric growth, parameter-only normalization, or joint exact evaluation; numerical formulas and quadrature policies unchanged.",
       "copyright": "Inherited; see NOTICE.md."
@@ -542,7 +542,7 @@
       "origin_scope": "legacy",
       "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/model.cpp",
       "origin_sha256": "4da71e4c9b289d4939acffa750fb727a5f8829bd061febd168bbbfe6ef8e30bf",
-      "sha256": "74483582ee9529728e4c5b1b06008364f43bf8097787151f0df53d02a02ce37c",
+      "sha256": "c48834ebe8a65eb2d9c9f9c3c14291181fca3659368b9c9af4e9a34d31a05623",
       "snapshot": "E2-production",
       "modification": "Fixed-state two-sided direct-Schur assembly, shared batch PG factor and immutable identities; excludes controller and audit machinery. P6 adds ell-only reconstruction from validated reference operators/interpolation. Release LOD temporary basis storage before reduced factorization or avoid duplicate selected-region Riesz scatter; arithmetic order retained. Accepted-basis checkpoint reuse, earlier resource release, or deterministic member/element tiling for requested thread counts. Direct corrector assembly skips unused component matrices. Added bounded cross-state corrector cache and checked reduced-operator restoration.",
       "copyright": "Inherited; no repository license found. See NOTICE.md."
@@ -562,7 +562,7 @@
       "origin_scope": "legacy",
       "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/adaptive/kernel_residual.cpp",
       "origin_sha256": "db07ff1fa841913cdf967460d2b6d17059a6f242d5dd035dadeeb616d872f6f7",
-      "sha256": "85ea6c016cf8a1e831b6860d49734129a638145c41aaf0e9e113b819c1f2312b",
+      "sha256": "011daebbba4f028d08695634184d2714a531bbf131729060d9255bf06887e0f5",
       "snapshot": "E2-production",
       "modification": "Extracted active-row QR reduction, restrictions and geometry; manuscript N2 and explicit archived support-expansion policies. Batched additive Schur/saddle body is from additive_kernel_riesz.inc. Preserves duplicate-patch multiplicity, deterministic reductions and selected/full identities; adds resource caps and local kernel residuals. Version 4 review: explicit kernel/archived policies, normalized localization, numerical recovery, variable-wavenumber support or updated documentation; see docs/paper_v4_review.md. Release LOD temporary basis storage before reduced factorization or avoid duplicate selected-region Riesz scatter; arithmetic order retained.",
       "copyright": "Inherited; no repository license found. See NOTICE.md.",
@@ -628,7 +628,7 @@
       "origin_scope": "legacy",
       "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/benchmarks/reference_epoch_paper_runner.cpp",
       "origin_sha256": "2e7317978ebe3673431b35e13c129d437466150d044751de42c4a3844ff440d2",
-      "sha256": "9277a5d295a92358b44fb9da0d0a5b1958134b8a0115bd1bdd9b936d324cb48e",
+      "sha256": "a56217fd06886c713c582e3ae2e8367817a4e2813abf016655fc9af7ba93aa21",
       "snapshot": "E2-production",
       "modification": "Regional training extracted into typed API; follows required normalized phi recurrence and empty/inherited-first budget evaluation, tracks raw representatives through projection/POD, keeps actual coupled blocks. Extraction used the P0 resource-only replay copy; its separate hash is retained. P6 caches base solves, growing products/AOT responses, explicit POD combinations and prepared projected PG factors; free-DOF adjoint residual gates remain active. Version 4 review: explicit kernel/archived policies, normalized localization, numerical recovery, variable-wavenumber support or updated documentation; see docs/paper_v4_review.md. Avoid unused energy factors and sparse copies; share enrichment products or immutable patch boundary classification and local embedding lookups. Incremental energy products with refresh/fallback and reuse of the existing LOD reduced matrix.",
       "copyright": "Inherited; no repository license found. See NOTICE.md.",
@@ -650,7 +650,7 @@
       "origin_scope": "legacy",
       "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/operators.cpp",
       "origin_sha256": "35c4f1ba9dc60b248be7e04a219f5a630e954718d8dab1be63583f8d115d296f",
-      "sha256": "982e79c1f699d4cdd0a57dde53d3d0eb764d8b8be8f8d35306b3cec46c2c8efa",
+      "sha256": "a21bdbc4b07b024643a704099085729e9fd74f21b1e982a34685ee28fef41205",
       "snapshot": "E2-production",
       "modification": "Derived fused audit integrator retains triangle geometry, quadrature and per-member element reduction from the imported operators; adds bounded RHS batching and one reusable reference FEM factor. Reusable quadrature storage with geometric growth, parameter-only normalization, or joint exact evaluation; numerical formulas and quadrature policies unchanged. Accepted-basis checkpoint reuse, earlier resource release, or deterministic member/element tiling for requested thread counts. Shared quadrature and geometry for identical member contexts with deterministic reductions. Optional bounded source moments assembled alongside loads.",
       "copyright": "Inherited; no repository license found. See NOTICE.md."

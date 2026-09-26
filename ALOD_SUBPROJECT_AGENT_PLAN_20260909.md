@@ -661,3 +661,12 @@ E1 四组标记对照另外验收，不能替代上表主生产 oracle：
 - [ ] 是否记录仍未验证的事项：大规模 AOT 缓存总收益、32 线程收益、m_ref>2 科学效果、区域 AS 对 localization 的非严格分工？
 
 最终交付应包含“已实现”“已复现”“仅有候选优化”三类清单，不能把计划中的性能改进写成已测得结论。
+
+
+## Structural optimization follow-up (2026-09-26)
+
+The implementation and validation status is recorded in [Structural optimization](docs/structural_optimization.md). The baseline was pushed as commit `8b4e03f` before changes. Shared reduced factors, immutable hierarchy ownership, bounded incremental training Riesz images and POD residual screening, early dependency-version patch lookup, borrowed checkpoint geometry, shared E2 analytic integration, and run-scoped audit provenance have been implemented.
+
+Still pending: complete mesh-lineage invalidation and cross-mesh Riesz factor reuse; eliminating remaining fine-grid solution/residual materializations during greedy training; a validated alternative reference Helmholtz solver; persistent numerical audit workers with bounded shared snapshots; and cross-refinement quadrature updates. Large E1/E2/E3 scaling experiments for these changes are not complete. Existing experiment results must not be relabeled as measurements of the new binary.
+
+Validation: all 46 CTest checks passed. Alternating three-state E2 measurements showed 7.5% lower workflow wall time and substantial load/error integration reductions; E1 wall time was effectively unchanged. Training Riesz RHS counts decreased, but the measured training wall-time difference was too small to claim a speedup. Patch-cache overhead decreased, but zero hits in the measured refinement workload justify retaining the disabled default. See [machine-readable evidence](docs/provenance/structural_validation.json).

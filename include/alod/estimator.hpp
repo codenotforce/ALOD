@@ -41,6 +41,7 @@ public:
     double factorization_seconds() const;
     std::size_t factorizations() const;
     std::size_t applications() const;
+    std::size_t applied_columns() const;
 private:
     struct Impl;
     std::unique_ptr<Impl> impl_;

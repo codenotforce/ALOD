@@ -2,6 +2,7 @@
 #include "helmholtz/boundary.h"
 
 #include <Eigen/QR>
+#include <bit>
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -269,6 +270,45 @@ HelmholtzPatchAssembler::HelmholtzPatchAssembler(
     }
 }
 
+namespace {
+void dependency_word(std::string& out,std::uint64_t value){for(int j=0;j<8;++j)out.push_back(char(value>>(8*j)));}
+void dependency_real(std::string& out,double value){dependency_word(out,std::bit_cast<std::uint64_t>(value));}
+}
+std::vector<std::string> HelmholtzPatchAssembler::dependency_records() const {
+    std::vector<std::string> records(2*std::max(fine_.nodes.size(),fine_.elems.size()));
+    for(int v=0;v<static_cast<int>(fine_.nodes.size());++v){
+        auto& out=records[2*v];dependency_word(out,v);dependency_real(out,operators_.wavenumber);
+        dependency_real(out,fine_.nodes[v].x());dependency_real(out,fine_.nodes[v].y());
+        dependency_word(out,fine_incidence_[v]);dependency_word(out,fine_dirichlet_[v]);
+        for(ComplexSparseMatrix::InnerIterator it(operators_.system,v);it;++it){
+            dependency_word(out,it.row());dependency_real(out,it.value().real());dependency_real(out,it.value().imag());}
+        dependency_word(out,UINT64_MAX);
+        for(Eigen::SparseMatrix<double>::InnerIterator it(quasi_interpolation_,v);it;++it){dependency_word(out,it.row());dependency_real(out,it.value());}
+    }
+    // Row-major DG access visits each embedding entry only once per state.
+    Eigen::SparseMatrix<double,Eigen::RowMajor> dg=fine_dg_prolongation_;
+    for(int e=0;e<static_cast<int>(fine_.elems.size());++e){
+        auto& out=records[2*e+1];dependency_word(out,e);
+        dependency_word(out,fine_natural_boundary_[e]);
+        for(int v:fine_.elems[e])dependency_word(out,v);
+        for(int j=0;j<9;++j){auto a=operators_.element_blocks[e].data()[j];dependency_real(out,a.real());dependency_real(out,a.imag());}
+        for(int j=0;j<3;++j){
+            for(Eigen::SparseMatrix<double,Eigen::RowMajor>::InnerIterator it(dg,3*e+j);it;++it){dependency_word(out,it.col());dependency_real(out,it.value());}
+            dependency_word(out,UINT64_MAX);
+        }
+    }
+    return records;
+}
+std::string HelmholtzPatchAssembler::dependency_key(int target,const std::vector<std::uint64_t>& versions) const {
+    if(versions.size()!=2*std::max(fine_.nodes.size(),fine_.elems.size()))throw std::invalid_argument("patch dependency dimensions");
+    std::string key;dependency_word(key,target);
+    const auto elements=patch_fine_elements(target);
+    for(int e:elements){dependency_word(key,versions[2*e+1]);for(int v:fine_.elems[e])dependency_word(key,versions[2*v]);}
+    dependency_word(key,UINT64_MAX);
+    for(int e:children_[target])dependency_word(key,versions[2*e+1]);
+    return key;
+}
+
 std::size_t HelmholtzPatchAssembler::patch_cost(int target) const {
     if (target < 0 || target >= patch_count())
         throw std::out_of_range("Helmholtz patch target is out of range");
@@ -294,7 +334,7 @@ std::vector<int> HelmholtzPatchAssembler::patch_fine_elements(
     return result;
 }
 
-HelmholtzPatchSystem HelmholtzPatchAssembler::assemble(int target, bool retain_components) const {
+HelmholtzPatchSystem HelmholtzPatchAssembler::geometry(int target) const {
     if (target < 0 || target >= patch_count())
         throw std::out_of_range("Helmholtz patch target is out of range");
 
@@ -383,6 +423,13 @@ HelmholtzPatchSystem HelmholtzPatchAssembler::assemble(int target, bool retain_c
         }
     }
 
+    return system;
+}
+
+HelmholtzPatchSystem HelmholtzPatchAssembler::assemble(int target, bool retain_components) const {
+    auto system=geometry(target);
+    const int stamp=patch_workspace.stamp;
+    auto local_index_of=[&](int vertex){return patch_workspace.local_seen[vertex]==stamp?patch_workspace.local_index[vertex]:-1;};
     if(retain_components){
     system.stiffness = restrict_matrix(
         operators_.stiffness, system.local_vertices, local_index_of);

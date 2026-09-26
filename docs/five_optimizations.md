@@ -1,5 +1,10 @@
 # Five workflow optimizations
 
+This page records the September 22 implementation and measurements. The later
+[structural optimization](structural_optimization.md) moves patch lookup before
+assembly, shares hierarchy ownership, and adds POD and analytic-batch reuse.
+The initial measurements below remain historical baseline evidence.
+
 Source moments, reduced operators, incremental energy products and shared
 geometry are enabled by default in newly built adaptive ALOD E1, E2 and
 variable-wavenumber E3 workflows. Cross-state patch caching is implemented

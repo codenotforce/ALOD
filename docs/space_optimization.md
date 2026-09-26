@@ -1,5 +1,8 @@
 # LOD, enrichment and training optimization
 
+See the subsequent [structural optimization](structural_optimization.md) for
+shared reduced factors, immutable hierarchy ownership and POD residual screening.
+
 The current kernel-lifting implementation avoids constructing the test-energy
 factor used only by the archived adjoint-test policy. The trial-energy
 projection factor is built lazily when a training vector is actually added.

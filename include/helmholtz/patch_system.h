@@ -4,6 +4,7 @@
 
 #include <Eigen/Sparse>
 #include <cstdint>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -40,6 +41,10 @@ public:
         const HelmholtzOperators &operators);
 
     HelmholtzPatchSystem assemble(int target, bool retain_components = true) const;
+    HelmholtzPatchSystem geometry(int target) const;
+    // Exact per-node/per-element dependencies, computed once per hierarchy.
+    std::vector<std::string> dependency_records() const;
+    std::string dependency_key(int target,const std::vector<std::uint64_t>& versions) const;
     // Exact fine-element support of a coarse patch.  Equal supports imply an
     // equal local Helmholtz energy block and are used only to schedule
     // DirectSchur solves with factorization affinity.

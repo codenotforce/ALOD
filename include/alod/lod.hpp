@@ -28,6 +28,15 @@ struct LodSolution {
     ComplexMatrix values, coefficients;
     double pg_relative_residual = 0;
 };
+// Immutable after construction; ell-only spaces and estimator contexts share it.
+struct LodHierarchyData {
+    lod2d::TriMesh coarse;
+    lod2d::RefineOutput reference;
+    Sparse interpolation,coarse_basis,energy;
+    lod2d::helmholtz::HelmholtzOperators operators;
+    std::vector<int> coarse_nodes;
+    std::string reference_identity;
+};
 class LodSpace {
 public:
     LodSpace(lod2d::TriMesh coarse, lod2d::RefineOutput reference, double wavenumber,
@@ -42,6 +51,7 @@ public:
     ~LodSpace();
     LodSpace(const LodSpace&) = delete;
     LodSpace& operator=(const LodSpace&) = delete;
+    std::shared_ptr<const LodHierarchyData> hierarchy() const;
     const lod2d::TriMesh& coarse() const;
     const lod2d::TriMesh& fine() const;
     const Sparse& prolongation() const;
@@ -62,6 +72,8 @@ public:
     // The factor belongs to this context. Calls on one context are sequential;
     // individual RHS columns are solved as a block, never concurrently on one LU.
     LodSolution solve(const ComplexMatrix& loads);
+    // Sequential access to the state-owned factor; no additional factorization.
+    ComplexMatrix solve_reduced(const ComplexMatrix& rhs) const;
 private:
     LodSpace(lod2d::TriMesh, lod2d::RefineOutput, double, int, InterpolationPolicy, LodLimits, const LodSpace*, const ComplexSparseMatrix* = nullptr,const ComplexSparseMatrix* = nullptr);
     struct Impl;

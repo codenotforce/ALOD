@@ -24,10 +24,19 @@ bool shared_quadrature(const std::vector<Problem>& problems){
 using Clock=std::chrono::steady_clock;
 double seconds(Clock::time_point t){return std::chrono::duration<double>(Clock::now()-t).count();}
 }
+AuditIntegrationGeometry::AuditIntegrationGeometry(const lod2d::TriMesh& mesh,int threads):mesh_(&mesh),gradients_(mesh.elems.size()){
+    parallel(static_cast<int>(mesh.elems.size()),threads,[&](int e){
+        auto tri=mesh.elems[e];auto a=mesh.nodes[tri[0]],b=mesh.nodes[tri[1]],c=mesh.nodes[tri[2]];
+        const double det=(b.x()-a.x())*(c.y()-a.y())-(b.y()-a.y())*(c.x()-a.x());
+        if(std::abs(det)<=1e-15)throw std::invalid_argument("degenerate audit triangle");
+        gradients_[e]={Eigen::Vector2d(b.y()-c.y(),c.x()-b.x())/det,Eigen::Vector2d(c.y()-a.y(),a.x()-c.x())/det,Eigen::Vector2d(a.y()-b.y(),b.x()-a.x())/det};
+    });
+}
 ComplexMatrix assemble_load_batch(const lod2d::TriMesh& mesh,const std::vector<Problem>& problems,const lod2d::helmholtz::QuadraturePolicy& q,int threads,std::vector<lod2d::helmholtz::SourceMomentData>* moments){
     if(threads<1)throw std::invalid_argument("batch threads must be positive");
     const int n=problems.size(),elements=mesh.elems.size();
     ComplexMatrix loads=ComplexMatrix::Zero(mesh.nodes.size(),n);
+    auto batch_source=std::getenv("ALOD_REFERENCE_EXECUTION")?std::function<void(const lod2d::Point2&,Complex*)>{}:lod2d::helmholtz::benchmarks::shared_source_evaluator(problems);
     if(moments){
         moments->clear();const bool shared=shared_quadrature(problems);
         std::size_t budget=768ULL*1024*1024;
@@ -42,7 +51,20 @@ ComplexMatrix assemble_load_batch(const lod2d::TriMesh& mesh,const std::vector<P
             }
             parallel(threads,threads,[&](int part){
                 std::vector<lod2d::helmholtz::PhysicalTriangleQuadraturePoint> points;
-                for(int e=static_cast<long long>(elements)*part/threads;e<static_cast<long long>(elements)*(part+1)/threads;++e)
+                std::vector<Complex> source_values(n);
+                for(int e=static_cast<long long>(elements)*part/threads;e<static_cast<long long>(elements)*(part+1)/threads;++e){
+                    if(shared&&batch_source){
+                        lod2d::helmholtz::triangle_quadrature_points_into(mesh,e,q,problems[0].quadrature_context,points);
+                        auto& mass=(*(*moments)[0].mass)[e];
+                        for(const auto& point:points){
+                            for(int a=0;a<3;++a)for(int b=0;b<3;++b)mass[3*a+b]+=point.weight*point.barycentric[a]*point.barycentric[b];
+                            batch_source(point.point,source_values.data());
+                            for(int j=0;j<n;++j){auto& m=(*moments)[j];const auto value=source_values[j];
+                                m.squared[e]+=point.weight*std::norm(value);
+                                for(int i=0;i<3;++i)m.load[e][i]+=point.weight*value*point.barycentric[i];}
+                        }
+                        continue;
+                    }
                     for(int j=0;j<n;++j){auto& m=(*moments)[j];
                         if(!j||!shared){
                             lod2d::helmholtz::triangle_quadrature_points_into(mesh,e,q,m.context,points);
@@ -54,6 +76,7 @@ ComplexMatrix assemble_load_batch(const lod2d::TriMesh& mesh,const std::vector<P
                             m.squared[e]+=point.weight*std::norm(value);
                             for(int i=0;i<3;++i)m.load[e][i]+=point.weight*value*point.barycentric[i];}
                     }
+                }
             });
             parallel(n,threads,[&](int j){for(int e=0;e<elements;++e)for(int i=0;i<3;++i)
                 loads(mesh.elems[e][i],j)+=(*moments)[j].load[e][i];});
@@ -65,11 +88,15 @@ ComplexMatrix assemble_load_batch(const lod2d::TriMesh& mesh,const std::vector<P
         std::vector<std::array<Complex,3>> local(static_cast<std::size_t>(n)*elements);
         parallel(threads,threads,[&](int part){
             std::vector<lod2d::helmholtz::PhysicalTriangleQuadraturePoint> points;
+            std::vector<Complex> source_values(n);
             for(int e=static_cast<long long>(elements)*part/threads;e<static_cast<long long>(elements)*(part+1)/threads;++e){
                 lod2d::helmholtz::triangle_quadrature_points_into(mesh,e,q,problems.front().quadrature_context,points);
-                for(int j=0;j<n;++j){auto& values=local[static_cast<std::size_t>(j)*elements+e];
-                    for(const auto& point:points){const Complex value=problems[j].source(point.point);
-                        for(int i=0;i<3;++i)values[i]+=point.weight*value*point.barycentric[i];}}
+                for(const auto& point:points){
+                    if(batch_source)batch_source(point.point,source_values.data());
+                    for(int j=0;j<n;++j){auto& values=local[static_cast<std::size_t>(j)*elements+e];
+                        const Complex value=batch_source?source_values[j]:problems[j].source(point.point);
+                        for(int i=0;i<3;++i)values[i]+=point.weight*value*point.barycentric[i];}
+                }
             }
         });
         parallel(n,threads,[&](int j){for(int e=0;e<elements;++e)for(int i=0;i<3;++i)
@@ -106,12 +133,14 @@ ErrorBatch integrate_error_batch(const lod2d::TriMesh& mesh,const Sparse& E,cons
     result.reference_error.resize(0);
     return result;
 }
-ErrorBatch integrate_audit_batch(const lod2d::TriMesh& mesh,const Sparse& E,const ComplexMatrix& values,const ComplexMatrix& reference,const std::vector<Problem>& problems,const lod2d::helmholtz::QuadraturePolicy& q,int threads,bool fused){
+ErrorBatch integrate_audit_batch(const lod2d::TriMesh& mesh,const Sparse& E,const ComplexMatrix& values,const ComplexMatrix& reference,const std::vector<Problem>& problems,const lod2d::helmholtz::QuadraturePolicy& q,int threads,bool fused,const AuditIntegrationGeometry* geometry){
     if(values.rows()!=mesh.nodes.size()||values.cols()!=problems.size()||reference.rows()!=values.rows()||reference.cols()!=values.cols())throw std::invalid_argument("audit integration dimensions invalid");
+    if(geometry&&geometry->mesh()!=&mesh)throw std::invalid_argument("audit geometry belongs to a different mesh");
     ErrorBatch result;int n=problems.size();result.exact_norm.resize(n);result.exact_error.resize(n);result.reference_error.resize(n);result.energy.resize(n);
     if(!fused){result=integrate_error_separate(mesh,E,values,problems,q,threads);result.reference_error.resize(n);parallel(n,threads,[&](int j){auto& p=problems[j];result.reference_error[j]=lod2d::helmholtz::compute_helmholtz_error(mesh,reference.col(j),p.wavenumber,p.exact,p.exact_gradient,q,p.quadrature_context).energy;});return result;}
     if(threads<1)throw std::invalid_argument("batch threads must be positive");
     if(n==0)return result;
+    auto batch_jet=std::getenv("ALOD_REFERENCE_EXECUTION")?std::function<void(const lod2d::Point2&,lod2d::helmholtz::benchmarks::ExactJet*)>{}:lod2d::helmholtz::benchmarks::shared_jet_evaluator(problems);
     const bool shared=n>1&&mesh.elems.size()>=static_cast<std::size_t>(threads)&&shared_quadrature(problems);
     const int blocks=shared?threads:std::max(1,(threads+n-1)/n),elements=mesh.elems.size();
     const bool staged=shared||blocks>1;
@@ -122,23 +151,35 @@ ErrorBatch integrate_audit_batch(const lod2d::TriMesh& mesh,const Sparse& E,cons
     };
     parallel(shared?blocks:n*blocks,threads,[&](int task){int first=shared?0:task/blocks,last=shared?n:first+1,part=task%blocks;std::array<double,3> energy_sum{};
         std::vector<lod2d::helmholtz::PhysicalTriangleQuadraturePoint> points;
-        for(int element=static_cast<long long>(elements)*part/blocks;element<static_cast<long long>(elements)*(part+1)/blocks;++element){auto tri=mesh.elems[element];auto a=mesh.nodes[tri[0]],b=mesh.nodes[tri[1]],c=mesh.nodes[tri[2]];
-            double det=(b.x()-a.x())*(c.y()-a.y())-(b.y()-a.y())*(c.x()-a.x());if(std::abs(det)<=1e-15)throw std::invalid_argument("degenerate audit triangle");
-            std::array<Eigen::Vector2d,3> gradients{Eigen::Vector2d(b.y()-c.y(),c.x()-b.x())/det,Eigen::Vector2d(c.y()-a.y(),a.x()-c.x())/det,Eigen::Vector2d(a.y()-b.y(),b.x()-a.x())/det};
-            lod2d::helmholtz::triangle_quadrature_points_into(mesh,element,q,problems[first].quadrature_context,points);
-            for(int j=first;j<last;++j){auto& p=problems[j];
-            std::array<Eigen::Vector2cd,3> discrete_gradient{Eigen::Vector2cd::Zero(),Eigen::Vector2cd::Zero(),Eigen::Vector2cd::Zero()};
-            for(int k=0;k<3;++k){discrete_gradient[0]+=values(tri[k],j)*gradients[k].cast<Complex>();discrete_gradient[1]+=reference(tri[k],j)*gradients[k].cast<Complex>();}
-            std::array<double,3> l2{},gradient{};
-            for(const auto& point:points){
-                std::array<Complex,3> discrete{};for(int k=0;k<3;++k){discrete[0]+=point.barycentric[k]*values(tri[k],j);discrete[1]+=point.barycentric[k]*reference(tri[k],j);}
-                const auto jet=p.exact_jet?p.exact_jet(point.point):std::make_pair(p.exact(point.point),p.exact_gradient(point.point));
-                const Complex exact=jet.first;const Eigen::Vector2cd& exact_gradient=jet.second;
-                for(int k=0;k<3;++k){l2[k]+=point.weight*std::norm(exact-discrete[k]);gradient[k]+=point.weight*(exact_gradient-discrete_gradient[k]).squaredNorm();}
+        std::vector<std::array<Eigen::Vector2cd,2>> discrete_gradient(last-first);
+        std::vector<std::array<double,3>> l2(last-first),gradient(last-first);
+        std::vector<lod2d::helmholtz::benchmarks::ExactJet> jets(shared&&batch_jet?n:0);
+        for(int element=static_cast<long long>(elements)*part/blocks;element<static_cast<long long>(elements)*(part+1)/blocks;++element){auto tri=mesh.elems[element];
+            std::array<Eigen::Vector2d,3> gradients;
+            if(geometry)gradients=geometry->gradients(element);
+            else {
+                auto a=mesh.nodes[tri[0]],b=mesh.nodes[tri[1]],c=mesh.nodes[tri[2]];
+                double det=(b.x()-a.x())*(c.y()-a.y())-(b.y()-a.y())*(c.x()-a.x());if(std::abs(det)<=1e-15)throw std::invalid_argument("degenerate audit triangle");
+                gradients={Eigen::Vector2d(b.y()-c.y(),c.x()-b.x())/det,Eigen::Vector2d(c.y()-a.y(),a.x()-c.x())/det,Eigen::Vector2d(a.y()-b.y(),b.x()-a.x())/det};
             }
-            for(int k=0;k<3;++k){double v=gradient[k]+p.wavenumber*p.wavenumber*l2[k];
+            lod2d::helmholtz::triangle_quadrature_points_into(mesh,element,q,problems[first].quadrature_context,points);
+            std::fill(l2.begin(),l2.end(),std::array<double,3>{});
+            std::fill(gradient.begin(),gradient.end(),std::array<double,3>{});
+            for(int j=first;j<last;++j){auto& dg=discrete_gradient[j-first];dg[0].setZero();dg[1].setZero();
+                for(int k=0;k<3;++k){dg[0]+=values(tri[k],j)*gradients[k].cast<Complex>();dg[1]+=reference(tri[k],j)*gradients[k].cast<Complex>();}}
+            for(const auto& point:points){
+                if(shared&&batch_jet)batch_jet(point.point,jets.data());
+                for(int j=first;j<last;++j){auto& p=problems[j];int index=j-first;
+                    std::array<Complex,3> discrete{};for(int k=0;k<3;++k){discrete[0]+=point.barycentric[k]*values(tri[k],j);discrete[1]+=point.barycentric[k]*reference(tri[k],j);}
+                    const auto jet=shared&&batch_jet?jets[j]:(p.exact_jet?p.exact_jet(point.point):std::make_pair(p.exact(point.point),p.exact_gradient(point.point)));
+                    for(int k=0;k<3;++k){
+                        l2[index][k]+=point.weight*std::norm(jet.first-discrete[k]);
+                        gradient[index][k]+=point.weight*(k<2?(jet.second-discrete_gradient[index][k]).squaredNorm():jet.second.squaredNorm());
+                    }
+                }
+            }
+            for(int j=first;j<last;++j)for(int k=0;k<3;++k){double v=gradient[j-first][k]+problems[j].wavenumber*problems[j].wavenumber*l2[j-first][k];
                 if(!staged)energy_sum[k]+=v;else element_energy[static_cast<std::size_t>(j)*elements+element][k]=v;}
-        }
         }
         if(!staged)finish(first,energy_sum);
     });

@@ -161,22 +161,25 @@ int adaptive_main(int argc,char** argv){
         }else {pending_events=saved.journal;resumed_current=true;resumed_check=saved.check_pending;}
         begin_state=cursor.state_id;
     }
+    std::unique_ptr<CheckpointGeometryView> checkpoint_geometry;
     auto snapshot=[&](CheckpointPhase phase,const std::string& journal,bool check,const ComplexMatrix& values,const ComplexMatrix& phi,
                       const std::vector<int>& cm,const std::vector<int>& fm,const std::string& identity,const LodSpace* accepted_space=nullptr){
         if(config.checkpoint_dir.empty())return;
         PhaseTimer timing(phase==CheckpointPhase::Accepted?"checkpoint_accepted":"checkpoint_restart",cursor.state_id);
-        Checkpoint s;s.coarse=coarse_history;s.fine=fine_history;s.P_node=reference.P_node;s.P_elem=reference.P_elem;s.P_dg=reference.P_dg;
+        Checkpoint s;
+        if(std::getenv("ALOD_REFERENCE_EXECUTION")){s.coarse=coarse_history;s.fine=fine_history;s.P_node=reference.P_node;s.P_elem=reference.P_elem;s.P_dg=reference.P_dg;}
         s.raw_kernel=incoming;s.phi=phi;s.values=values;s.warm_full=warm_full;s.coarse_marks=cm;s.reference_marks=fm;
         for(const auto& m:input.members)s.computed_ids.push_back(m.id);
         s.cursor=cursor;s.ell=ell;s.last_check=config.policy.last_check;s.next_event=event_id;s.revision=revision;s.phase=phase;s.mesh_changed=mesh_changed;s.check_pending=check;
         s.committed_lines=committed_lines;s.journal_hash=prefix_hash;s.journal=journal;s.mathematics_key=key;s.config_json=config_json;s.members_text=members_text;s.space_identity=identity;
         save_checkpoint(config.checkpoint_dir,s,accepted_space?&accepted_space->trial():nullptr,
             accepted_space&&!std::getenv("ALOD_REFERENCE_EXECUTION")?&accepted_space->reduced():nullptr,
-            !std::getenv("ALOD_REFERENCE_EXECUTION"));
+            !std::getenv("ALOD_REFERENCE_EXECUTION"),checkpoint_geometry.get());
     };
     std::cout<<std::setprecision(17);
     for(int state=begin_state;state<states;++state){
         PhaseTimer state_timer("adaptive_state",state);
+        if(!std::getenv("ALOD_REFERENCE_EXECUTION"))checkpoint_geometry=std::make_unique<CheckpointGeometryView>(CheckpointGeometryView{coarse_history,fine_history,reference.P_node,reference.P_elem,reference.P_dg});
         BufferedEvents events(pending_events);pending_events.clear();
         const auto start=std::chrono::steady_clock::now();bool terminal=state+1==states;
         if(reference.mesh.nodes.size()*members.size()>config.dense_entries)
@@ -331,7 +334,7 @@ int adaptive_main(int argc,char** argv){
         events.publish();
         if(config.pause_state==state&&config.pause_phase=="accepted")return 0;
         if(terminal)break;
-        riesz.reset();space.reset();regional=RegionalResult{};
+        checkpoint_geometry.reset();riesz.reset();space.reset();regional=RegionalResult{};
         loads.resize(0,0);values.resize(0,0);E=Sparse{};coarse_mass.resize(0,0);strong.resize(0,0);
         advance(cm.marked_elements,fm.marked_elements);
     }

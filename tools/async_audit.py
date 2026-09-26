@@ -8,6 +8,8 @@ class AuditQueue:
     def __init__(self, output, executable, members, workers=1, threads=None):
         if type(workers) is not int or workers<1:raise ValueError('audit workers must be positive')
         self.output=Path(output);self.executable=Path(executable);self.members=members
+        from run_audit import AuditExecutionContext
+        self.execution_context=AuditExecutionContext(executable)
         self.threads=threads;self.cancel=threading.Event();self.jobs={};self.futures={}
         self.pool=ThreadPoolExecutor(max_workers=workers,thread_name_prefix='alod-audit')
         self.lock=threading.Lock();self.stopped=False
@@ -43,7 +45,7 @@ class AuditQueue:
                 found=base;attempt=0
                 while found.exists():
                     attempt+=1;found=base.with_name(base.name+f'-retry-{attempt}')
-                audit(checkpoint,found,self.executable,batch_size=8,threads=self.threads,cancel=self.cancel)
+                audit(checkpoint,found,self.executable,batch_size=8,threads=self.threads,cancel=self.cancel,execution_context=self.execution_context)
             samples=[json.loads(line) for line in (found/'samples.jsonl').read_text().splitlines() if json.loads(line)['kind']=='sample']
             state=int(name.split('-')[1])
             if len(samples)!=len(self.members) or {r['sample'] for r in samples}!=set(self.members) or any(r['state_id']!=state for r in samples):

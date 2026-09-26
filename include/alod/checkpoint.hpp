@@ -23,14 +23,21 @@ struct Checkpoint {
     std::string journal,mathematics_key,config_json,members_text,space_identity;
     lod2d::RefineOutput reference() const {return {fine.mesh,P_node,P_elem,P_dg};}
 };
+// Borrowed immutable geometry for synchronous publication. The owner must not
+// mutate these objects during the view's lifetime; create a new view on refinement.
+struct CheckpointGeometryView {
+    const MeshState &coarse,&fine;
+    const Sparse &P_node,&P_elem,&P_dg;
+    mutable std::string object_name,coarse_hash,fine_hash;
+};
 std::string json_string(const std::string&);
 std::uint64_t journal_hash(const std::string&,std::uint64_t prefix=14695981039346656037ULL);
 std::string matrix_hash(const ComplexMatrix&);
-std::string checkpoint_metadata(const Checkpoint&, bool has_basis=false,int format=0);
+std::string checkpoint_metadata(const Checkpoint&, bool has_basis=false,int format=0,const CheckpointGeometryView* geometry=nullptr);
 // Immutable, checksummed little-endian files. A temporary is verified before
 // rename; latest is replaced only after the new checkpoint is committed.
 std::filesystem::path save_checkpoint(const std::filesystem::path& directory,const Checkpoint&, const ComplexSparseMatrix* accepted_trial=nullptr,
-    const ComplexSparseMatrix* accepted_reduced=nullptr,bool share_geometry=false);
+    const ComplexSparseMatrix* accepted_reduced=nullptr,bool share_geometry=false,const CheckpointGeometryView* geometry=nullptr);
 // Check the complete checksum while reading only the metadata into memory.
 std::string inspect_checkpoint(const std::filesystem::path&,std::uint64_t maximum_bytes=UINT64_MAX);
 Checkpoint load_checkpoint(const std::filesystem::path& file,std::uint64_t maximum_bytes=UINT64_MAX);

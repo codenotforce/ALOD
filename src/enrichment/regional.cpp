@@ -1,4 +1,5 @@
 #include "alod/regional.hpp"
+#include "alod/timing.hpp"
 #include <Eigen/SparseLU>
 #include <Eigen/SVD>
 #include <stdexcept>
@@ -15,7 +16,15 @@ struct Coupled {
     const ComplexSparseMatrix &B,&C,&A;
     Eigen::SparseLU<ComplexSparseMatrix> coarse,trial_energy,test_energy;
     bool reuse; EnrichmentTests policy;
+    bool independent_factor=std::getenv("ALOD_REFERENCE_EXECUTION")!=nullptr;
+    ComplexMatrix correction_coordinates;
+    bool last_estimate_direct=true;
+    ComplexMatrix riesz_base,riesz_phi,riesz_images;
+    std::vector<int> riesz_mask;
+    std::size_t training_budget=256ULL*1024*1024;
+    void clear_riesz(){riesz_base.resize(0,0);riesz_phi.resize(0,0);riesz_images.resize(0,0);riesz_mask.clear();}
     ComplexMatrix last_loads,last_f0,last_base,root_phi,root_ephi,root_aphi,root_raw;
+    ComplexMatrix root_as0,root_response,root_test_block;
     ComplexMatrix prepared_phi,prepared_raw,prepared_tests,prepared_response,prepared_as0;
     Eigen::FullPivLU<ComplexMatrix> prepared_lu;
     double prepared_residual=0,prepared_raw_base=0,prepared_raw_dictionary=0;
@@ -26,36 +35,45 @@ struct Coupled {
         :Coupled(space,&r,cache,reuse_,policy_){}
     Coupled(const LodSpace& space,AdditiveKernelRieszContext* r,AdjointTestCache& cache,bool reuse_,EnrichmentTests policy_)
         :s(space),riesz(r),aot(cache),E(s.energy().cast<Complex>()),B(s.trial()),C(s.test()),A(s.operators().system),reuse(reuse_),policy(policy_){
-        if(std::getenv("ALOD_REFERENCE_EXECUTION")){
+        if(const char* value=std::getenv("ALOD_TRAIN_RIESZ_BYTES")){
+            std::string text(value);if(text.empty()||text.find_first_not_of("0123456789")!=std::string::npos)throw std::invalid_argument("invalid ALOD_TRAIN_RIESZ_BYTES");
+            training_budget=std::stoull(text);
+        }
+        if(independent_factor){
             ComplexSparseMatrix a=C.adjoint()*A*B;coarse.compute(a);
-        }else coarse.compute(s.reduced());
-        if(coarse.info()!=Eigen::Success)
+        }
+        if(independent_factor && coarse.info()!=Eigen::Success)
             throw std::runtime_error("regional base factorization failed");
         if(policy==EnrichmentTests::ArchivedAdjoint){
             ComplexSparseMatrix c=C.adjoint()*E*C;test_energy.compute(c);
             if(test_energy.info()!=Eigen::Success)throw std::runtime_error("regional test energy factorization failed");
         }
     }
-    RegionalEvaluation evaluate(const ComplexMatrix& loads,const ComplexMatrix& phi,const std::vector<int>& mask,const ComplexMatrix& transform={},bool estimate=true){
+    ComplexMatrix solve_base(const ComplexMatrix& rhs){
+        if(independent_factor)return coarse.solve(rhs);
+        return s.solve_reduced(rhs);
+    }
+    RegionalEvaluation evaluate(const ComplexMatrix& loads,const ComplexMatrix& phi,const std::vector<int>& mask,const ComplexMatrix& transform={},bool estimate=true,bool direct_riesz=false){
         if(loads.rows()!=A.rows()||loads.cols()<1||!loads.allFinite()
             ||(phi.cols()&&(phi.rows()!=A.rows()||!phi.allFinite())))
             throw std::invalid_argument("regional evaluation dimensions or values invalid");
         RegionalEvaluation out;
+        if(!same(loads,last_loads)||mask!=riesz_mask)clear_riesz();
         ComplexMatrix f0,base;
         if(reuse&&same(loads,last_loads)){f0=last_f0;base=last_base;}
-        else {f0=C.adjoint()*loads;base=coarse.solve(f0);if(reuse){last_loads=loads;last_f0=f0;last_base=base;}}
+        else {f0=C.adjoint()*loads;base=solve_base(f0);if(reuse){last_loads=loads;last_f0=f0;last_base=base;}}
         if(phi.cols()==0){out.values=B*base;out.tests.resize(B.rows(),0);out.raw_tests=out.tests;}
         else {
             if(!(reuse&&same(phi,prepared_phi))){
-                ComplexMatrix ephi,aphi,raw;
+                ComplexMatrix ephi,aphi,raw;int appended_from=0;bool transformed=false;
                 if(reuse&&transform.size()&&root_phi.cols()==transform.rows()
                     &&(root_phi*transform-phi).norm()<1e-13*std::max(1.,phi.norm())){
-                    ephi=root_ephi*transform;aphi=root_aphi*transform;raw=root_raw*transform;
+                    ephi=root_ephi*transform;aphi=root_aphi*transform;raw=root_raw*transform;transformed=true;
                 }else {
                     int prefix=0;
                     if(reuse&&root_phi.rows()==phi.rows()&&root_phi.cols()<=phi.cols()
                         &&same(root_phi,phi.leftCols(root_phi.cols())))prefix=root_phi.cols();
-                    int extra=phi.cols()-prefix;
+                    appended_from=prefix;int extra=phi.cols()-prefix;
                     ephi.resize(phi.rows(),phi.cols());aphi=ephi;raw=ephi;
                     if(prefix){ephi.leftCols(prefix)=root_ephi;aphi.leftCols(prefix)=root_aphi;raw.leftCols(prefix)=root_raw;}
                     if(extra){ephi.rightCols(extra)=E*phi.rightCols(extra);aphi.rightCols(extra)=A*phi.rightCols(extra);
@@ -79,20 +97,47 @@ struct Coupled {
                 prepared_raw=raw;
                 if(policy==EnrichmentTests::ArchivedAdjoint)prepared_tests=raw-C*test_energy.solve(C.adjoint()*E*raw);
                 else prepared_tests=raw; // Y(E) = Y0 + (I - T_ell I_H) E.
-                ComplexMatrix a0s=C.adjoint()*aphi;
-                // Retain the original multiplication order and share the
-                // expensive fine-space product with the diagnostics.
-                ComplexMatrix test_A=prepared_tests.adjoint()*A;
-                prepared_as0=test_A*B;
-                if(policy==EnrichmentTests::KernelLift){
+                ComplexMatrix test_block;
+                if(policy==EnrichmentTests::KernelLift&&reuse&&!independent_factor){
+                    if(transformed&&root_as0.rows()==transform.rows()){
+                        prepared_as0=transform.adjoint()*root_as0;
+                        prepared_response=root_response*transform;
+                        test_block=transform.adjoint()*root_test_block*transform;
+                    }else{
+                        if(root_as0.rows()!=appended_from||root_response.cols()!=appended_from)appended_from=0;
+                        const int extra=phi.cols()-appended_from;
+                        prepared_as0.resize(phi.cols(),B.cols());prepared_response.resize(B.cols(),phi.cols());
+                        if(appended_from){
+                            prepared_as0.topRows(appended_from)=root_as0;
+                            prepared_response.leftCols(appended_from)=root_response;
+                        }
+                        if(extra){
+                            // Only new test rows and coarse responses are needed
+                            // when the dictionary grows. No rank-by-fine-grid
+                            // test-action matrix is retained across evaluations.
+                            ComplexMatrix new_test_A=prepared_tests.rightCols(extra).adjoint()*A;
+                            prepared_as0.bottomRows(extra)=new_test_A*B;
+                            prepared_response.rightCols(extra)=solve_base(C.adjoint()*aphi.rightCols(extra));
+                        }
+                        test_block=prepared_tests.adjoint()*aphi;
+                        if(!transformed){root_as0=prepared_as0;root_response=prepared_response;root_test_block=test_block;}
+                    }
                     prepared_raw_base=prepared_as0.norm()/std::max(1.,B.norm());
-                    prepared_raw_dictionary=(test_A*phi-ComplexMatrix::Identity(phi.cols(),phi.cols())).norm();
+                    prepared_raw_dictionary=(test_block-ComplexMatrix::Identity(phi.cols(),phi.cols())).norm();
                 }else{
-                    prepared_raw_base=(raw.adjoint()*A*B).norm()/std::max(1.,B.norm());
-                    prepared_raw_dictionary=(raw.adjoint()*A*phi-ComplexMatrix::Identity(phi.cols(),phi.cols())).norm();
+                    ComplexMatrix test_A=prepared_tests.adjoint()*A;
+                    prepared_as0=test_A*B;
+                    if(policy==EnrichmentTests::KernelLift){
+                        prepared_raw_base=prepared_as0.norm()/std::max(1.,B.norm());
+                        prepared_raw_dictionary=(test_A*phi-ComplexMatrix::Identity(phi.cols(),phi.cols())).norm();
+                    }else{
+                        prepared_raw_base=(raw.adjoint()*A*B).norm()/std::max(1.,B.norm());
+                        prepared_raw_dictionary=(raw.adjoint()*A*phi-ComplexMatrix::Identity(phi.cols(),phi.cols())).norm();
+                    }
+                    prepared_response=solve_base(C.adjoint()*aphi);
+                    test_block=prepared_tests.adjoint()*aphi;
                 }
-                prepared_response=coarse.solve(a0s);
-                prepared_lu.compute(prepared_tests.adjoint()*aphi-prepared_as0*prepared_response);
+                prepared_lu.compute(test_block-prepared_as0*prepared_response);
                 if(!prepared_lu.isInvertible())throw std::runtime_error("regional coupled Schur block is singular");
                 prepared_phi=phi;
             }
@@ -102,6 +147,7 @@ struct Coupled {
             out.raw_dictionary_block=prepared_raw_dictionary;
             // The projected lower-left block remains in the actual PG solve.
             ComplexMatrix d=prepared_lu.solve(out.tests.adjoint()*loads-prepared_as0*base);
+            correction_coordinates=d;
             out.values=B*(base-prepared_response*d)+phi*d;
         }
         ComplexMatrix residual=loads-A*out.values;
@@ -113,10 +159,43 @@ struct Coupled {
         if(out.pg_residual>1e-9)throw std::runtime_error("regional coupled PG residual gate failed");
         if(!estimate)return out;
         if(!riesz)throw std::logic_error("regional estimation requires a Riesz context");
+        last_estimate_direct=true;
+        const bool cache_riesz=reuse&&!independent_factor&&loads.cols()>2&&!transform.size()
+            &&static_cast<long double>(A.rows())*(loads.cols()+phi.cols())*3*sizeof(Complex)<=training_budget;
+        if(!cache_riesz)clear_riesz();
+        if(cache_riesz&&!direct_riesz&&phi.cols()&&riesz_base.cols()==loads.cols()){
+            const bool prefix=riesz_phi.cols()<=phi.cols()
+                &&(!riesz_phi.cols()||same(riesz_phi,phi.leftCols(riesz_phi.cols())));
+            if(prefix){
+                PhaseTimer timer("training_riesz_coordinates",-1);
+                const int first=riesz_phi.cols();riesz_images.conservativeResize(A.rows(),phi.cols());
+                for(int col=first;col<phi.cols();col+=loads.cols()){
+                    int count=std::min<int>(loads.cols(),phi.cols()-col);
+                    ComplexMatrix rhs=A*(phi.middleCols(col,count)-B*prepared_response.middleCols(col,count));
+                    auto image=riesz->apply_selected(rhs,mask,false);
+                    if(image.selected_identity_relative_error>1e-7||image.constraint_relative_residual>1e-8)
+                        throw std::runtime_error("training residual image gate failed");
+                    riesz_images.middleCols(col,count)=image.selected_values;
+                }
+                riesz_phi=phi;
+                out.seeds=riesz_base-riesz_images*correction_coordinates;
+                out.eta.resize(loads.cols());bool cancellation=false;
+                for(int j=0;j<loads.cols();++j){
+                    const Complex action=residual.col(j).dot(out.seeds.col(j));
+                    const double magnitude=residual.col(j).norm()*out.seeds.col(j).norm();
+                    cancellation|=!std::isfinite(action.real())||!std::isfinite(action.imag())
+                        ||action.real()<=1e-6*magnitude||std::abs(action.imag())>1e-8*std::max(1e-30,action.real());
+                    out.eta[j]=std::sqrt(std::max(0.,action.real()));
+                }
+                if(!cancellation){last_estimate_direct=false;return out;}
+            }else clear_riesz();
+        }
         auto local=riesz->apply_selected(residual,mask,false);
         if(local.selected_identity_relative_error>1e-7||local.constraint_relative_residual>1e-8)
             throw std::runtime_error("regional AS identity or kernel gate failed");
-        out.eta=local.selected_eta;out.seeds=local.selected_values;return out;
+        out.eta=local.selected_eta;out.seeds=local.selected_values;
+        if(cache_riesz&&!phi.cols()){riesz_base=out.seeds;riesz_mask=mask;}
+        return out;
     }
     bool add(ComplexVector raw,ComplexMatrix& psi,ComplexMatrix& phi){
         // Frozen evaluations and empty training regions never need this factor.
@@ -188,14 +267,27 @@ RegionalResult train_regional(LodSpace& s,AdditiveKernelRieszContext& r,AdjointT
         if(kernel>1e-8)throw std::runtime_error("incoming representative is outside the current kernel");
         for(int j=0;j<raw.cols()&&phi.cols()<cfg.rank_cap;++j)model.add(raw.col(j),psi,phi);
     }
-    out.inherited_rank=phi.cols();double previous=0;int small_gains=0;RegionalEvaluation full;
+    out.inherited_rank=phi.cols();double previous=0;int small_gains=0;RegionalEvaluation full;bool full_verified=false;
     for(;;){
         full=phi.cols()?model.evaluate(loads,phi,mask):base;++out.evaluations;
+        full_verified=!phi.cols()||model.last_estimate_direct;
         Eigen::Index worst=0;double score=(full.eta.array()/out.targets.array()).maxCoeff(&worst);
+        bool close_decision=std::abs(score-1.)<=1e-6;
+        if(previous>0)close_decision|=std::abs((previous-score)/previous-.01)<=1e-6;
+        for(int j=0;j<loads.cols();++j)if(j!=worst)
+            close_decision|=std::abs(full.eta[j]/out.targets[j]-score)<=1e-8*std::max(1.,score);
+        if(!full_verified&&close_decision){
+            full=model.evaluate(loads,phi,mask,{},true,true);full_verified=true;
+            score=(full.eta.array()/out.targets.array()).maxCoeff(&worst);
+        }
         out.training_met=score<=1;
         if(out.selected_patches==0){out.stop="empty_region";break;}
-        if(out.training_met){out.stop="budget_met";break;}
-        if(phi.cols()>=cfg.rank_cap){out.stop="rank_cap";break;}
+        if(out.training_met||phi.cols()>=cfg.rank_cap){
+            if(!full_verified)full=model.evaluate(loads,phi,mask,{},true,true);full_verified=true;
+            score=(full.eta.array()/out.targets.array()).maxCoeff(&worst);out.training_met=score<=1;
+            if(out.training_met){out.stop="budget_met";break;}
+            if(phi.cols()>=cfg.rank_cap){out.stop="rank_cap";break;}
+        }
         if(previous>0)small_gains=(previous-score)/previous<.01?small_gains+1:0;
         previous=score;
         if(small_gains>=2){out.stop="low_marginal_gain";break;}
@@ -208,6 +300,10 @@ RegionalResult train_regional(LodSpace& s,AdditiveKernelRieszContext& r,AdjointT
         }
         if(!added){out.stop="dependent_seed";break;}
     }
+    // Publish accepted estimators and seeds through the original local-energy
+    // path, including low-gain/dependent-seed termination.
+    if(phi.cols()&&!full_verified)full=model.evaluate(loads,phi,mask,{},true,true);
+    out.training_met=(full.eta.array()/out.targets.array()).maxCoeff()<=1;
     out.working_rank=phi.cols();out.full_phi=phi;out.full_values=full.values;out.full_eta=full.eta;
     out.accepted=full;
     if(phi.cols()){
@@ -215,13 +311,74 @@ RegionalResult train_regional(LodSpace& s,AdditiveKernelRieszContext& r,AdjointT
         for(int j=0;j<loads.cols();++j)snapshots.col(j)/=std::max(1e-12,norm(s.energy(),full.values.col(j)));
         ComplexMatrix coordinates=phi.adjoint()*model.E*snapshots;
         Eigen::JacobiSVD<ComplexMatrix> svd(coordinates,Eigen::ComputeThinU);
+        // POD candidates live in the fixed correction space W = phi-B*response.
+        // Build its residual Gram once, instead of solving every local Riesz
+        // problem for every candidate and every training member.
+        ComplexMatrix residual_gram;
+        const int members=loads.cols(), width=members+phi.cols();
+        std::size_t pod_budget=256ULL*1024*1024;
+        if(const char* value=std::getenv("ALOD_POD_GRAM_BYTES")){
+            std::string text(value);if(text.empty()||text.find_first_not_of("0123456789")!=std::string::npos)throw std::invalid_argument("invalid ALOD_POD_GRAM_BYTES");
+            pod_budget=std::stoull(text);
+        }
+        const bool reduced_pod=!std::getenv("ALOD_REFERENCE_EXECUTION")
+            && svd.matrixU().cols()>2
+            && static_cast<long double>(s.energy().rows())*width*3*sizeof(Complex)<=pod_budget
+            && static_cast<std::size_t>(s.energy().rows())*width*3<=s.limits().maximum_dense_entries;
+        if(reduced_pod){
+            PhaseTimer timer("pod_residual_gram",-1);
+            ComplexMatrix directions(loads.rows(),width);
+            directions.leftCols(members)=loads-model.A*base.values;
+            directions.rightCols(phi.cols())=model.A*(phi-model.B*model.prepared_response);
+            for(int node:s.operators().dirichlet_nodes)directions.row(node).setZero();
+            residual_gram.resize(width,width);
+            if(model.riesz_base.cols()==members&&Coupled::same(model.riesz_phi,phi)){
+                residual_gram.leftCols(members)=directions.adjoint()*model.riesz_base;
+                residual_gram.rightCols(phi.cols())=directions.adjoint()*model.riesz_images;
+            }else {
+                // Bound local patch scratch using the same batch width as training.
+                for(int first=0;first<width;first+=members){
+                    int count=std::min(members,width-first);
+                    auto image=r.apply_selected(directions.middleCols(first,count),mask,false);
+                    if(image.selected_identity_relative_error>1e-7||image.constraint_relative_residual>1e-8)
+                        throw std::runtime_error("POD residual basis Riesz gate failed");
+                    residual_gram.middleCols(first,count)=directions.adjoint()*image.selected_values;
+                }
+            }
+            residual_gram=(.5*(residual_gram+residual_gram.adjoint())).eval();
+        }
+        model.clear_riesz();
         for(int rank=1;rank<=svd.matrixU().cols();++rank){
             ++out.compression_trials;ComplexMatrix transform=svd.matrixU().leftCols(rank);
             ComplexMatrix candidate=phi*transform;
-            auto evaluated=model.evaluate(loads,candidate,mask,transform);bool pass=true;
+            auto evaluated=model.evaluate(loads,candidate,mask,transform,!reduced_pod);bool pass=true;
+            bool direct=!reduced_pod;
+            if(reduced_pod){
+                ComplexMatrix coordinates=ComplexMatrix::Zero(width,members);
+                coordinates.topRows(members).setIdentity();
+                coordinates.bottomRows(phi.cols())=-transform*model.correction_coordinates;
+                evaluated.eta.resize(members);
+                bool cancellation=false;
+                for(int j=0;j<members;++j){
+                    const auto c=coordinates.col(j);
+                    const double sq=std::real(c.dot(residual_gram*c));
+                    const double magnitude=(c.cwiseAbs().transpose()*residual_gram.cwiseAbs()*c.cwiseAbs())(0,0);
+                    const double threshold=std::max(1.1*out.targets[j],1.03*full.eta[j]);
+                    cancellation|=!std::isfinite(sq)||sq<=1e-6*magnitude
+                        ||std::abs(sq-threshold*threshold)<=1e-8*std::max(magnitude,threshold*threshold);
+                    evaluated.eta[j]=std::sqrt(std::max(0.,sq));
+                }
+                if(cancellation){evaluated=model.evaluate(loads,candidate,mask,transform);direct=true;}
+            }
             for(int j=0;j<loads.cols();++j)
                 if(norm(s.energy(),(full.values.col(j)-evaluated.values.col(j)).eval())>.2*out.targets[j]
                     ||evaluated.eta[j]>std::max(1.1*out.targets[j],1.03*full.eta[j]))pass=false;
+            // Verify any accepted candidate through the original Riesz path.
+            if(pass&&!direct){
+                evaluated=model.evaluate(loads,candidate,mask,transform);
+                for(int j=0;j<members;++j)
+                    if(evaluated.eta[j]>std::max(1.1*out.targets[j],1.03*full.eta[j]))pass=false;
+            }
             if(pass){out.compression_accepted=true;out.accepted=std::move(evaluated);psi=(psi*transform).eval();phi=std::move(candidate);break;}
         }
     }

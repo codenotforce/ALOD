@@ -12,7 +12,30 @@ from run_fixed import DEFAULT as FIXED, arguments, validate, write_members
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def audit(checkpoint, output, executable, *, member_ids=None, batch_size=8, fresh=False, rank_zero=True, threads=None, pure=False, ell_override=0, quadrature_boost=0, refinement_steps=0, timeout=604800, cancel=None, reuse_basis=True):
+class AuditExecutionContext:
+    """Run-scoped executable/source provenance shared by asynchronous jobs.
+
+    This is a launch snapshot, not a global cache. Replacing the executable
+    invalidates the context; checkpoint validation remains per-job.
+    """
+    def __init__(self, executable):
+        from runtime_provenance import provenance
+        self.executable = Path(executable).resolve()
+        self.identity = self._identity()
+        self.executable_sha256 = digest(self.executable)
+        self.provenance = provenance(self.executable.with_name('alod_run'))
+        self.verify(executable)
+
+    def _identity(self):
+        s = self.executable.stat()
+        return (s.st_dev, s.st_ino, s.st_size, s.st_mtime_ns, s.st_ctime_ns)
+
+    def verify(self, executable):
+        if Path(executable).resolve() != self.executable or self._identity() != self.identity:
+            raise ValueError('audit executable changed after launch snapshot')
+
+
+def audit(checkpoint, output, executable, *, member_ids=None, batch_size=8, fresh=False, rank_zero=True, threads=None, pure=False, ell_override=0, quadrature_boost=0, refinement_steps=0, timeout=604800, cancel=None, reuse_basis=True, execution_context=None):
     setup_start=time.monotonic()
     if type(ell_override) is not int or not 0<=ell_override<=4 or type(quadrature_boost) is not int or not 0<=quadrature_boost<=8:
         raise ValueError("invalid diagnostic override")
@@ -20,6 +43,8 @@ def audit(checkpoint, output, executable, *, member_ids=None, batch_size=8, fres
     if type(reuse_basis) is not bool:raise ValueError("reuse_basis must be boolean")
     if timeout<=0: raise ValueError("invalid audit timeout")
     output, executable = Path(output), Path(executable)
+    context = execution_context or AuditExecutionContext(executable)
+    context.verify(executable)
     checkpoint, metadata = inspect(checkpoint, executable.with_name("alod_run"))
     if metadata["phase"] != 0:
         raise ValueError("only accepted checkpoints may be audited")
@@ -60,11 +85,10 @@ def audit(checkpoint, output, executable, *, member_ids=None, batch_size=8, fres
     table = output/"members.txt"
     write_members(table, rows)
     manifest = dict(status="running", checkpoint=checkpoint.name, checkpoint_sha256=digest(checkpoint),
-                    executable_sha256=digest(executable), config=config, member_ids=member_ids,
+                    executable_sha256=context.executable_sha256, config=config, member_ids=member_ids,
                     ell_override=ell_override, quadrature_boost=quadrature_boost, refinement_steps=refinement_steps, batch_size=batch_size, reuse_basis=reuse_basis, fresh=fresh, rank_zero=rank_zero, threads=fixed["threads"],
                     solver_completed=False, validation_passed=False, audit_complete=False, paper_complete=False)
-    from runtime_provenance import provenance
-    manifest['provenance'] = provenance(executable.with_name('alod_run'))
+    manifest['provenance'] = context.provenance
     manifest['setup_seconds']=time.monotonic()-setup_start
     save = lambda: atomic_text(output/"run.json", json.dumps(manifest, indent=2)+"\n")
     save()
@@ -82,6 +106,7 @@ def audit(checkpoint, output, executable, *, member_ids=None, batch_size=8, fres
             from execution import cancellable_run
             result = cancellable_run([str(executable.resolve()), *(["audit"] if executable.stem=="alod_run" else []), *arguments(fixed, table.resolve()), *runtime],
                                     stdout=out, stderr=err, env=env, timeout=timeout, cancel=cancel)
+        context.verify(executable)
         manifest["returncode"] = result.returncode
         if result.returncode:
             raise RuntimeError("independent audit failed; see stderr.log")

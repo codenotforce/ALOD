@@ -31,3 +31,22 @@ class RuntimePolicy(unittest.TestCase):
             self.assertEqual(env['OMP_NUM_THREADS'],'32')
 
 if __name__=='__main__':unittest.main()
+
+
+class AuditContextTests(unittest.TestCase):
+    def test_run_scoped_provenance_and_binary_replacement(self):
+        import tempfile
+        from pathlib import Path
+        from unittest.mock import patch
+        from run_audit import AuditExecutionContext
+        with tempfile.TemporaryDirectory() as directory:
+            exe = Path(directory)/'alod_run'
+            exe.write_bytes(b'first')
+            with patch('runtime_provenance.provenance', return_value={'build': 'test'}) as probe:
+                context = AuditExecutionContext(exe)
+                context.verify(exe)
+                context.verify(exe)
+                self.assertEqual(probe.call_count, 1)
+                exe.write_bytes(b'replacement')
+                with self.assertRaises(ValueError):
+                    context.verify(exe)

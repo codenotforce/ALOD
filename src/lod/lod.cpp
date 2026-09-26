@@ -18,14 +18,20 @@ namespace alod {
 using namespace lod2d;
 using namespace lod2d::helmholtz;
 struct LodSpace::Impl {
-    TriMesh coarse;
-    RefineOutput reference;
-    Sparse interpolation, coarse_basis, energy;
-    HelmholtzOperators operators;
+    std::shared_ptr<LodHierarchyData> hierarchy;
+    TriMesh& coarse;
+    RefineOutput& reference;
+    Sparse &interpolation,&coarse_basis,&energy;
+    HelmholtzOperators& operators;
+    explicit Impl(std::shared_ptr<LodHierarchyData> h):hierarchy(std::move(h)),
+        coarse(hierarchy->coarse),reference(hierarchy->reference),interpolation(hierarchy->interpolation),
+        coarse_basis(hierarchy->coarse_basis),energy(hierarchy->energy),operators(hierarchy->operators),
+        coarse_nodes(hierarchy->coarse_nodes),reference_identity(hierarchy->reference_identity){}
     ComplexSparseMatrix trial, test, reduced;
     Eigen::SparseLU<ComplexSparseMatrix> solver;
-    std::vector<int> coarse_nodes;
-    std::string reference_identity, identity;
+    std::vector<int>& coarse_nodes;
+    std::string& reference_identity;
+    std::string identity;
     LodLimits limits;
     InterpolationPolicy policy;
     double patch_residual = 0, constraint_residual = 0;
@@ -35,33 +41,33 @@ LodSpace::LodSpace(TriMesh coarse, RefineOutput reference, double k, int ell,
                    InterpolationPolicy policy, LodLimits limits)
     :LodSpace(std::move(coarse),std::move(reference),k,ell,policy,limits,nullptr){}
 LodSpace::LodSpace(const LodSpace& previous,int ell)
-    :LodSpace(previous.coarse(),previous.impl_->reference,previous.operators().wavenumber,ell,previous.impl_->policy,previous.limits(),&previous){}
+    :LodSpace({}, {},previous.operators().wavenumber,ell,previous.impl_->policy,previous.limits(),&previous){}
 LodSpace::LodSpace(TriMesh coarse,RefineOutput reference,double k,int ell,
                    InterpolationPolicy policy,LodLimits limits,const ComplexSparseMatrix& trial,const ComplexSparseMatrix* reduced)
     :LodSpace(std::move(coarse),std::move(reference),k,ell,policy,limits,nullptr,&trial,reduced){}
 LodSpace::LodSpace(TriMesh coarse,RefineOutput reference,double k,int ell,
-                   InterpolationPolicy policy,LodLimits limits,const LodSpace* reused,const ComplexSparseMatrix* accepted_trial,const ComplexSparseMatrix* accepted_reduced) : impl_(std::make_unique<Impl>()) {
+                   InterpolationPolicy policy,LodLimits limits,const LodSpace* reused,const ComplexSparseMatrix* accepted_trial,const ComplexSparseMatrix* accepted_reduced) : impl_(std::make_unique<Impl>(reused?reused->impl_->hierarchy:std::make_shared<LodHierarchyData>())) {
     auto& p = *impl_;
-    const int nh = reference.mesh.nodes.size(), nH = coarse.nodes.size();
+    const auto& source_reference=reused?reused->impl_->reference:reference;
+    const auto& source_coarse=reused?reused->coarse():coarse;
+    const int nh = source_reference.mesh.nodes.size(), nH = source_coarse.nodes.size();
     if (!std::isfinite(k) || k <= 0 || ell < 1 || ell > 16 || limits.threads < 1
         || limits.maximum_reference_nodes < 1 || nh > limits.maximum_reference_nodes
-        || nH == 0 || nh == 0 || coarse.elems.empty() || reference.mesh.elems.empty()
-        || reference.P_node.rows() != nh || reference.P_node.cols() != nH
-        || reference.P_elem.rows() != static_cast<int>(reference.mesh.elems.size())
-        || reference.P_elem.cols() != static_cast<int>(coarse.elems.size())
+        || nH == 0 || nh == 0 || source_coarse.elems.empty() || source_reference.mesh.elems.empty()
+        || source_reference.P_node.rows() != nh || source_reference.P_node.cols() != nH
+        || source_reference.P_elem.rows() != static_cast<int>(source_reference.mesh.elems.size())
+        || source_reference.P_elem.cols() != static_cast<int>(source_coarse.elems.size())
         || (policy != InterpolationPolicy::ArchivedArithmetic && policy != InterpolationPolicy::ManuscriptAreaWeighted))
         throw std::invalid_argument("invalid LOD hierarchy, policy, parameters or reference resource limit");
-    p.coarse = std::move(coarse); p.reference = std::move(reference); p.limits = limits;p.policy=policy;
+    if(!reused){p.coarse=std::move(coarse);p.reference=std::move(reference);}
+    p.limits=limits;p.policy=policy;
     validate_boundary_tags(p.coarse);validate_boundary_tags(p.reference.mesh);
     if(static_cast<std::size_t>(nh)*nH>limits.maximum_patch_entries)
         throw std::runtime_error("LOD constraint workspace bound exceeds resource limit");
     int column=0;
     {PhaseTimer timing("lod_hierarchy_operators",-1);
     if(reused){
-        const auto& old=*reused->impl_;
-        p.interpolation=old.interpolation;p.coarse_basis=old.coarse_basis;
-        p.coarse_nodes=old.coarse_nodes;p.operators=old.operators;p.energy=old.energy;
-        p.reference_identity=old.reference_identity;column=p.coarse_nodes.size();
+        column=p.coarse_nodes.size();
     }else {
     std::vector<Eigen::Triplet<double>> entries;
     for (int e=0; e<static_cast<int>(p.reference.mesh.elems.size()); ++e)
@@ -115,6 +121,9 @@ LodSpace::LodSpace(TriMesh coarse,RefineOutput reference,double k,int ell,
     const std::vector<Sparse> no_prolongations;
     HelmholtzPatchAssembler assembler(p.coarse,p.reference.mesh,p.reference.P_elem,p.reference.P_dg,
         p.interpolation,patches,no_meshes,no_prolongations,no_prolongations,p.operators);
+    std::vector<std::uint64_t> dependencies;
+    if(limits.patch_cache){PhaseTimer timing("lod_dependency_versions",-1);
+        dependencies=limits.patch_cache->update_dependencies(assembler.dependency_records());}
     std::vector<HelmholtzElementCorrector> correctors(p.coarse.elems.size());
     // Assembly is shared and immutable; independent target factors are thread-local.
     std::vector<double> residuals(correctors.size()), constraints(correctors.size());
@@ -125,18 +134,22 @@ LodSpace::LodSpace(TriMesh coarse,RefineOutput reference,double k,int ell,
 #pragma omp for schedule(dynamic,1)
     for (int target=0;target<static_cast<int>(correctors.size());++target) {
         try {
-            auto system=assembler.assemble(target,false);
-            if (static_cast<std::size_t>(system.constraints.size())>limits.maximum_patch_entries
-                || static_cast<std::size_t>(system.helmholtz.rows())*(system.constraints.rows()+3)>limits.maximum_dense_entries)
+            std::shared_ptr<const HelmholtzPatchSolveResult> saved;std::string cache_key;
+            const bool cacheable=limits.patch_cache&&!dependencies.empty();
+            if(cacheable)cache_key=assembler.dependency_key(target,dependencies);
+            if(cacheable)saved=limits.patch_cache->find_shared(cache_key);
+            const bool hit=static_cast<bool>(saved);
+            // A hit never assembles a local matrix or performs constraint QR.
+            auto system=hit?assembler.geometry(target):assembler.assemble(target,false);
+            const std::size_t local_size=system.local_vertices.size();
+            const std::size_t constraint_rows=hit?saved->multipliers.rows():system.constraints.rows();
+            if (local_size*constraint_rows>limits.maximum_patch_entries
+                || local_size*(constraint_rows+3)>limits.maximum_dense_entries)
                 throw std::runtime_error("LOD patch resource limit exceeded");
-            HelmholtzPatchSolverConfig config; config.symbolic_cache_slots=1;
-            HelmholtzPatchSolveResult solved;std::string cache_key;
-            const bool cacheable=limits.patch_cache&&limits.patch_cache->fits(system);
-            if(cacheable)cache_key=LodPatchCache::key(system,p.reference.mesh);
-            if(!cacheable||!limits.patch_cache->find(cache_key,solved)){
-                solved=solve_helmholtz_patch(system,config);
-            }
-            if(cacheable)limits.patch_cache->insert(std::move(cache_key),solved);
+            if(!hit){HelmholtzPatchSolverConfig config;config.symbolic_cache_slots=1;
+                saved=std::make_shared<HelmholtzPatchSolveResult>(solve_helmholtz_patch(system,config));}
+            if(cacheable)limits.patch_cache->insert_shared(std::move(cache_key),saved);
+            const auto& solved=*saved;
             residuals[target]=std::max(solved.diagnostics.primal_residual,solved.diagnostics.adjoint_residual);
             constraints[target]=solved.diagnostics.constraint_residual;
             for(int row=0;row<solved.corrector.rows();++row)
@@ -190,13 +203,23 @@ LodSolution LodSpace::solve(const ComplexMatrix& loads) {
         || static_cast<std::size_t>(loads.size())>p.limits.maximum_dense_entries)
         throw std::invalid_argument("LOD load dimensions, values or dense resource limit");
     ComplexMatrix rhs=p.test.adjoint()*loads;
-    LodSolution result;result.coefficients=p.solver.solve(rhs);
+    LodSolution result;result.coefficients=solve_reduced(rhs);
     if(p.solver.info()!=Eigen::Success || !result.coefficients.allFinite())throw std::runtime_error("LOD coarse solve failed");
     result.values=p.trial*result.coefficients;
     result.pg_relative_residual=(p.test.adjoint()*(p.operators.system*result.values-loads)).norm()/std::max(1.0,rhs.norm());
     if(result.pg_relative_residual>1e-9)throw std::runtime_error("LOD PG residual gate failed");
     return result;
 }
+ComplexMatrix LodSpace::solve_reduced(const ComplexMatrix& rhs) const {
+    auto& p=*impl_;
+    if(rhs.rows()!=p.reduced.rows()||rhs.cols()<1||!rhs.allFinite()
+        ||static_cast<std::size_t>(rhs.size())>p.limits.maximum_dense_entries)
+        throw std::invalid_argument("reduced RHS dimensions, values or resource limit");
+    ComplexMatrix result=p.solver.solve(rhs);
+    if(p.solver.info()!=Eigen::Success||!result.allFinite())throw std::runtime_error("reduced solve failed");
+    return result;
+}
+std::shared_ptr<const LodHierarchyData> LodSpace::hierarchy()const{return impl_->hierarchy;}
 const TriMesh& LodSpace::coarse()const{return impl_->coarse;}
 const TriMesh& LodSpace::fine()const{return impl_->reference.mesh;}
 const Sparse& LodSpace::prolongation()const{return impl_->reference.P_node;}

@@ -287,15 +287,18 @@ struct AdditiveKernelRieszContext::Impl {
     };
     std::vector<std::unique_ptr<Group>> groups;
     std::vector<KernelRieszPatch> patches;
-    TriMesh mesh;
-    ComplexSparseMatrix system;
-    Eigen::SparseMatrix<double> interpolation;
+    std::shared_ptr<const LodHierarchyData> hierarchy;
+    const TriMesh& mesh;
+    const ComplexSparseMatrix& system;
+    const Eigen::SparseMatrix<double>& interpolation;
+    explicit Impl(std::shared_ptr<const LodHierarchyData> h):hierarchy(std::move(h)),
+        mesh(hierarchy->coarse),system(hierarchy->operators.system),interpolation(hierarchy->interpolation){}
     std::vector<int> dirichlet;
     int full_size = 0, coarse_size = 0, elements = 0, threads = 1;
     std::string identity,policy_name;
     std::size_t dense_limit=0;
     double preparation_seconds = 0.0;
-    std::size_t calls = 0;
+    std::size_t calls = 0,columns = 0;
 
     template<class F> void parallel(F fn) {
         std::exception_ptr failure;
@@ -316,7 +319,7 @@ struct AdditiveKernelRieszContext::Impl {
 
 AdditiveKernelRieszContext::AdditiveKernelRieszContext(
     const LodSpace &space,RieszPatchPolicy policy)
-    : impl_(std::make_unique<Impl>()) {
+    : impl_(std::make_unique<Impl>(space.hierarchy())) {
     const auto start = std::chrono::steady_clock::now();
     auto &p = *impl_;
     const auto& operators=space.operators();
@@ -325,14 +328,11 @@ AdditiveKernelRieszContext::AdditiveKernelRieszContext(
     p.policy_name=policy==RieszPatchPolicy::ManuscriptN2?"manuscript-n2":"archived-support-expanded";
     p.dense_limit=space.limits().maximum_dense_entries;
     p.full_size = operators.system.rows();
-    p.mesh = space.coarse();
     p.coarse_size = space.coarse().nodes.size();
     p.elements = space.coarse().elems.size();
-    p.system = operators.system;
-    p.interpolation = space.interpolation();
     p.dirichlet = operators.dirichlet_nodes;
     p.patches = build_kernel_riesz_patches(space,policy);
-    const auto energy = energy_matrix(operators);
+    const auto& energy = space.energy();
     std::unordered_map<std::string, std::vector<int>> lookup;
     for (const auto &patch : p.patches) {
         if (patch.discrete_dofs.empty()) continue;
@@ -372,6 +372,7 @@ AdditiveKernelRieszContext::AdditiveKernelRieszContext(
         g.energy = restrict_sparse_matrix(energy, g.patch.discrete_dofs);
         const auto &c = g.patch.constraints;
         const int n = g.energy.rows(), m = c.rows();
+        if(m==n)return; // The constrained space is exactly zero; no factor is used.
         g.schur = m <= 256;
         if (g.schur) {
             g.energy_factor.compute(g.energy);
@@ -434,7 +435,7 @@ AdditiveKernelRieszContext::Result AdditiveKernelRieszContext::apply_selected(
     std::size_t local_entries=0;
     for(const auto& g:p.groups)local_entries+=g->patch.discrete_dofs.size()*input.cols();
     if(local_entries>p.dense_limit)throw std::runtime_error("Riesz batch workspace resource limit exceeded");
-    ++p.calls;
+    ++p.calls;p.columns+=input.cols();
     ComplexMatrix rhs = input;
     for (int node : p.dirichlet) rhs.row(node).setZero();
     Result result;
@@ -554,6 +555,7 @@ ResidualRieszBatch AdditiveKernelRieszContext::estimate(
 double AdditiveKernelRieszContext::factorization_seconds() const {return impl_->preparation_seconds;}
 std::size_t AdditiveKernelRieszContext::factorizations() const {return impl_->groups.size();}
 std::size_t AdditiveKernelRieszContext::applications() const {return impl_->calls;}
+std::size_t AdditiveKernelRieszContext::applied_columns() const {return impl_->columns;}
 
 const std::vector<KernelRieszPatch>& AdditiveKernelRieszContext::patches()const{return impl_->patches;}
 const std::string& AdditiveKernelRieszContext::reference_identity()const{return impl_->identity;}

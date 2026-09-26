@@ -63,6 +63,9 @@ int audit_main(int argc,char** argv){try{
     const auto reference_mesh_hash=mesh_fingerprint(audit_mesh),dictionary_hash=matrix_hash(snapshot.phi);
     auto reference_ptr=[&]{PhaseTimer timing("reference_factor",snapshot.cursor.state_id);return std::make_unique<ReferenceFemContext>(operators);}();auto& reference=*reference_ptr;double prepare_seconds=seconds(),load_seconds=0,error_seconds=0,coupled_seconds=0,fresh_seconds=0;
     auto q=paper_quadrature(input.problem);q.base_triangle_order+=quadrature_boost;q.gaussian_triangle_order+=quadrature_boost;q.singular_triangle_order+=quadrature_boost;std::cout<<std::setprecision(17);int completed=0;
+    std::unique_ptr<AuditIntegrationGeometry> integration_geometry;
+    if(!std::getenv("ALOD_REFERENCE_EXECUTION")){PhaseTimer timing("audit_geometry",snapshot.cursor.state_id);
+        integration_geometry=std::make_unique<AuditIntegrationGeometry>(audit_mesh,input.threads);}
     for(int begin=0;begin<static_cast<int>(selected.size());begin+=batch){int count=std::min(batch,static_cast<int>(selected.size())-begin);std::vector<Problem> problems;for(int j=0;j<count;++j)problems.push_back(selected[begin+j].problem);
         double t=seconds();auto loads=[&]{PhaseTimer timing("audit_load",snapshot.cursor.state_id);return assemble_load_batch(audit_mesh,problems,q,input.threads);}();load_seconds+=seconds()-t;
         auto ref=[&]{PhaseTimer timing("reference_solve",snapshot.cursor.state_id);return reference.solve(loads);}();ComplexMatrix values,base;double pg=0;
@@ -83,7 +86,7 @@ int audit_main(int argc,char** argv){try{
         ref_defect.resize(0,0);ref_rhs.resize(0,0);
         if(!afem && refinement_steps)pg=(space->test().adjoint()*(operators.system*values-loads)).norm()/std::max(1e-30,(space->test().adjoint()*loads).norm());
         if(refinement_steps && std::max(pg,audited_reference_residual)>1e-10)throw std::runtime_error("strict refined residual gate failed");
-        t=seconds();auto errors=[&]{PhaseTimer timing("error_integral",snapshot.cursor.state_id);return integrate_audit_batch(audit_mesh,E,values,ref,problems,q,input.threads);}();
+        t=seconds();auto errors=[&]{PhaseTimer timing("error_integral",snapshot.cursor.state_id);return integrate_audit_batch(audit_mesh,E,values,ref,problems,q,input.threads,true,integration_geometry.get());}();
         const auto& floors=errors.reference_error;error_seconds+=seconds()-t;
         PhaseTimer metrics_timer("sample_metrics",snapshot.cursor.state_id);
         for(int j=0;j<count;++j){const auto& member=selected[begin+j];double n=errors.exact_norm[j];auto norm=[&](const ComplexVector& x){return std::sqrt(std::max(0.,x.dot(E.cast<Complex>()*x).real()));};

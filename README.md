@@ -100,3 +100,5 @@ controlled campaign are documented in [the campaign protocol](docs/kappa_campaig
 See [workflow reuse and E1 timing](docs/workflow_reuse.md) for accepted-basis audit reuse, memory lifetime and the 32+32-thread server configuration.
 
 See [five workflow optimizations](docs/five_optimizations.md) for bounded cross-state reuse, shared checkpoint geometry, and portable checkpoint export.
+
+See [structural optimizations and remaining work](docs/structural_optimization.md) for shared state ownership, POD screening, early patch reuse, and the localization eigensolver.

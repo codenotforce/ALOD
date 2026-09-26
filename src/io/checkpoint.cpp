@@ -73,14 +73,19 @@ std::filesystem::path geometry_path(const std::filesystem::path& checkpoint,cons
         throw std::runtime_error("invalid shared checkpoint geometry name");
     return checkpoint.parent_path()/"meshes"/name;
 }
-void write_geometry(Writer& w,const Checkpoint& s){w.u(magic_mesh);w.mesh(s.coarse);w.mesh(s.fine);w.sparse(s.P_node);w.sparse(s.P_elem);w.sparse(s.P_dg);}
+void write_geometry_body(Writer& w,const Checkpoint& s,const CheckpointGeometryView* g){
+    w.mesh(g?g->coarse:s.coarse);w.mesh(g?g->fine:s.fine);
+    w.sparse(g?g->P_node:s.P_node);w.sparse(g?g->P_elem:s.P_elem);w.sparse(g?g->P_dg:s.P_dg);
+}
+void write_geometry(Writer& w,const Checkpoint& s,const CheckpointGeometryView* g){w.u(magic_mesh);write_geometry_body(w,s,g);}
 std::uint64_t finish_read(Reader& r){auto checksum=r.hash;if(r.u()!=checksum||r.remaining)throw std::runtime_error("checkpoint checksum or trailing-data mismatch");return checksum;}
 void verify_geometry(const std::filesystem::path& file,const std::string& name,std::uint64_t cap){
     Reader r(file,cap);if(r.u()!=magic_mesh)throw std::runtime_error("invalid shared geometry format");
     while(r.remaining>8)r.byte();if(geometry_name(finish_read(r))!=name)throw std::runtime_error("shared geometry identity mismatch");
 }
-std::string save_geometry(const std::filesystem::path& directory,const Checkpoint& s){
-    Writer fingerprint;write_geometry(fingerprint,s);const auto name=geometry_name(fingerprint.hash);
+std::string save_geometry(const std::filesystem::path& directory,const Checkpoint& s,const CheckpointGeometryView* g){
+    std::string name=g?g->object_name:"";
+    if(name.empty()){Writer fingerprint;write_geometry(fingerprint,s,g);name=geometry_name(fingerprint.hash);if(g)g->object_name=name;}
     const auto folder=directory/"meshes";std::filesystem::create_directories(folder);
     const auto file=folder/name;
     if(std::filesystem::exists(file)){
@@ -95,7 +100,7 @@ std::string save_geometry(const std::filesystem::path& directory,const Checkpoin
         }
     }
     auto temp=file;temp+=".tmp";
-    {Writer w(temp);write_geometry(w,s);auto checksum=w.hash;w.u(checksum);w.out.flush();if(!w.out)throw std::runtime_error("geometry flush failed");}
+    {Writer w(temp);write_geometry(w,s,g);auto checksum=w.hash;w.u(checksum);w.out.flush();if(!w.out)throw std::runtime_error("geometry flush failed");}
     verify_geometry(temp,name,UINT64_MAX);sync_file(temp);std::filesystem::rename(temp,file);sync_file(folder);return name;
 }
 void atomic_text(const std::filesystem::path& target,const std::string& text){auto temp=target;temp+=".tmp";{std::ofstream out(temp,std::ios::binary);out<<text;out.flush();if(!out)throw std::runtime_error("checkpoint pointer write failed");}sync_file(temp);std::filesystem::rename(temp,target);sync_file(target.parent_path());}
@@ -103,25 +108,25 @@ void atomic_text(const std::filesystem::path& target,const std::string& text){au
 std::uint64_t journal_hash(const std::string& text,std::uint64_t hash){for(unsigned char c:text)hash=(hash^c)*1099511628211ULL;return hash;}
 std::string json_string(const std::string& text){std::ostringstream out;out<<'"';for(unsigned char c:text){if(c=='"'||c=='\\')out<<'\\'<<c;else if(c<32)out<<"\\u"<<std::hex<<std::setw(4)<<std::setfill('0')<<int(c)<<std::dec;else out<<c;}out<<'"';return out.str();}
 std::string matrix_hash(const ComplexMatrix& matrix){FingerprintBuilder hash;hash.add_i64(matrix.rows());hash.add_i64(matrix.cols());for(int j=0;j<matrix.cols();++j)for(int i=0;i<matrix.rows();++i)hash.add_complex(matrix(i,j));return hash.finish();}
-std::string checkpoint_metadata(const Checkpoint& s,bool has_basis,int format){has_basis=has_basis||s.lod_trial.cols();if(!format)format=s.format_version?s.format_version:(has_basis?2:1);std::ostringstream out;out<<"{\"format\":"<<format<<",\"state_id\":"<<s.cursor.state_id<<",\"coarse_cycle\":"<<s.cursor.coarse_cycle<<",\"reference_sweep\":"<<s.cursor.reference_sweep<<",\"phase\":"<<int(s.phase)<<",\"ell\":"<<s.ell<<",\"committed_lines\":"<<s.committed_lines<<",\"journal_hash\":"<<json_string(std::to_string(s.journal_hash))<<",\"journal\":"<<json_string(s.journal)<<",\"mathematics_key\":"<<json_string(s.mathematics_key)<<",\"config\":"<<s.config_json<<",\"members_text\":"<<json_string(s.members_text)<<",\"space_identity\":"<<json_string(s.space_identity)
-        <<",\"coarse_mesh_hash\":"<<json_string(mesh_fingerprint(s.coarse.mesh))<<",\"reference_mesh_hash\":"<<json_string(mesh_fingerprint(s.fine.mesh))
+std::string checkpoint_metadata(const Checkpoint& s,bool has_basis,int format,const CheckpointGeometryView* geometry){has_basis=has_basis||s.lod_trial.cols();if(!format)format=s.format_version?s.format_version:(has_basis?2:1);std::ostringstream out;out<<"{\"format\":"<<format<<",\"state_id\":"<<s.cursor.state_id<<",\"coarse_cycle\":"<<s.cursor.coarse_cycle<<",\"reference_sweep\":"<<s.cursor.reference_sweep<<",\"phase\":"<<int(s.phase)<<",\"ell\":"<<s.ell<<",\"committed_lines\":"<<s.committed_lines<<",\"journal_hash\":"<<json_string(std::to_string(s.journal_hash))<<",\"journal\":"<<json_string(s.journal)<<",\"mathematics_key\":"<<json_string(s.mathematics_key)<<",\"config\":"<<s.config_json<<",\"members_text\":"<<json_string(s.members_text)<<",\"space_identity\":"<<json_string(s.space_identity)
+        <<",\"coarse_mesh_hash\":"<<json_string((geometry?(geometry->coarse_hash.empty()?geometry->coarse_hash=mesh_fingerprint(geometry->coarse.mesh):geometry->coarse_hash):mesh_fingerprint(s.coarse.mesh)))<<",\"reference_mesh_hash\":"<<json_string((geometry?(geometry->fine_hash.empty()?geometry->fine_hash=mesh_fingerprint(geometry->fine.mesh):geometry->fine_hash):mesh_fingerprint(s.fine.mesh)))
         <<",\"kernel_hash\":"<<json_string(matrix_hash(s.raw_kernel))<<",\"dictionary_hash\":"<<json_string(matrix_hash(s.phi))
         <<",\"solution_hash\":"<<json_string(matrix_hash(s.values))<<",\"warm_hash\":"<<json_string(matrix_hash(s.warm_full))
         <<",\"config_hash\":"<<json_string(std::to_string(journal_hash(s.config_json)))<<",\"members_hash\":"<<json_string(std::to_string(journal_hash(s.members_text)))
         <<",\"format_identity\":\"ALOD-checkpoint-le-ieee754-v"<<format<<"\"}";return out.str();}
-std::filesystem::path save_checkpoint(const std::filesystem::path& directory,const Checkpoint& s,const ComplexSparseMatrix* accepted_trial,const ComplexSparseMatrix* accepted_reduced,bool share_geometry){
+std::filesystem::path save_checkpoint(const std::filesystem::path& directory,const Checkpoint& s,const ComplexSparseMatrix* accepted_trial,const ComplexSparseMatrix* accepted_reduced,bool share_geometry,const CheckpointGeometryView* view){
     const auto& basis=accepted_trial?*accepted_trial:s.lod_trial;
     const auto& reduced=accepted_reduced?*accepted_reduced:s.lod_reduced;
     const int format=share_geometry||reduced.cols()?3:(basis.cols()?2:1);
     std::filesystem::create_directories(directory);std::ostringstream name;name<<"state-"<<std::setw(6)<<std::setfill('0')<<s.cursor.state_id<<"-phase-"<<int(s.phase)<<"-ell-"<<s.ell<<".bin";
     auto file=directory/name.str(),temp=file;temp+=".tmp";
     if(std::filesystem::exists(file))throw std::runtime_error("refusing to overwrite an immutable checkpoint");
-    const std::string geometry=share_geometry?save_geometry(directory,s):"";
-    {Writer w(temp);w.u(format==3?magic_shared:basis.cols()?magic_basis:magic);w.str(checkpoint_metadata(s,basis.cols()>0,format));
+    const std::string geometry=share_geometry?save_geometry(directory,s,view):"";
+    {Writer w(temp);w.u(format==3?magic_shared:basis.cols()?magic_basis:magic);w.str(checkpoint_metadata(s,basis.cols()>0,format,view));
         if(format==3){w.str(geometry);w.u(basis.cols()>0);w.u(reduced.cols()>0);}
         w.str(s.mathematics_key);w.str(s.config_json);w.str(s.members_text);w.str(s.space_identity);w.str(s.journal);
         for(int v:{s.cursor.state_id,s.cursor.coarse_cycle,s.cursor.reference_sweep,s.ell,s.last_check,s.next_event,s.revision,int(s.phase),int(s.mesh_changed),int(s.check_pending)})w.u(static_cast<std::uint64_t>(static_cast<std::int64_t>(v)));
-        w.u(s.committed_lines);w.u(s.journal_hash);if(geometry.empty()){w.mesh(s.coarse);w.mesh(s.fine);w.sparse(s.P_node);w.sparse(s.P_elem);w.sparse(s.P_dg);}
+        w.u(s.committed_lines);w.u(s.journal_hash);if(geometry.empty())write_geometry_body(w,s,view);
         for(const auto* m:{&s.raw_kernel,&s.phi,&s.values,&s.warm_full})w.dense(*m);
         w.ints(s.coarse_marks);w.ints(s.reference_marks);w.ints(s.computed_ids);if(basis.cols())w.sparse_complex(basis);if(format==3&&reduced.cols())w.sparse_complex(reduced);auto checksum=w.hash;w.u(checksum);w.out.flush();if(!w.out)throw std::runtime_error("checkpoint flush failed");}
     // Verify in constant memory instead of decoding a second dense snapshot.
