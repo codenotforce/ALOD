@@ -23,6 +23,7 @@ struct LodLimits {
     std::size_t maximum_patch_entries = 8000000;
     std::size_t maximum_dense_entries = 8000000;
     int threads = omp_get_max_threads();
+    bool parallel_riesz_gather = true;
     std::shared_ptr<LodPatchCache> patch_cache;
     std::shared_ptr<LocalFactorCache> riesz_cache;
 };

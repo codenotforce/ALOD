@@ -1,9 +1,10 @@
 # Revised policies and the E1 wavenumber campaign
 
+**Historical recipe — not the current production launcher.** This page records the September 12 four-wavenumber protocol. Use [the ordered production protocol](production_campaign_20260927.md) and `tools/make_production_campaign.py` for new E1/E2/E3 runs. The old `make_kappa_campaign.py` reads mutable current presets while retaining old metadata; it is not a frozen replay tool and must not be used to claim reproduction of this protocol. The policies and limits below describe the original design only.
+
 Version 4 update (2026-09-22): see [the current implementation review](paper_v4_review.md). Numerical policies and performance statements below describe their original migration stage unless explicitly updated.
 
-This campaign uses the migrated manuscript algorithms. Its trajectories are new
-experiments, not reproductions of the archived production values.
+The original campaign proposed new manuscript-mode trajectories rather than reproductions of archived values. References below to main presets describe their September 12 versions, not their current contents.
 
 ## Mathematical policies
 
@@ -102,8 +103,9 @@ cap 24, theta_H=0.15, global strong-residual candidate marking theta_c=0.2 and
 one reference sweep. E1 retains its lazy threshold 1.2 and reference sweeps
 [0.3,0.2]. The exact JSON files are authoritative.
 
-Each active job receives 16 disjoint physical cores, OpenMP binding disabled
-within that allowed set, and one BLAS thread. At most three jobs run together.
+The historical scheduling design assigned 16 disjoint physical cores and one
+BLAS thread per job, with at most three jobs. Current launchers do not apply that
+affinity policy; use the current production protocol for thread/resource settings.
 Admission reserves 80 GiB; a live guard terminates a job if available memory
 falls below 64 GiB, its process-group RSS exceeds its reservation (112 GiB for
 adaptive jobs; 48 GiB SLOD; 32 GiB FEM), or free disk drops below 35 GiB.
@@ -116,7 +118,11 @@ ceiling remains 64 million entries. Raising the former avoids rejecting sparse
 hierarchies merely because reference nodes times coarse nodes is large. The
 entry parser uses a 64-bit value; this does not allocate a matrix of that size.
 
-## Reproduction and later analysis
+## Historical preparation sequence (not a current launch recipe)
+
+The sequence below records the original design. Reproduction requires its frozen
+source and configurations; executing the old generator against current presets
+is not equivalent. For new experiments use `tools/make_production_campaign.py`.
 
 1. Build and run CTest, including `variable_wavenumber`.
 2. Generate configuration and measured geometry using

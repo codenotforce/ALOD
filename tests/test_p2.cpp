@@ -21,6 +21,8 @@ void run(const std::string& id,bool graded) {
     for(int i=0;i<n;++i)for(int j=0;j<3;++j)residual(i,j)=Complex(std::sin((i+1)*(j+1)),std::cos((i+1)*(j+2)));
     for(int node:space.operators().dirichlet_nodes)residual.row(node).setZero();
     auto actual=riesz.apply(residual);
+    require((riesz.apply_action(residual)-actual.values).norm()<1e-12,
+            "action-only Riesz changed the additive inverse");
     ComplexMatrix map=ComplexMatrix::Zero(n,n);
     Eigen::MatrixXd local_mass=Eigen::MatrixXd::Zero(coarse.nodes.size(),3);
     require(riesz.patches().size()==coarse.nodes.size(),"geometric boundary vertices omitted");

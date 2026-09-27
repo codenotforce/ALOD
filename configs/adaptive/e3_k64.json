@@ -42,8 +42,9 @@
   "ell_ratio_mode": "solution_scaled",
   "ell_threshold": 0.3,
   "enrichment_tests": "kernel_lift",
-  "ell_absolute_threshold": 0.2,
+  "ell_absolute_threshold": 0.05,
   "exact_target": 0.01,
   "exact_scope": "nominal",
-  "audit_mode": "exact"
+  "audit_mode": "exact",
+  "checkpoint_interval_cycles": 5
 }

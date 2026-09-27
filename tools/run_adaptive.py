@@ -15,7 +15,7 @@ from checkpoint_io import atomic_text, digest, inspect, recover_journal, validat
 from run_fixed import DEFAULT as FIXED, validate as validate_fixed, write_members, member_text
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT = dict(FIXED, exact_target=-1., exact_scope="nominal", audit_mode="full", method="ALOD", cycles=1, m_ref=2, state_limit=0,
+DEFAULT = dict(FIXED, checkpoint_interval_cycles=0, exact_target=-1., exact_scope="nominal", audit_mode="full", method="ALOD", cycles=1, m_ref=2, state_limit=0,
                minimum_gap=2, reference_theta=[0.3, 0.2], ell_mode="lazy",
                ell_ratio_mode="raw", ell_threshold=0., ell_absolute_threshold=-1., enrichment_tests="kernel_lift",
                maximum_ell=4, extra_checks=[], force_promotions=[],
@@ -44,7 +44,7 @@ def validate(config):
         raise ValueError("invalid maximum_nodes")
     fixed["maximum_nodes"] = min(cap, 200000)
     rows = validate_fixed(fixed)
-    for key, lo, hi in [("cycles", 0, 1000), ("m_ref", 1, 16), ("state_limit", 0, 10001),
+    for key, lo, hi in [("cycles", 0, 1000), ("checkpoint_interval_cycles", 0, 1000), ("m_ref", 1, 16), ("state_limit", 0, 10001),
                         ("minimum_gap", 0, 8), ("rank_cap", 1, 24),
                         ("maximum_ell", config["ell"], 4),
                         ("maximum_patch_entries", 1, 64000000000),
@@ -104,12 +104,21 @@ def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=N
     if type(audit_drain_workers) is not int or audit_drain_workers<audit_workers:raise ValueError("audit drain workers must be at least active workers")
     metadata = None
     startup_recovery=False
-    if str(resume)=="auto" and not list((output/'checkpoints').rglob('*.bin')):
+    if str(resume)=="auto" and not list((output/'checkpoints').glob('state-*-phase-*-ell-*.bin')):
         previous=json.loads((output/'run.json').read_text())
         validate_resume_config(previous['config'],config)
         if (output/'members.txt').read_text()!=member_text(rows):raise ValueError("startup recovery member table mismatch")
         log=output/'solver.jsonl'
-        if log.exists() and log.stat().st_size:raise ValueError("nonempty numerical journal without a checkpoint")
+        if log.exists() and log.stat().st_size:
+            if not config['checkpoint_interval_cycles']:raise ValueError("nonempty numerical journal without a checkpoint")
+            from checkpoint_io import quarantine_snapshot_tail
+            quarantine_snapshot_tail(output,None)
+            recovery=output/'recovery';recovery.mkdir(exist_ok=True)
+            old=recovery/f'solver-before-first-checkpoint-{time.time_ns()}.jsonl'
+            log.replace(old)
+        elif config['checkpoint_interval_cycles']:
+            from checkpoint_io import quarantine_snapshot_tail
+            quarantine_snapshot_tail(output,None)
         startup_recovery=True;resume=None
     if resume is not None:
         if str(resume)=="auto":
@@ -122,6 +131,9 @@ def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=N
         if not output.is_dir():
             raise ValueError("resume requires the original run directory and its committed journal")
         recover_journal(output/"solver.jsonl", metadata)
+        if config['checkpoint_interval_cycles']:
+            from checkpoint_io import quarantine_snapshot_tail
+            quarantine_snapshot_tail(output,metadata)
     elif not startup_recovery:
         output.mkdir(parents=True, exist_ok=False)
     if pause_state is not None and (type(pause_state) is not int or pause_state < 0 or pause_phase not in ("accepted", "training", "ell")):
@@ -132,7 +144,7 @@ def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=N
     manifest = dict(config=config, table_sha256=sha(table), executable_sha256=sha(executable),
                     status="running", scope="P5 checkpointed adaptive trajectory", solver_completed=False, validation_passed=False, audit_complete=False, paper_complete=False)
     mathematical = {key:value for key,value in config.items() if key not in
-                    ('cycles','state_limit','maximum_nodes','maximum_patch_entries','maximum_dense_entries','threads','audit','audit_mode','emit_solution')}
+                    ('cycles','state_limit','maximum_nodes','maximum_patch_entries','maximum_dense_entries','threads','audit','audit_mode','emit_solution','checkpoint_interval_cycles')}
     manifest['experiment_id'] = hashlib.sha256((json.dumps(mathematical,sort_keys=True)+member_text(rows)).encode()).hexdigest()[:24]
     from runtime_provenance import provenance
     manifest['provenance'] = provenance(executable)
@@ -231,6 +243,7 @@ def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=N
         manifest['audit_drain_workers']=audit_drain_workers
         manifest['audit_execution']='shared_memory_and_persistent_workers' if shared_endpoint else 'persistent_checkpoint_workers'
         manifest['checkpoint_bytes'] = sum(path.stat().st_size for path in (output/'checkpoints').rglob('*.bin'))
+        manifest['audit_snapshot_bytes'] = sum(path.stat().st_size for path in (output/'audit_snapshots').rglob('*.bin'))
         from export_results import export
         try:
             manifest["canonical_tables"] = export(output)

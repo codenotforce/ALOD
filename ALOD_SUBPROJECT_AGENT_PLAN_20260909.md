@@ -693,3 +693,68 @@ Implemented resumable exact-relative-error target termination (nominal or traini
 Source/mass integrals and analytic exact jets can now survive local refinement on unchanged physical triangles. Numerical solution values are never reused as error integrands after a state change. Checkpoint mesh serialization, verification and durable publication overlap state preparation in a bounded background task; dense payload publication and commit-before-journal semantics remain synchronous. See `docs/scientific_workflow.md` for controls and remaining limits.
 
 Full new-binary E1/E2/E3 campaigns, high-k late-state memory/failure tests, and fully asynchronous dense checkpoint payloads remain deferred. A regenerated historical paper package is not evidence that those production campaigns were rerun.
+
+### 2026-09-27: ordered production deployment and periodic restart points
+
+At the user's request, gamma calibration is cancelled and production uses the prescribed rule tau(k)=3.2/k for k=8,16,32,64,128. E1/E2 are extended to 28 cycles. The deployment order is E1 -> E2 -> E3 k=32 -> E3 k=64 -> parallel E3 k=8,16,128, with 32 adaptive threads and one 32-thread auditor per job, including audit drain. E3 retains its existing 1% exact target and bounded state horizons.
+
+Implemented five-cycle restart retention plus a final accepted checkpoint, separate all-state audit snapshots, interval rollback and pre-first-checkpoint replay, and dependency-aware campaign admission. Per-state audit inputs remain on disk for fallback and offline diagnostics; this is not a claim that all per-state I/O was removed. Numerical completion, audit completion and the pending large-run performance/scientific conclusions remain separate. See `docs/production_campaign_20260927.md` for the deployment and recovery contract.
+
+### 2026-09-27: E2/E3 redeployment
+
+E1 completed all 28 cycles and 57 state audits. The original E2 adaptive trajectory
+completed, but four late full audits failed in reference FEM factorization.
+The reference auditor now uses 64-bit UMFPACK indices and METIS ordering; a full
+nominal-member audit of the previously failing final state passed the existing
+validation gates. Checkpoint/audit and dependency regression tests also passed.
+This validates the selected final state, not yet the full replacement campaign.
+
+At the user's request, E2 is rerun from the beginning with its full asynchronous
+audit. The revised E3 order is parallel k=8/16, followed by k=32, k=64 and k=128
+sequentially. Original outputs are retained. Thread counts, thresholds, targets
+and five-cycle/final checkpoint retention remain unchanged. Completion of this
+replacement E2/E3 campaign and its scientific assessment remain pending.
+
+### 2026-09-27: localization operator reuse
+
+Theta now reuses Ritz/search-direction operator images and uses an action-only
+Riesz interface. It recomputes the original residual before accepting cached
+convergence. The 1e-9 tolerance and lazy promotion policy are unchanged. The
+full Riesz estimator remains available for training, marking and diagnostics.
+Independent operator/eigenvalue comparisons and short E1/E2 promotion/resume
+tests passed. An offline paired benchmark uses the final E1 checkpoint; this
+does not rerun the full trajectory or replace the active E2/E3 executable.
+See `docs/theta_optimization.md` for the implementation and validation scope.
+
+
+### 2026-09-27: bounded within-state asynchronous execution
+
+Implemented overlapping load/LOD preparation and scheduled Theta/training work
+with shared immutable Riesz factors, private workspaces, atomic counters and
+explicit promotion barriers. Added a persistent bounded audit quadrature lane,
+ordered results, memory-budget fallback, scoped OpenMP budgets and detailed
+Theta/wait timing. Added E1/E2 serial/async, resume, full/exact audit and execution
+lifetime regressions. See `docs/async_execution.md`. Existing production runs
+remain on their frozen binaries; campaign-scale speedup requires later measurement.
+
+
+### 2026-09-28: localization sparse products and patch-local fusion
+
+Implemented row-owned parallel defect products and an optional patch-local
+fused `D* R_AS D` operator. Both reuse immutable kernel factors and the shared
+constrained-solve implementation. Final Ritz convergence is checked with the
+global operator path at the unchanged tolerance. Added deterministic gather,
+resource/lifetime checks, iteration/storage timing, and fused/global regression
+coverage. The final k=128 checkpoint action probe favors parallel global
+execution (2.287 s) over fusion (4.901 s) and the earlier global path (8.703 s),
+so parallel global execution is the default. Full same-checkpoint cold-start
+validation is separate from production results; see `docs/theta_fused_operator.md`.
+
+
+### 2026-09-28: deterministic Riesz gather and checkpoint validation
+
+- Completed the independent final-state cold-start comparison: image reuse and lightweight Riesz took 660.786 s; parallel sparse products took 218.433 s, with identical 70-iteration convergence and residual below 1e-9.
+- Added a bounded inverse incidence map for parallel, row-owned Riesz gathers; preserve original contribution order, multiplicities and regional masks, with a serial fallback when the map exceeds its memory budget.
+- Added serial-versus-parallel regional/full estimator checks. Validate the final gather path on the same checkpoint separately from the completed production campaign.
+
+- Final validation completed: parallel products plus gather took 188.741 s (3.50x versus 660.786 s), with identical Theta, 70 iterations and 8.99322e-10 residual. Gather took 2.596 s cumulatively; all eight targeted tests passed. Production experiment outputs remain unchanged.

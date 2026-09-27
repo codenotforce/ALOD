@@ -11,8 +11,10 @@ def main():
  config_path=a.campaign/j['config'];config=json.loads(config_path.read_text());folder=a.campaign/'runs'/a.name
  if j['kind']=='baseline':
   subprocess.run([sys.executable,str(ROOT/'tools/run_baseline.py'),'--config',str(config_path),'--output',str(folder),'--executable',str(a.build/'alod_run')],check=True);return
- result=run(config,folder,a.build/'alod_run',timeout=30*86400,resume='auto' if folder.exists() else None)
- if not result['solver_completed'] or not result['audit_complete']:raise RuntimeError('trajectory or independent audit incomplete')
+ result=run(config,folder,a.build/'alod_run',timeout=30*86400,resume='auto' if folder.exists() else None,
+            audit_workers=j.get('audit_workers',1),audit_threads=j.get('audit_threads'),
+            audit_drain_workers=j.get('audit_drain_workers'))
+ if result['status']!='complete' or not result['solver_completed'] or not result['audit_complete']:raise RuntimeError('trajectory, audit or export incomplete')
  if config['problem']=='E1' and config['wavenumber'] in definition['ell_diagnostic_kappa']:
   states=[json.loads(l) for l in (folder/'solver.jsonl').read_text().splitlines() if json.loads(l)['kind']=='accepted']
   samples={}

@@ -2,11 +2,13 @@
 
 ALOD is an independent C++20 migration of the E1/E2 Helmholtz experiments. It provides mixed-boundary P1 FEM, NVB meshes, AFEM/UFEM/SLOD baselines, adaptive two-sided LOD, explicit family marking, reference sweeps, regional AS/POD enrichment, dictionary inheritance and lazy localization checks.
 
-P0 source discovery and old-program replays are recorded in [the P0 evidence](docs/provenance/p0/README.md). P1-P6 implementation and bounded validation are summarized in [migration status](docs/migration_status.md). The [migration plan](ALOD_SUBPROJECT_AGENT_PLAN_20260909.md) tracks the completed checkpoint/performance work and the remaining integration and full production work.
+For the current module boundaries and a file-by-file inventory, see [project structure](docs/project_structure.md). The [2026-09-28 source/documentation audit](docs/project_audit_20260928.md) records the documentation corrections and remaining historical-tool cleanup. Dated migration measurements remain evidence for their own binaries.
 
-Version 4 now uses kernel-lifted enrichment tests and normalized lazy localization in the current paper presets. See [the version 4 review](docs/paper_v4_review.md) for the implemented changes, historical compatibility and remaining work. Supplied September result packages are evidence; full campaigns have not been rerun in this checkout.
+P0 source discovery and old-program replays are recorded in [the P0 evidence](docs/provenance/p0/README.md). P1-P6 implementation and bounded validation are summarized in [migration status](docs/migration_status.md). The [migration plan](ALOD_SUBPROJECT_AGENT_PLAN_20260909.md) preserves the chronological implementation and acceptance history; the latest status below supersedes early pending lists.
 
-Current execution supports a manual lazy absolute-defect gate, concurrent audits through the same numerical executable, automatic checkpoint recovery, and unpinned runtime-selected threads. See [execution and recovery](docs/async_execution.md).
+Version 4 now uses kernel-lifted enrichment tests and normalized lazy localization in the current paper presets. See [the version 4 review](docs/paper_v4_review.md) for the implemented changes, historical compatibility and remaining work. The September 27 production deployments completed E1/E2 at 28 cycles (57 accepted states each) and E3 at k=8,16,32,64,128, including their audits. These runs used frozen deployed sources. Later Theta and asynchronous changes have separate bounded/checkpoint validation; they have not all been rerun through the full campaign. Supplied historical controls remain labelled historical.
+
+Current execution supports a manual lazy absolute-defect gate, concurrent audits through the same numerical executable, automatic checkpoint recovery, and unpinned runtime-selected threads. See [execution and recovery](docs/async_execution.md). The localization eigencheck uses cached operator images, parallel sparse products and deterministic Riesz gathers; see [operator mathematics and benchmark modes](docs/theta_fused_operator.md).
 
 Current Linux runs also support bounded shared-memory audit snapshots, resident audit workers, exact cross-state local reuse and reduced-coordinate training. See [deep reuse and audit ownership](docs/deep_reuse.md) for defaults, fallback modes and validation.
 
@@ -59,7 +61,7 @@ python3 tools/run_adaptive.py --config configs/adaptive/e1_smoke.json --output r
 python3 tools/run_adaptive.py --config configs/adaptive/e2_smoke.json --output results/e2-adaptive
 ```
 
-[P3/P4 documentation](docs/p3_p4.md) describes the state machine, all presets and deferred experiments. Current main presets use normalized `max(norm_k(U_nom), 1e-12) * Theta/eta_H > 0.3`; the old raw E2 threshold 0.1 is retained only for historical configurations. E1 fixed-ell nominal/family ALOD and AFEM controls use the same 48 members. Full current 51-state E1/E2 and historical 51/97/33-state control campaigns and long lazy/every comparisons remain pending P8. The E2 cold-start recurrence follows the plan and differs from the archive; its regression report distinguishes numerical proximity from equality.
+[P3/P4 documentation](docs/p3_p4.md) describes the state machine, all presets and deferred experiments. Current main presets use normalized `max(norm_k(U_nom), 1e-12) * Theta/eta_H > 0.3`; the old raw E2 threshold 0.1 is retained only for historical configurations. E1 fixed-ell nominal/family ALOD and AFEM controls use the same 48 members. The current 28-cycle E1/E2 main runs are complete on their recorded deployment. New-binary family/nominal controls and full lazy/every or inherit/reset comparison campaigns remain separate validation work. The E2 cold-start recurrence follows the plan and differs from the archive; its regression report distinguishes numerical proximity from equality.
 
 ## Resume and audit
 
@@ -69,9 +71,13 @@ python3 tools/run_adaptive.py --config configs/adaptive/e1_smoke.json --output r
 python3 tools/run_audit.py --checkpoint results/e1-restart/checkpoints/latest --output results/e1-audit --batch-size 8
 ```
 
-Every accepted state has an immutable checkpoint containing both meshes, the
-raw kernel/dictionary, solutions, counters, warm starts and the frozen sample
-table. Audits run concurrently in background processes of the same executable, without replaying the adaptive prefix.
+Current production presets retain restart checkpoints every five completed
+cycles and at the final accepted state. Every accepted state still supplies an
+immutable audit snapshot containing both meshes, the raw kernel/dictionary,
+solutions, counters, warm starts and the frozen sample table. Periodic restart
+points reuse those files without another serialization. The compatibility
+setting `checkpoint_interval_cycles=0` retains the earlier every-boundary policy.
+Audits run concurrently through the same executable without replaying the adaptive prefix.
 Optional E2 `--fresh` and `--pure` diagnostics do not change the saved state.
 Canonical CSV tables use external hashed marking sets; solver, validation,
 audit and paper-data completion have separate status flags. See [P5/P6](docs/p5_p6.md)
@@ -96,8 +102,7 @@ Rebuilding old-source references is an explicit developer action, never part of 
 
 Remote repository: [codenotforce/ALOD](https://github.com/codenotforce/ALOD).
 
-The revised runtime policies, E2 lazy production preset, and four-wavenumber
-controlled campaign are documented in [the campaign protocol](docs/kappa_campaign_20260912.md).
+The [September 12 four-wavenumber protocol](docs/kappa_campaign_20260912.md) is a historical recipe. For new ordered E1/E2/E3 deployments, use `tools/make_production_campaign.py` and [the current production protocol](docs/production_campaign_20260927.md).
 
 See [workflow reuse and E1 timing](docs/workflow_reuse.md) for accepted-basis audit reuse, memory lifetime and the 32+32-thread server configuration.
 
@@ -110,3 +115,10 @@ See [audit scheduling, training updates, and global solve inventory](docs/async_
 Scientific workflow additions: [exact targets, lightweight audits, diagnostics, current-paper delivery and incremental I/O/integration](docs/scientific_workflow.md).
 
 See [the code structure review and tuned plot conventions](docs/code_structure_review.md) for module boundaries and maintenance notes.
+
+See [fine-grid stability calibration](docs/stability_calibration.md) for the
+inf-sup diagnostic and experimental localization-threshold scaling.
+
+See [the ordered production campaign](docs/production_campaign_20260927.md) for
+the requested inverse-wavenumber thresholds, 28-cycle E1/E2 runs, 32+32 threads,
+E3 dependency barriers and five-cycle restart policy.

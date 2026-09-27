@@ -3,6 +3,7 @@
 #include "alod/afem.hpp"
 
 namespace alod {
+class KernelDefectOperator;
 enum class RieszPatchPolicy { ManuscriptN2, ArchivedSupportExpanded };
 struct KernelRieszPatch {
     int coarse_node = -1;
@@ -31,7 +32,11 @@ public:
     ~AdditiveKernelRieszContext();
     AdditiveKernelRieszContext(const AdditiveKernelRieszContext&) = delete;
     AdditiveKernelRieszContext& operator=(const AdditiveKernelRieszContext&) = delete;
+    // Concurrent applications share immutable factors; workspaces are call-local
+    // and usage counters atomic. Construction/destruction still require ownership.
     Result apply(const ComplexMatrix& residual);
+    // Same additive kernel inverse, without estimator/diagnostic side products.
+    ComplexMatrix apply_action(const ComplexMatrix& residual);
     Result apply_selected(const ComplexMatrix& residual,const std::vector<int>& mask,bool full_estimator=false);
     ResidualRieszBatch estimate(const ComplexMatrix& loads,const ComplexMatrix& values,double theta);
     std::vector<int> regional_mask(double radius) const;
@@ -43,6 +48,8 @@ public:
     std::size_t applications() const;
     std::size_t applied_columns() const;
 private:
+    friend class KernelDefectOperator;
+    Result apply_impl(const ComplexMatrix&,const std::vector<int>&,bool,bool);
     struct Impl;
     std::unique_ptr<Impl> impl_;
 };

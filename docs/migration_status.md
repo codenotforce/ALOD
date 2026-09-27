@@ -1,16 +1,20 @@
 # Migration status
 
-2026-09-27 follow-up: [scientific workflows](scientific_workflow.md) implement exact-target termination, exact-only auditing, the offline diagnostic menu and version 4 figure/table delivery. Incremental integration and background checkpoint geometry preparation are also available. Full new-binary campaigns remain deferred.
+**Current status, 2026-09-28.** E1/E2 production completed 28 cycles and 57 accepted states each; E3 k=8,16,32,64,128 completed with their audits. These are frozen-deployment results, not a full campaign of every later optimization. Exact targets, exact-only audits, scientific diagnostics, paper delivery, cross-state reuse, resident/shared audit workers, incremental integration and background geometry preparation are implemented. See [current production](production_campaign_20260927.md), [scientific workflows](scientific_workflow.md), [execution](async_execution.md) and [Theta optimization](theta_fused_operator.md).
+
+The stage-by-stage account below preserves what was implemented and measured at each migration stage. Its old pending lists are historical, not the current backlog.
+
+2026-09-27 follow-up: [scientific workflows](scientific_workflow.md) implement exact-target termination, exact-only auditing, the offline diagnostic menu and version 4 figure/table delivery. Incremental integration and background checkpoint geometry preparation are also available. That update did not itself validate a full new-binary campaign; the completed production and later-optimization distinction is stated above.
 
 Current follow-up: [cross-state reuse, coordinate training and shared asynchronous audits](deep_reuse.md). This update supersedes earlier pending statements about local factor reuse, intermediate fine-grid training vectors and resident/shared audit execution. Full production validation remains separate.
 
 Version 4 update (2026-09-22): see [the current implementation review](paper_v4_review.md). Numerical policies and performance statements below describe their original migration stage unless explicitly updated.
 
-Updated: 2026-09-12. **P0-P6 implementation and bounded acceptance are complete.** Full production experiments remain deferred to P8; P7-P9 remain open. Historical full campaigns remain imported evidence; this repository has not generated new 51-state E1 or 33-state E2 production trajectories.
+**Historical status at 2026-09-12:** P0-P6 implementation and bounded acceptance were complete; production experiments and later acceptance were then deferred. At that stage only imported full trajectories were available. Subsequent production completion is recorded above.
 
 ## P0: source discovery and old replay
 
-- Verified the 58 originally cited evidence items and froze the current manuscript inventory (seven figures, eight tables), configurations, source differences, sample roles and canonical audits.
+- Verified the 58 originally cited evidence items and froze the then-current manuscript inventory (seven figures, eight tables; the later v4 inventory has five figures/five tables), configurations, source differences, sample roles and canonical audits.
 - Recovered the actual archived E1 production source and verified runner, workflow, executable and static-library hashes against production checksums. E2 uses its accepted production snapshot, including the selected-value kernel API absent from the main legacy worktree.
 - Rebuilt both old programs from source without reusing old libraries. E1 completed the historically validated 27-state H2/h4 smoke; its 170 sampled family rows and 120 coarse-mark entries agree with the archive. E2 completed two H6/h10 states; all 100 accepted audit rows agree with the archived prefix. Tolerance is 1e-12 + 1e-8*abs(expected); identities and marks are exact.
 - Recorded resource-only replay patches, effective configurations, build-hash/environment branch inventories, source hashes, compiler/link commands, actual linked archive members and dependency-version evidence. Historical package locking was not archived; observed host versions are labelled by date.
@@ -45,7 +49,7 @@ See `p2.md` and `provenance/p2_validation.json` for the acceptance evidence, lim
 
 ## Reproducibility limits
 
-P3/P4 add the unified reference-sweep controller, E1 fixed/lazy policies and four explicit 48-member controls, E2 regional budget/POD/inheritance, cached AOT factors and every-state/lazy ell policies. E2 lazy reuses E1's timing only and retains the 0.1 threshold. Short tests cover full/partial cycles, same-state promotion and mathematical invariants. The E1 prefix agrees across an ell promotion. E2 target/Theta equality and corrected-training numerical proximity are separate checks. See [P3/P4](p3_p4.md) and `provenance/p34_validation.json` for scope, evidence and pending campaigns.
+P3/P4 add the unified reference-sweep controller, E1 fixed/lazy policies and four explicit 48-member controls, E2 regional budget/POD/inheritance, cached AOT factors and every-state/lazy ell policies. At that migration stage, E2 lazy reused E1's timing and retained the raw 0.1 threshold. Current main presets instead use normalized 0.3 plus the manual absolute gate; see the production protocol. Short tests cover full/partial cycles, same-state promotion and mathematical invariants. The E1 prefix agrees across an ell promotion. E2 target/Theta equality and corrected-training numerical proximity are separate checks. See [P3/P4](p3_p4.md) and `provenance/p34_validation.json` for scope, evidence and pending campaigns.
 
 Native vectorization changes the ordering of nearly equal indicators on an E1 symmetric coarse mesh. `provenance/p1_floating_point_sensitivity.json` records the first observed difference. Matching compiler flags give exact old/new agreement; arbitrary cross-architecture adaptive trajectory identity is not claimed. The original comparison rule remains unchanged, with no new tie tolerance.
 
@@ -83,12 +87,12 @@ forward/adjoint factor variants remain measured candidates. No complete
 trajectory speedup or 32-thread gain is inferred. Evidence and numerical limits
 are in `provenance/p56_validation.json`.
 
-## Next phases
+## Historical phase plan and current remaining acceptance
 
 | Phase | Remaining work |
 |---|---|
-| P7 | Broader integration, resource-failure supervision, portable result packages, optional diagnostic coverage and late-state allocation/timing attribution |
-| P8 | E1 main and all four controls; E2 every/lazy and inherit/reset campaigns; complete audits and reproducible paper figures/tables |
+| P7 | Workflow, diagnostics and portable delivery are implemented; sustained resource/failure coverage and broader late-state attribution remain validation work. |
+| P8 | Main E1/E2 and five-k E3 production/audits are complete on recorded deployments. New-binary controls, policy-comparison campaigns and full reruns after subsequent optimization remain separate. |
 | P9 | Final release documentation and full publication acceptance |
 
 Read this file, the implementation map, source manifest and phase plan before continuing. Do not replace accepted-source headers with main-worktree versions, infer new performance from historical timing, or overwrite regression fixtures to hide a failed comparison.

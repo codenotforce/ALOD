@@ -1,4 +1,6 @@
 #include "alod/estimator.hpp"
+#include "riesz_internal.hpp"
+#include "alod/execution.hpp"
 #include "alod/local_factor_cache.hpp"
 #include <bit>
 #include "../lod/fingerprint.hpp"
@@ -276,52 +278,6 @@ std::vector<KernelRieszPatch> build_kernel_riesz_patches(const LodSpace& space,R
     return patches;
 }
 } // namespace
-// Batched Schur/saddle implementation extracted from the archived E2 production source.
-struct AdditiveKernelRieszContext::Impl {
-    struct Factors {
-        Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> energy_factor;
-        Eigen::MatrixXd inverse_constraints;
-        Eigen::LDLT<Eigen::MatrixXd> schur_factor;
-        Eigen::SparseLU<ComplexSparseMatrix> saddle_factor;
-        bool schur = true;
-    };
-    struct Group {
-        KernelRieszPatch patch;
-        std::vector<int> nodes;
-        Eigen::SparseMatrix<double> energy;
-        std::shared_ptr<Factors> factors;
-    };
-    std::vector<std::unique_ptr<Group>> groups;
-    std::vector<KernelRieszPatch> patches;
-    std::shared_ptr<const LodHierarchyData> hierarchy;
-    const TriMesh& mesh;
-    const ComplexSparseMatrix& system;
-    const Eigen::SparseMatrix<double>& interpolation;
-    explicit Impl(std::shared_ptr<const LodHierarchyData> h):hierarchy(std::move(h)),
-        mesh(hierarchy->coarse),system(hierarchy->operators.system),interpolation(hierarchy->interpolation){}
-    std::vector<int> dirichlet;
-    int full_size = 0, coarse_size = 0, elements = 0, threads = 1;
-    std::string identity,policy_name;
-    std::size_t dense_limit=0;
-    double preparation_seconds = 0.0;
-    std::size_t calls = 0,columns = 0;
-
-    template<class F> void parallel(F fn) {
-        std::exception_ptr failure;
-        std::mutex mutex;
-#ifdef _OPENMP
-        #pragma omp parallel for schedule(dynamic, 1) num_threads(threads)
-#endif
-        for (int i = 0; i < static_cast<int>(groups.size()); ++i) {
-            try { fn(i); }
-            catch (...) {
-                std::lock_guard<std::mutex> lock(mutex);
-                if (!failure) failure = std::current_exception();
-            }
-        }
-        if (failure) std::rethrow_exception(failure);
-    }
-};
 
 AdditiveKernelRieszContext::AdditiveKernelRieszContext(
     const LodSpace &space,RieszPatchPolicy policy)
@@ -369,7 +325,7 @@ AdditiveKernelRieszContext::AdditiveKernelRieszContext(
         p.groups[found]->nodes.push_back(patch.coarse_node);
     }
 #ifdef _OPENMP
-    p.threads = omp_get_max_threads();
+    p.threads = maximum_threads>0?maximum_threads:omp_get_max_threads();
 #endif
     if (maximum_threads > 0) p.threads = std::min(p.threads, maximum_threads);
     p.threads = std::max(1, std::min(p.threads, static_cast<int>(p.groups.size())));
@@ -423,6 +379,25 @@ AdditiveKernelRieszContext::AdditiveKernelRieszContext(
             space.limits().riesz_cache->insert(std::move(key),g.factors,bytes);
         }
     });
+    // An optional inverse incidence map turns overlapping scatter writes into
+    // row-owned gathers. Admission is bounded; large maps keep the serial path.
+    std::size_t incidence=0;
+    for(const auto& group:p.groups)incidence+=group->patch.discrete_dofs.size();
+    const std::size_t gather_bytes=(std::size_t(p.full_size)+1)*sizeof(std::size_t)
+        +incidence*sizeof(std::pair<int,int>);
+    if(space.limits().parallel_riesz_gather&&p.threads>1
+       &&gather_bytes<=std::min<std::size_t>(512ULL*1024*1024,p.dense_limit*sizeof(Complex))){
+        PhaseTimer timer("riesz_gather_prepare",-1);
+        p.gather_offsets.assign(p.full_size+1,0);
+        for(const auto& group:p.groups)for(int row:group->patch.discrete_dofs)++p.gather_offsets[row+1];
+        for(int row=0;row<p.full_size;++row)p.gather_offsets[row+1]+=p.gather_offsets[row];
+        p.gather_entries.resize(incidence);auto cursor=p.gather_offsets;
+        for(int k=0;k<static_cast<int>(p.groups.size());++k){
+            const auto& dofs=p.groups[k]->patch.discrete_dofs;
+            for(int i=0;i<static_cast<int>(dofs.size());++i)p.gather_entries[cursor[dofs[i]]++]={k,i};
+        }
+        PhaseTimer::counter("riesz_gather_bytes",gather_bytes,-1);
+    }
     p.preparation_seconds = std::chrono::duration<double>(
         std::chrono::steady_clock::now()-start).count();
 }
@@ -445,14 +420,21 @@ std::vector<int> AdditiveKernelRieszContext::regional_mask(double radius) const 
 AdditiveKernelRieszContext::Result AdditiveKernelRieszContext::apply(const ComplexMatrix &input) {
     return apply_selected(input,std::vector<int>(impl_->coarse_size,1),true);
 }
+ComplexMatrix AdditiveKernelRieszContext::apply_action(const ComplexMatrix &input) {
+    return apply_impl(input,{},true,true).values;
+}
 AdditiveKernelRieszContext::Result AdditiveKernelRieszContext::apply_selected(
     const ComplexMatrix &input,const std::vector<int> &mask,bool full_estimator) {
+    return apply_impl(input,mask,full_estimator,false);
+}
+AdditiveKernelRieszContext::Result AdditiveKernelRieszContext::apply_impl(
+    const ComplexMatrix &input,const std::vector<int> &mask,bool full_estimator,bool action_only) {
     const auto start = std::chrono::steady_clock::now();
     auto &p = *impl_;
     if (input.rows() != p.full_size || input.cols()<1 || !input.allFinite()
         || static_cast<std::size_t>(input.size())>p.dense_limit)
         throw std::invalid_argument("AS residual dimension/value mismatch");
-    if(mask.size()!=static_cast<std::size_t>(p.coarse_size)) throw std::invalid_argument("AS mask size");
+    if(!action_only && mask.size()!=static_cast<std::size_t>(p.coarse_size)) throw std::invalid_argument("AS mask size");
     for(int v:mask) if(v!=0 && v!=1) throw std::invalid_argument("AS mask value");
     std::size_t local_entries=0;
     for(const auto& g:p.groups)local_entries+=g->patch.discrete_dofs.size()*input.cols();
@@ -462,15 +444,18 @@ AdditiveKernelRieszContext::Result AdditiveKernelRieszContext::apply_selected(
     for (int node : p.dirichlet) rhs.row(node).setZero();
     Result result;
     if(full_estimator)result.values = ComplexMatrix::Zero(p.full_size,input.cols());
-    result.node_eta_squared = Eigen::MatrixXd::Zero(p.coarse_size,input.cols());
-    result.selected_values = ComplexMatrix::Zero(p.full_size,input.cols());
-    result.selected_eta = Eigen::VectorXd::Zero(input.cols());
+    if(!action_only){
+        result.node_eta_squared = Eigen::MatrixXd::Zero(p.coarse_size,input.cols());
+        result.selected_values = ComplexMatrix::Zero(p.full_size,input.cols());
+        result.selected_eta = Eigen::VectorXd::Zero(input.cols());
+    }
     std::vector<int> selected_counts(p.groups.size(),0);
-    for(int k=0;k<static_cast<int>(p.groups.size());++k)
+    if(!action_only)for(int k=0;k<static_cast<int>(p.groups.size());++k)
         for(int node:p.groups[k]->nodes) selected_counts[k]+=mask[node];
     std::vector<ComplexMatrix> local_values(p.groups.size());
     std::vector<double> local_errors(p.groups.size(),0.0);
     std::vector<double> kernel_errors(p.groups.size(),0.0);
+    {PhaseTimer timer("riesz_patch_apply",-1);
     p.parallel([&](int index) {
         auto &g = *p.groups[index];
         if(!full_estimator && selected_counts[index]==0) return;
@@ -484,52 +469,55 @@ AdditiveKernelRieszContext::Result AdditiveKernelRieszContext::apply_selected(
             local_values[index] = ComplexMatrix::Zero(n,input.cols());
             return;
         }
-        // Cached Schur/LDLT factors are immutable. Eigen's dense-RHS solves
-        // write only the caller-owned destination, so independent patches can
-        // share the factor without serializing their back substitutions.
-        const auto& f=*g.factors;
-        ComplexMatrix r(n,input.cols()), x(n,input.cols());
-        for (int i=0;i<n;++i) r.row(i)=rhs.row(dofs[i]);
-        ComplexMatrix multipliers = ComplexMatrix::Zero(m,input.cols());
-        if (f.schur) {
-            x.real() = f.energy_factor.solve(r.real());
-            x.imag() = f.energy_factor.solve(r.imag());
-            if (m) {
-                const ComplexMatrix cr = c.cast<Complex>() * x;
-                multipliers.real() = f.schur_factor.solve(cr.real());
-                multipliers.imag() = f.schur_factor.solve(cr.imag());
-                x -= f.inverse_constraints.cast<Complex>() * multipliers;
+        ComplexMatrix r(n,input.cols());
+        for(int i=0;i<n;++i)r.row(i)=rhs.row(dofs[i]);
+        auto solved=p.solve(index,r);
+        auto& x=solved.values;const auto& multipliers=solved.multipliers;
+        // Theta only consumes R*r. Keep the identical solve and deterministic
+        // scatter, but omit energy products, indicators and residual diagnostics.
+        if(!action_only){
+            const ComplexMatrix ex = g.energy.cast<Complex>()*x;
+            kernel_errors[index]=(c.cast<Complex>()*x).norm()/std::max(1e-30,c.norm()*x.norm());
+            local_errors[index]=(ex+c.transpose().cast<Complex>()*multipliers-r).norm()
+                /std::max(1e-30,r.norm());
+            for (int j=0;j<input.cols();++j) {
+                const double sq=std::max(0.0,std::real(x.col(j).dot(ex.col(j))));
+                for (int node:g.nodes) if(full_estimator || mask[node]) result.node_eta_squared(node,j)=sq;
             }
-        } else {
-            ComplexMatrix b = ComplexMatrix::Zero(n+m,input.cols());
-            b.topRows(n)=r;
-            const ComplexMatrix sol = f.saddle_factor.solve(b);
-            x=sol.topRows(n); multipliers=sol.bottomRows(m);
-        }
-        if (!x.allFinite()) throw std::runtime_error("AS solve is not finite");
-        const ComplexMatrix ex = g.energy.cast<Complex>()*x;
-        kernel_errors[index]=(c.cast<Complex>()*x).norm()/std::max(1e-30,c.norm()*x.norm());
-        local_errors[index]=(ex+c.transpose().cast<Complex>()*multipliers-r).norm()
-            /std::max(1e-30,r.norm());
-        for (int j=0;j<input.cols();++j) {
-            const double sq=std::max(0.0,std::real(x.col(j).dot(ex.col(j))));
-            for (int node:g.nodes) if(full_estimator || mask[node]) result.node_eta_squared(node,j)=sq;
         }
         local_values[index]=std::move(x);
     });
+    }
+    {PhaseTimer timer("riesz_scatter",-1);
     // Deterministic reduction: no overlapping parallel writes or atomics.
+    if(!p.gather_offsets.empty()){
+        const int workers=execution_threads(p.threads);
+        #pragma omp parallel for schedule(dynamic,256) num_threads(workers)
+        for(int row=0;row<p.full_size;++row)
+            for(std::size_t entry=p.gather_offsets[row];entry<p.gather_offsets[row+1];++entry){
+                const auto [k,i]=p.gather_entries[entry];
+                if(!full_estimator&&selected_counts[k]==0)continue;
+                if(full_estimator)result.values.row(row)+=static_cast<double>(p.groups[k]->nodes.size())*local_values[k].row(i);
+                if(!action_only)result.selected_values.row(row)+=static_cast<double>(selected_counts[k])*local_values[k].row(i);
+            }
+    }else{
     for (int k=0;k<static_cast<int>(p.groups.size());++k) {
         const auto &g=*p.groups[k];
         if(!full_estimator && selected_counts[k]==0) continue;
         for (int i=0;i<static_cast<int>(g.patch.discrete_dofs.size());++i) {
             if(full_estimator)result.values.row(g.patch.discrete_dofs[i]) +=
                 static_cast<double>(g.nodes.size()) * local_values[k].row(i);
-            result.selected_values.row(g.patch.discrete_dofs[i]) +=
+            if(!action_only)result.selected_values.row(g.patch.discrete_dofs[i]) +=
                 static_cast<double>(selected_counts[k]) * local_values[k].row(i);
         }
+    }
+    }
+    for(int k=0;k<static_cast<int>(p.groups.size());++k){
         result.local_relative_residual=std::max(result.local_relative_residual,local_errors[k]);
         result.constraint_relative_residual=std::max(result.constraint_relative_residual,kernel_errors[k]);
     }
+    }
+    if(action_only)return result;
     // For selected-only training both fields represent exactly the same sum.
     // Scatter once in the original deterministic order, then copy contiguously.
     if(!full_estimator)result.values=result.selected_values;
@@ -574,7 +562,7 @@ ResidualRieszBatch AdditiveKernelRieszContext::estimate(
         for(int i=0;i<p.elements;++i) mass[i]=result.element_eta_squared(i,j);
         result.marked_elements[j]=mark_doerfler(mass,theta);
     }
-    result.parallel_threads=p.threads;
+    result.parallel_threads=execution_threads(p.threads);
     result.patch_solve_seconds=applied.solve_seconds;
     return result;
 }

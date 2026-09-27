@@ -18,13 +18,15 @@ def samples(folder):
 with tempfile.TemporaryDirectory() as directory:
     root=Path(directory)
     c=dict(DEFAULT,problem='E2',level=4,gap=2,ell=1,maximum_ell=1,ell_mode='fixed',cycles=2,
-           radius=10.,rank_cap=4,member_ids=list(range(6)),training_ids=list(range(4)),threads=2,audit=True)
+           radius=10.,rank_cap=4,member_ids=list(range(12)),training_ids=list(range(4)),threads=4,audit=True)
     with patch.dict(os.environ,{'ALOD_AUDIT_ONESHOT':'1'}):
-        before=run(c,root/'oneshot',exe,audit_threads=2)
-    after=run(c,root/'shared',exe,audit_threads=2)
+        before=run(c,root/'oneshot',exe,audit_threads=4)
+    after=run(c,root/'shared',exe,audit_threads=4)
     with patch.dict(os.environ,{'ALOD_SHARED_SNAPSHOT_BYTES':'0'}):
-        spilled=run(c,root/'spill',exe,audit_threads=2)
+        spilled=run(c,root/'spill',exe,audit_threads=4)
     assert all(m['audit_complete'] for m in (before,after,spilled))
+    assert all(json.loads(f.read_text())['timing']['batch_pipeline']
+               for f in (root/'shared/audits').glob('*/run.json'))
     expected=samples(root/'oneshot')
     for name in ('shared','spill'):
         actual=samples(root/name);assert len(actual)==len(expected)

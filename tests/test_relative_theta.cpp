@@ -16,6 +16,25 @@ int main(){try{
     bool rejected=false;try{(void)localization_theta(s,r,insufficient);}catch(const std::runtime_error&){rejected=true;}
     if(!rejected)throw std::runtime_error("unconverged nontrivial Ritz problem was accepted");
     auto cold=localization_theta(s,r,cfg);
+    auto fused_config=cfg;fused_config.fused_defect=true;
+    auto fused_result=localization_theta(s,r,fused_config);
+    if(fused_result.spectrum.relative_residual>1e-9||std::abs(fused_result.theta/cold.theta-1)>1e-8)
+        throw std::runtime_error("fused eigenproblem differs from parallel global path");
+    auto reference_config=cfg;
+    reference_config.reuse_operator_actions=false;reference_config.lightweight_riesz=false;
+    reference_config.fused_defect=false;reference_config.parallel_defect=false;
+    auto reference=localization_theta(s,r,reference_config);
+    if(std::abs(cold.theta/reference.theta-1)>1e-8)
+        throw std::runtime_error("cached/lightweight Theta differs from reference");
+    if(cold.spectrum.operator_columns>=reference.spectrum.operator_columns)
+        throw std::runtime_error("operator action reuse did not reduce solved columns");
+    for(bool light:{false,true}){
+        auto variant=cfg;variant.lightweight_riesz=light;variant.reuse_operator_actions=!light;
+        variant.fused_defect=false;variant.parallel_defect=false;
+        auto result=localization_theta(s,r,variant);
+        if(result.spectrum.relative_residual>1e-9||std::abs(result.theta/reference.theta-1)>1e-8)
+            throw std::runtime_error("individual Theta optimization changed result");
+    }
     if(cold.spectrum.relative_residual>1e-9)throw std::runtime_error("cold residual exceeds 1e-9");
     cfg.warm_start=cold.warm_start;
     auto warm=localization_theta(s,r,cfg);

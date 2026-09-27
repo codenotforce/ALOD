@@ -2,6 +2,8 @@
 #include "audit_diagnostics.hpp"
 #include "mesh_export.hpp"
 #include "alod/timing.hpp"
+#include "alod/execution.hpp"
+#include <functional>
 #include "fixed_support.hpp"
 #include "alod/checkpoint.hpp"
 #include "alod/batch.hpp"
@@ -136,8 +138,42 @@ int audit_main(int argc,char** argv,AuditWorkerState* worker,std::ostream* outpu
     std::unique_ptr<AuditIntegrationGeometry> integration_geometry;
     if(!std::getenv("ALOD_REFERENCE_EXECUTION")){PhaseTimer timing("audit_geometry",snapshot.cursor.state_id);
         integration_geometry=std::make_unique<AuditIntegrationGeometry>(audit_mesh,input.threads);}
+    // A bounded three-stage pipeline: one prefetched load, one solve, and one
+    // pending integration. Factors stay on the foreground thread; only immutable
+    // batch values reach the integrator. Fresh-training diagnostics remain serial.
+    const bool pipeline=asynchronous_execution(input.threads)&&input.threads>=3&&!fresh&&!accepted_only
+        &&selected.size()>static_cast<std::size_t>(batch)
+        &&asynchronous_buffers_fit(std::size_t(audit_mesh.nodes.size())*batch*sizeof(Complex)*5);
+    // Quadrature stages share one persistent team rather than competing for
+    // memory bandwidth. The foreground exclusively owns the sparse factors.
+    const int integral_workers=pipeline?input.threads-1:input.threads;
+    ExecutionScope solve_scope(thread_budget(pipeline?1:input.threads));
+    auto integrate_budget=thread_budget(integral_workers);
+    auto load_batch=[&](int begin){
+        auto start=seconds();PhaseTimer timer("audit_load",snapshot.cursor.state_id);
+        std::vector<Problem> problems;
+        for(int j=begin;j<std::min<int>(begin+batch,selected.size());++j)problems.push_back(selected[j].problem);
+        auto loads=accepted_only?ComplexMatrix{}:assemble_load_batch(audit_mesh,problems,q,input.threads);
+        return std::make_pair(std::move(loads),seconds()-start);
+    };
+    std::unique_ptr<TaskLane> quadrature_lane;
+    if(pipeline)quadrature_lane=std::make_unique<TaskLane>(integrate_budget);
+    std::future<std::pair<ComplexMatrix,double>> next_load;
+    if(pipeline)next_load=quadrature_lane->submit([&]{return load_batch(0);});
+    std::function<void(ErrorBatch)> emit_metrics;
+    // The lane drains on exceptional unwinding before borrowed mesh/solver state
+    // is destroyed. Batch payloads remain owned by their queued tasks.
+    std::future<std::pair<ErrorBatch,double>> pending_errors;
+    auto drain=[&]{if(pending_errors.valid()){
+        PhaseTimer wait("audit_integral_wait",snapshot.cursor.state_id);
+        auto result=pending_errors.get();error_seconds+=result.second;
+        emit_metrics(std::move(result.first));emit_metrics={};
+    }};
     for(int begin=0;begin<static_cast<int>(selected.size());begin+=batch){int count=std::min(batch,static_cast<int>(selected.size())-begin);std::vector<Problem> problems;for(int j=0;j<count;++j)problems.push_back(selected[begin+j].problem);
-        double t=seconds();auto loads=[&]{if(accepted_only)return ComplexMatrix{};PhaseTimer timing("audit_load",snapshot.cursor.state_id);return assemble_load_batch(audit_mesh,problems,q,input.threads);}();load_seconds+=seconds()-t;
+        auto loaded=next_load.valid()?next_load.get():load_batch(begin);
+        auto loads=std::move(loaded.first);load_seconds+=loaded.second;double t=seconds();
+        if(pipeline&&begin+batch<static_cast<int>(selected.size()))
+            next_load=quadrature_lane->submit([&,next=begin+batch]{return load_batch(next);});
         auto ref=[&]{PhaseTimer timing("reference_solve",snapshot.cursor.state_id);return reference?reference->solve(loads):ComplexMatrix::Zero(loads.rows(),loads.cols()).eval();}();ComplexMatrix values,base;double pg=0;
         t=seconds();{PhaseTimer timing("frozen_solve",snapshot.cursor.state_id);if(accepted_only){values.resize(audit_mesh.nodes.size(),count);for(int j=0;j<count;++j){auto found=std::find(snapshot.computed_ids.begin(),snapshot.computed_ids.end(),selected[begin+j].id);values.col(j)=snapshot.values.col(found-snapshot.computed_ids.begin());}pg=accepted_pg;}else if(afem)values=ref;else if(coupled){auto result=coupled->evaluate_frozen(loads,snapshot.phi);values=std::move(result.values);pg=result.pg_residual;if(rankzero&&!exact_only)base=space->solve(loads).values;}
         else {auto result=space->solve(loads);values=std::move(result.values);pg=result.pg_relative_residual;}}coupled_seconds+=seconds()-t;
@@ -158,8 +194,21 @@ int audit_main(int argc,char** argv,AuditWorkerState* worker,std::ostream* outpu
         if(!afem && refinement_steps)pg=(space->test().adjoint()*(operators.system*values-loads)).norm()/std::max(1e-30,(space->test().adjoint()*loads).norm());
         if(refinement_steps && std::max(pg,audited_reference_residual)>1e-10)throw std::runtime_error("strict refined residual gate failed");
         std::string exact_family=snapshot.members_text;for(int j=0;j<count;++j)exact_family+=":"+std::to_string(selected[begin+j].id);
-        t=seconds();auto errors=[&]{PhaseTimer timing("error_integral",snapshot.cursor.state_id);return exact_only?integrate_error_batch(audit_mesh,E,values,problems,q,input.threads,worker?&worker->exact_reuse:nullptr,exact_family):integrate_audit_batch(audit_mesh,E,values,ref,problems,q,input.threads,true,integration_geometry.get(),worker?&worker->exact_reuse:nullptr,exact_family);}();
-        const auto& floors=errors.reference_error;error_seconds+=seconds()-t;
+        // Finish the previous batch before reusing its integration cache or
+        // emitting this batch. Ordered output is independent of task completion.
+        drain();
+        struct BatchValues {ComplexMatrix values,ref,base,loads;std::vector<Problem> problems;};
+        auto owned=std::make_shared<BatchValues>(BatchValues{std::move(values),std::move(ref),std::move(base),std::move(loads),std::move(problems)});
+        auto integrate=[&,owned,exact_family]{
+            auto start=seconds();PhaseTimer timing("error_integral",snapshot.cursor.state_id);
+            auto errors=exact_only?integrate_error_batch(audit_mesh,E,owned->values,owned->problems,q,input.threads,worker?&worker->exact_reuse:nullptr,exact_family)
+                :integrate_audit_batch(audit_mesh,E,owned->values,owned->ref,owned->problems,q,input.threads,true,integration_geometry.get(),worker?&worker->exact_reuse:nullptr,exact_family);
+            return std::make_pair(std::move(errors),seconds()-start);
+        };
+        const double reference_pg=reference?reference->relative_residual():0.;
+        emit_metrics=[&,owned,begin,count,pg,audited_reference_residual,reference_pg](ErrorBatch errors){
+        const auto& values=owned->values;const auto& ref=owned->ref;const auto& base=owned->base;const auto& loads=owned->loads;
+        const auto& floors=errors.reference_error;double t=seconds();
         PhaseTimer metrics_timer("sample_metrics",snapshot.cursor.state_id);
         for(int j=0;j<count;++j){const auto& member=selected[begin+j];double n=errors.exact_norm[j];auto norm=[&](const ComplexVector& x){return std::sqrt(std::max(0.,x.dot(E.cast<Complex>()*x).real()));};
             double gap=(afem||exact_only)?0:norm((ref.col(j)-values.col(j)).eval());
@@ -176,7 +225,7 @@ int audit_main(int argc,char** argv,AuditWorkerState* worker,std::ostream* outpu
             out<<",\"wavenumber\":"<<input.wavenumber<<",\"source_ell\":"<<snapshot.ell<<",\"quadrature_boost\":"<<quadrature_boost;
             out<<",\"reference_residual\":";if(!reference)out<<"null";else out<<audited_reference_residual;out<<",\"refinement_steps\":"<<refinement_steps;
             out<<",\"parameter_id\":"<<json_string(parameter_ids.at(member.id))<<",\"reference_mesh_hash\":"<<json_string(reference_mesh_hash)<<",\"dictionary_hash\":"<<json_string(dictionary_hash)<<",\"solution_hash\":"<<json_string(matrix_hash(values.col(j)));
-            out<<",\"ratio_status\":\""<<(n>1e-12?"finite":"near_zero_exact_norm")<<"\",\"reference_status\":\""<<(afem?"not_applicable":exact_only?"not_computed":"available")<<"\",\"PG_residual\":"<<(afem&&reference?reference->relative_residual():pg);
+            out<<",\"ratio_status\":\""<<(n>1e-12?"finite":"near_zero_exact_norm")<<"\",\"reference_status\":\""<<(afem?"not_applicable":exact_only?"not_computed":"available")<<"\",\"PG_residual\":"<<(afem&&reference?reference_pg:pg);
             if(rankzero&&!afem&&!exact_only)out<<",\"base_gap\":"<<(coupled?norm((ref.col(j)-base.col(j)).eval()):gap)<<",\"as_correction_energy\":"<<(coupled?norm((values.col(j)-base.col(j)).eval()):0.);
             if(fresh&&!afem){t=seconds();ComplexVector u;int rank=0;if(input.problem=="E2"){auto trained=train_regional(*space,*riesz,aot,loads.col(j),{radius,rankcap,false,tests});u=trained.accepted.values.col(0);rank=trained.phi.cols();}else u=space->solve(loads.col(j)).values.col(0);
                 double error=lod2d::helmholtz::compute_helmholtz_error(audit_mesh,u,input.wavenumber,member.problem.exact,member.problem.exact_gradient,q,member.problem.quadrature_context).energy;fresh_seconds+=seconds()-t;
@@ -191,9 +240,13 @@ int audit_main(int argc,char** argv,AuditWorkerState* worker,std::ostream* outpu
             }
             out<<"}\n";++completed;
         }
+        };
+        if(pipeline)pending_errors=quadrature_lane->submit(std::move(integrate));
+        else {auto result=integrate();error_seconds+=result.second;emit_metrics(std::move(result.first));emit_metrics={};}
     }
+    integrate_budget->store(input.threads);drain();
     out<<"{\"kind\":\"audit_complete\",\"state_id\":"<<snapshot.cursor.state_id<<",\"samples\":"<<completed<<",\"batch_size\":"<<batch<<",\"reference_factorizations\":"<<(reference?1:0)<<",\"audit_mode\":"<<json_string(options["audit-mode"])<<",\"aot_factorizations\":"<<aot.factorizations()
-        <<",\"accepted_values_reused\":"<<(accepted_only?"true":"false")<<",\"snapshot_transferred\":"<<(shared_snapshot?"true":"false")<<",\"lod_basis_reused\":"<<(restored_basis?"true":"false")<<",\"lod_patch_rebuilds\":"<<(!afem&&!restored_basis?1:0)<<",\"threads\":"<<input.threads<<",\"prepare_seconds\":"<<prepare_seconds<<",\"load_seconds\":"<<load_seconds<<",\"error_seconds\":"<<error_seconds<<",\"reference_factor_seconds\":"<<(reference?reference->factor_seconds():0.)<<",\"reference_solve_seconds\":"<<(reference?reference->solve_seconds():0.)
+        <<",\"batch_pipeline\":"<<(pipeline?"true":"false")<<",\"accepted_values_reused\":"<<(accepted_only?"true":"false")<<",\"snapshot_transferred\":"<<(shared_snapshot?"true":"false")<<",\"lod_basis_reused\":"<<(restored_basis?"true":"false")<<",\"lod_patch_rebuilds\":"<<(!afem&&!restored_basis?1:0)<<",\"threads\":"<<input.threads<<",\"prepare_seconds\":"<<prepare_seconds<<",\"load_seconds\":"<<load_seconds<<",\"error_seconds\":"<<error_seconds<<",\"reference_factor_seconds\":"<<(reference?reference->factor_seconds():0.)<<",\"reference_solve_seconds\":"<<(reference?reference->solve_seconds():0.)
         <<",\"coupled_seconds\":"<<coupled_seconds<<",\"fresh_seconds\":"<<fresh_seconds<<",\"wall_seconds\":"<<seconds()<<"}\n";
     return 0;
 }catch(const std::exception& e){err<<"alod_audit: "<<e.what()<<'\n';return 1;}}

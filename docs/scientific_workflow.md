@@ -111,7 +111,7 @@ The supplied manuscript has a reproducible inconsistency: its E1 family-control 
 
 ## Validation scope
 
-Bounded server tests exercise target crossing before the horizon, terminal resume, training-family targets, exact/full error agreement, zero auxiliary reference factors, cold/incremental parity, background/synchronous checkpoint parity and every applicable scientific diagnostic. A separate local-refinement test checks exact source/mass equality and error-jet reuse with changed numerical values. The historical delivery is also exercised against the supplied E1/E2/E3 exports. Full new-binary production campaigns and high-k late-state resource measurements remain separate work.
+Bounded server tests exercise target crossing before the horizon, terminal resume, training-family targets, exact/full error agreement, zero auxiliary reference factors, cold/incremental parity, background/synchronous checkpoint parity and every applicable scientific diagnostic. A separate local-refinement test checks exact source/mass equality and error-jet reuse with changed numerical values. The historical delivery is also exercised against the supplied E1/E2/E3 exports. Later main production and final-checkpoint measurements are recorded in [the production protocol](production_campaign_20260927.md) and [Theta benchmarks](theta_fused_operator.md). Full campaigns after every subsequent optimization and sustained high-k resource/fault tests remain separate validation work.
 
 ### Bounded performance evidence
 
@@ -128,3 +128,18 @@ The alternating E2 benchmark uses three accepted states, 16 training/audit membe
 The optimized full-audit run reuses 49,082 source-element records. Background geometry work totals about 0.256 seconds; only 0.036 seconds remains in the join. The large exact-jet working set is bypassed, keeping target-check cost at 0.159 seconds rather than retaining an ineffective cache. Exact auditing reuses all three accepted solution blocks and performs zero auxiliary reference factorizations. Full auditing performs three. All three modes produce equivalent accepted marks/ranks and exact errors. These small-run medians establish bounded evidence, not universal production speedups. Reproduce with `tools/benchmark_scientific.py`; machine-independent evidence is retained in `docs/provenance/scientific_workflow_validation.json`.
 
 Final validation passed all 52 server CTest cases (184.75 seconds) and all 29 local Python tests. The local-refinement test reduced source evaluations from 66,048 to 4,096, retained 62 exact-jet hits, and matched cold source moments and exact integrals bit for bit.
+
+## Scoped 25-cycle figures and separate 28-cycle convergence fits
+
+`tools/paper_snapshot.py` implements the September 28 export request. It merges
+current ALOD runs with explicitly historical controls, plots initial state plus
+E1/E2 cycle endpoints 1–25, and requires ALOD meshes from cycle 25. E3 retains
+its completed-cycle/first-1%-prefix selection. The separate convergence report
+fits nominal relative energy error against online DOFs on cycles 19–28 of the
+full 28-cycle E1/E2 runs. It does not fit the truncated figure curves.
+
+The general `paper_delivery.py` terminal tables retain their historical fitting
+windows (including a five-cycle E1 ALOD tail). Use the scoped exporter for the
+ten-cycle fit request; these two CLIs are not interchangeable. Both preserve
+source identities and historical/current origin labels. The scoped package has
+`full-runs.json.gz`, `plotted-runs.json.gz`, fit points and `reproduce.py`.

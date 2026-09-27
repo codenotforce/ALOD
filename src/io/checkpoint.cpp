@@ -117,7 +117,7 @@ std::string checkpoint_metadata(const Checkpoint& s,bool has_basis,int format,co
         <<",\"solution_hash\":"<<json_string(matrix_hash(s.values))<<",\"warm_hash\":"<<json_string(matrix_hash(s.warm_full))
         <<",\"config_hash\":"<<json_string(std::to_string(journal_hash(s.config_json)))<<",\"members_hash\":"<<json_string(std::to_string(journal_hash(s.members_text)))
         <<",\"format_identity\":\"ALOD-checkpoint-le-ieee754-v"<<format<<"\"}";return out.str();}
-std::filesystem::path save_checkpoint(const std::filesystem::path& directory,const Checkpoint& s,const ComplexSparseMatrix* accepted_trial,const ComplexSparseMatrix* accepted_reduced,bool share_geometry,const CheckpointGeometryView* view){
+std::filesystem::path save_checkpoint(const std::filesystem::path& directory,const Checkpoint& s,const ComplexSparseMatrix* accepted_trial,const ComplexSparseMatrix* accepted_reduced,bool share_geometry,const CheckpointGeometryView* view,bool update_latest){
     const auto& basis=accepted_trial?*accepted_trial:s.lod_trial;
     const auto& reduced=accepted_reduced?*accepted_reduced:s.lod_reduced;
     const int format=share_geometry||reduced.cols()?3:(basis.cols()?2:1);
@@ -134,7 +134,23 @@ std::filesystem::path save_checkpoint(const std::filesystem::path& directory,con
         w.ints(s.coarse_marks);w.ints(s.reference_marks);w.ints(s.computed_ids);if(basis.cols())w.sparse_complex(basis);if(format==3&&reduced.cols())w.sparse_complex(reduced);auto checksum=w.hash;w.u(checksum);w.out.flush();if(!w.out)throw std::runtime_error("checkpoint flush failed");}
     // Verify in constant memory instead of decoding a second dense snapshot.
     {Reader r(temp,UINT64_MAX);while(r.remaining>8)r.byte();auto checksum=r.hash;if(r.u()!=checksum||r.remaining)throw std::runtime_error("checkpoint verification failed");}
-    sync_file(temp);std::filesystem::rename(temp,file);atomic_text(directory/"latest",name.str()+"\n");return file;
+    sync_file(temp);std::filesystem::rename(temp,file);sync_file(directory);
+    if(update_latest)atomic_text(directory/"latest",name.str()+"\n");return file;
+}
+void retain_checkpoint(const std::filesystem::path& file,const std::filesystem::path& directory,const std::string& geometry){
+    std::filesystem::create_directories(directory);
+    const auto link=[&](const std::filesystem::path& source,const std::filesystem::path& target){
+        if(std::filesystem::exists(target))return;
+        std::error_code error;std::filesystem::create_hard_link(source,target,error);
+        if(error){auto temp=target;temp+=".tmp";std::filesystem::copy_file(source,temp,std::filesystem::copy_options::overwrite_existing);sync_file(temp);std::filesystem::rename(temp,target);}
+        sync_file(target.parent_path());
+    };
+    if(!geometry.empty()){
+        std::filesystem::create_directories(directory/"meshes");
+        link(geometry_path(file,geometry),directory/"meshes"/geometry);
+    }
+    if(std::filesystem::exists(directory/file.filename()))throw std::runtime_error("refusing to overwrite retained checkpoint");
+    link(file,directory/file.filename());atomic_text(directory/"latest",file.filename().string()+"\n");
 }
 std::string inspect_checkpoint(const std::filesystem::path& file,std::uint64_t cap){
     Reader r(file,cap);auto signature=r.u();if(signature!=magic&&signature!=magic_basis&&signature!=magic_shared)throw std::runtime_error("unsupported checkpoint format");

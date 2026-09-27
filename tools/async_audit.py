@@ -42,7 +42,11 @@ class AuditQueue:
         atomic_text(self.output/'audit_queue.json',json.dumps(dict(schema=1,jobs=self.jobs),indent=2)+'\n')
 
     def discover(self):
-        for checkpoint in sorted((self.output/'checkpoints').glob('state-*-phase-0-ell-*.bin')):
+        # Periodic restart points and per-state audit inputs have separate
+        # lifetimes. Prefer the audit path so shared-memory lookup still hits.
+        snapshots={p.name:p for folder in ('checkpoints','audit_snapshots')
+                   for p in (self.output/folder).glob('state-*-phase-0-ell-*.bin')}
+        for checkpoint in sorted(snapshots.values()):
             name=checkpoint.name
             if name in self.jobs:continue
             with self.lock:

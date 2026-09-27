@@ -27,6 +27,7 @@ int main(){try{
         std::vector<int> mask(coarse.nodes.size());
         for(int i=0;i<static_cast<int>(mask.size());++i)mask[i]=i%2;
         for(double scale:{1.0,1e-12}) for(bool full:{false,true}) {
+            require(context.apply_action(scale*rhs).norm()==0,"action-only zero kernel");
             auto r=context.apply_selected(scale*rhs,mask,full);
             require(r.values.norm()==0 && r.selected_values.norm()==0,
                     "zero-dimensional Riesz map must return exact zero");

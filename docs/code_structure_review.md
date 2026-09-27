@@ -12,7 +12,7 @@ responsibilities.
 | Area | Finding | Change |
 | --- | --- | --- |
 | Paper delivery | One function combined data selection, plotting, table arithmetic and packaging. | `tools/paper_delivery.py` is a CLI; `paper/data.py`, `selection.py`, `figures.py`, `tables.py` and `bundle.py` have separate responsibilities. |
-| Plot conventions | E3 incorrectly reused the completed-cycle sampling used for E1/E2. | E3 keeps all accepted states through the first one-percent crossing, including intermediate reference sweeps. Unreached endpoints remain visible. |
+| Plot conventions | An earlier revision displayed every accepted E3 state. | Current E3 ALOD displays the initial state and completed-cycle endpoints within the first one-percent-crossing prefix. Intermediate states remain in raw data/tables; controls retain their own samples. |
 | Plot styles | Generic styles discarded the supplied, tuned parameters. | Separate Matplotlib contexts preserve the two reference scripts' fonts, colors, sizes, line widths, markers, annotations and axis settings. E3 is named `kappa_error_dof.pdf`. |
 | Scientific table arithmetic | A large reporting function mixed unrelated metrics. | Terminal fits, family first crossings, family budget interpolation and kappa endpoints each have a named function. |
 | Paper validation | The PG residual gate checked only the nominal member. | Every imported member is checked for a finite, admissible residual and a positive finite error. |
@@ -44,8 +44,7 @@ Comments explain contracts that are easy to break during optimization:
   clipped curved cells.
 - Compatibility defaults preserve old adjoint-test checkpoints; current presets
   use kernel lifting. Combining those defaults would change old experiments.
-- E1/E2 and E3 intentionally have different sampling rules. Tables keep their
-  documented interpolation and first-crossing definitions.
+- ALOD curves use completed-cycle endpoints. E3 additionally applies its first-one-percent-crossing prefix; the scoped E1/E2 export stops at cycle 25. Tables and separate fits retain their declared sampling definitions.
 
 ## Remaining boundaries
 
@@ -62,17 +61,16 @@ rewritten. Further extraction should preserve arithmetic order and have a
 specific ownership or dependency benefit, rather than merely increasing the
 number of files.
 
-Dense checkpoint payload publication remains synchronous. Full refinement
-lineage scheduling, memory-aware audit admission and large high-k production
-validation remain the separately documented future work.
+Dense checkpoint payload publication remains synchronous. Further incremental
+global hierarchy scheduling and memory-aware audit admission remain optimization candidates. Frozen high-k production and later final-checkpoint benchmarks have separate evidence; full campaigns after every optimization remain separate validation.
 
 ## Validation
 
-All five PNGs match fresh renders from the supplied original plotting functions
+At the original style-validation stage, all five PNGs matched fresh renders from the supplied original plotting functions
 pixel for pixel with the same installed Matplotlib version. The E1/E2 scripts
 save PDF before PNG; the E3 script saves PNG before PDF. Keeping this order also
-avoids constrained-layout rounding differences. All scientific CSV/LaTeX tables
-remain byte-identical to the preceding delivery.
+avoids constrained-layout rounding differences. At that stage, scientific CSV/LaTeX tables
+were byte-identical to the preceding delivery; later scoped exports have their own data and fit definitions.
 
 The affected server regressions passed 6/6: scientific controls, asynchronous
 restart, shared snapshots, incremental integration, checkpoint audits and source

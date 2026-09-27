@@ -1,4 +1,5 @@
 #include "alod/batch.hpp"
+#include "alod/execution.hpp"
 #include "alod/mesh_state.hpp"
 #include <cstdlib>
 #include <bit>
@@ -10,7 +11,7 @@
 #include <chrono>
 namespace alod {
 namespace {
-template<class F> void parallel(int n,int threads,F f){if(threads<1)throw std::invalid_argument("batch threads must be positive");if(n==0)return;if(n==1){f(0);return;}threads=std::min(n,threads);std::exception_ptr failure;std::mutex mutex;
+template<class F> void parallel(int n,int threads,F f){if(threads<1)throw std::invalid_argument("batch threads must be positive");threads=execution_threads(threads);if(n==0)return;if(n==1){f(0);return;}threads=std::min(n,threads);std::exception_ptr failure;std::mutex mutex;
 #pragma omp parallel for schedule(static) num_threads(threads)
     for(int i=0;i<n;++i){try{f(i);}catch(...){std::lock_guard<std::mutex> lock(mutex);if(!failure)failure=std::current_exception();}}
     if(failure)std::rethrow_exception(failure);
@@ -37,6 +38,9 @@ AuditIntegrationGeometry::AuditIntegrationGeometry(const lod2d::TriMesh& mesh,in
 }
 ComplexMatrix assemble_load_batch(const lod2d::TriMesh& mesh,const std::vector<Problem>& problems,const lod2d::helmholtz::QuadraturePolicy& q,int threads,std::vector<lod2d::helmholtz::SourceMomentData>* moments,SourceMomentReuse* reuse,const std::string& family){
     if(threads<1)throw std::invalid_argument("batch threads must be positive");
+    // Partition for the actual task budget, not the original whole-run team.
+    // Otherwise 32 equal chunks on 31 workers leave one worker with double work.
+    threads=execution_threads(threads);
     const int n=problems.size(),elements=mesh.elems.size();
     ComplexMatrix loads=ComplexMatrix::Zero(mesh.nodes.size(),n);
     auto batch_source=std::getenv("ALOD_REFERENCE_EXECUTION")?std::function<void(const lod2d::Point2&,Complex*)>{}:lod2d::helmholtz::benchmarks::shared_source_evaluator(problems);
@@ -161,6 +165,8 @@ ErrorBatch integrate_error_batch(const lod2d::TriMesh& mesh,const Sparse& E,cons
     return result;
 }
 ErrorBatch integrate_audit_batch(const lod2d::TriMesh& mesh,const Sparse& E,const ComplexMatrix& values,const ComplexMatrix& reference,const std::vector<Problem>& problems,const lod2d::helmholtz::QuadraturePolicy& q,int threads,bool fused,const AuditIntegrationGeometry* geometry,ExactIntegrationReuse* reuse,const std::string& family){
+    if(threads<1)throw std::invalid_argument("batch threads must be positive");
+    threads=execution_threads(threads);
     if(values.rows()!=mesh.nodes.size()||values.cols()!=problems.size()||reference.rows()!=values.rows()||reference.cols()!=values.cols())throw std::invalid_argument("audit integration dimensions invalid");
     if(geometry&&geometry->mesh()!=&mesh)throw std::invalid_argument("audit geometry belongs to a different mesh");
     ErrorBatch result;int n=problems.size();result.exact_norm.resize(n);result.exact_error.resize(n);result.reference_error.resize(n);result.energy.resize(n);
@@ -257,8 +263,10 @@ ErrorBatch integrate_audit_batch(const lod2d::TriMesh& mesh,const Sparse& E,cons
     return result;
 }
 struct ReferenceFemContext::Impl {
-    ComplexSparseMatrix matrix;std::vector<int> free;int full_size=0;
-    Eigen::UmfPackLU<ComplexSparseMatrix> factor;
+    // Factor workspaces can exceed 32-bit indices before the input matrix does.
+    using ReferenceMatrix = Eigen::SparseMatrix<Complex, Eigen::ColMajor, SuiteSparse_long>;
+    ReferenceMatrix matrix;std::vector<int> free;int full_size=0;
+    Eigen::UmfPackLU<ReferenceMatrix> factor;
     double factor_time=0,solve_time=0,residual=0;
 };
 ReferenceFemContext::ReferenceFemContext(const lod2d::helmholtz::HelmholtzOperators& ops):impl_(std::make_unique<Impl>()){
@@ -266,7 +274,16 @@ ReferenceFemContext::ReferenceFemContext(const lod2d::helmholtz::HelmholtzOperat
     for(int i:ops.dirichlet_nodes){if(i<0||i>=p.full_size)throw std::invalid_argument("FEM boundary out of range");d[i]=true;}
     for(int i=0;i<p.full_size;++i)if(!d[i]){map[i]=p.free.size();p.free.push_back(i);}
     std::vector<Eigen::Triplet<Complex>> entries;for(int c=0;c<ops.system.outerSize();++c)for(ComplexSparseMatrix::InnerIterator it(ops.system,c);it;++it)if(map[it.row()]>=0&&map[c]>=0)entries.emplace_back(map[it.row()],map[c],it.value());
-    p.matrix.resize(p.free.size(),p.free.size());p.matrix.setFromTriplets(entries.begin(),entries.end());p.factor.compute(p.matrix);if(p.factor.info()!=Eigen::Success)throw std::runtime_error("reference FEM factorization failed");p.factor_time=seconds(start);
+    p.matrix.resize(p.free.size(),p.free.size());p.matrix.setFromTriplets(entries.begin(),entries.end());
+    // Nested dissection reduces fill on the large two-dimensional audit meshes.
+    if(p.matrix.rows()>256)p.factor.umfpackControl()[UMFPACK_ORDERING]=UMFPACK_ORDERING_METIS;
+    p.factor.compute(p.matrix);
+    if(p.factor.info()!=Eigen::Success){
+        p.factor.umfpackControl()[UMFPACK_PRL]=3;
+        p.factor.printUmfpackStatus();p.factor.printUmfpackInfo();
+        throw std::runtime_error("reference FEM factorization failed");
+    }
+    p.factor_time=seconds(start);
 }
 ReferenceFemContext::~ReferenceFemContext()=default;
 ComplexMatrix ReferenceFemContext::solve(const ComplexMatrix& loads){auto& p=*impl_;if(loads.rows()!=p.full_size||loads.cols()<1||!loads.allFinite())throw std::invalid_argument("reference RHS invalid");auto start=Clock::now();ComplexMatrix rhs(p.free.size(),loads.cols());for(int j=0;j<rhs.rows();++j)rhs.row(j)=loads.row(p.free[j]);ComplexMatrix x=p.factor.solve(rhs);

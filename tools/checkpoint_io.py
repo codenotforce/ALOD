@@ -83,7 +83,7 @@ def validate_resume_config(old, new):
     old, new = with_compatibility_defaults(old), with_compatibility_defaults(new)
     if set(old)!=set(new):raise ValueError("resume configuration fields differ")
     increases = {"cycles", "state_limit", "maximum_nodes", "maximum_patch_entries", "maximum_dense_entries"}
-    operational = {"audit_mode", "audit", "emit_solution", "threads"}
+    operational = {"audit_mode", "audit", "emit_solution", "threads", "checkpoint_interval_cycles"}
     for key in old:
         if key in operational:
             continue
@@ -125,6 +125,30 @@ def recover_latest(output, executable, expected_config=None, expected_members=No
     atomic_text(directory/'latest',chosen.name+'\n')
     atomic_text(output/'recovery.json',json.dumps(dict(checkpoint=chosen.name,invalid=invalid),indent=2)+'\n')
     return chosen
+
+
+def quarantine_snapshot_tail(output, metadata):
+    """Preserve superseded audit/restart transactions before replaying an interval.
+
+    Audit snapshots are never candidates for automatic restart. States newer
+    than the chosen checkpoint must be regenerated; retaining their old names
+    would either reuse stale audits or collide with immutable publication.
+    """
+    output = Path(output)
+    def order(state, phase, ell):
+        return state, int(phase == 0), ell, phase
+    cutoff = (-1, 0, 0, 0) if metadata is None else order(
+        metadata['state_id'], metadata['phase'], metadata['ell'])
+    for folder in (output/'audit_snapshots', output/'checkpoints'):
+        for path in folder.glob('state-*-phase-*-ell-*.bin'):
+            parts = path.stem.split('-')
+            if order(int(parts[1]), int(parts[3]), int(parts[5])) <= cutoff:
+                continue
+            recovery = folder/'recovery'; recovery.mkdir(exist_ok=True)
+            target = recovery/path.name; attempt = 0
+            while target.exists():
+                attempt += 1; target = recovery/(path.name+f'.{attempt}')
+            path.replace(target)
 
 
 def pack(path, directory, executable):

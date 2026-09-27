@@ -27,6 +27,7 @@ add_library(alod_core STATIC
     src/lod/slod.cpp
     src/lod/lod.cpp
     src/estimator/riesz.cpp
+    src/estimator/kernel_defect.cpp
     src/estimator/marking.cpp
     src/localization/theta.cpp
     src/localization/dense.cpp
@@ -54,13 +55,30 @@ add_executable(alod_audit apps/alod_audit.cpp apps/audit_run.cpp apps/audit_diag
 target_link_libraries(alod_audit PRIVATE alod_core)
 add_executable(alod_geometry apps/alod_geometry.cpp)
 target_link_libraries(alod_geometry PRIVATE alod_core)
+add_executable(alod_stability apps/alod_stability.cpp)
+target_include_directories(alod_stability PRIVATE ${UMFPACK_INCLUDE_DIR})
+target_link_libraries(alod_stability PRIVATE alod_core ${UMFPACK_LIBRARY})
 add_executable(alod_profile apps/alod_profile.cpp)
 target_link_libraries(alod_profile PRIVATE alod_core)
 
 if(ALOD_BUILD_TESTS)
     enable_testing()
+    add_test(NAME fine_grid_stability COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_stability.py $<TARGET_FILE:alod_stability>)
+    set_tests_properties(fine_grid_stability PROPERTIES TIMEOUT 120)
+    add_test(NAME periodic_checkpoint COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_checkpoint_interval.py $<TARGET_FILE:alod_run>)
+    set_tests_properties(periodic_checkpoint PROPERTIES TIMEOUT 600)
+    add_test(NAME campaign_dependencies COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_campaign_dependencies.py)
     add_executable(benchmark_spaces EXCLUDE_FROM_ALL tests/benchmark_spaces.cpp)
     target_link_libraries(benchmark_spaces PRIVATE alod_core)
+    add_executable(benchmark_theta EXCLUDE_FROM_ALL tests/benchmark_theta.cpp)
+    target_link_libraries(benchmark_theta PRIVATE alod_core)
+    # Optional offline benchmark; production has no additional dependency.
+    find_library(CHOLMOD_LIBRARY NAMES cholmod)
+    if(CHOLMOD_LIBRARY)
+        add_executable(benchmark_reference_solvers EXCLUDE_FROM_ALL tests/benchmark_reference_solvers.cpp)
+        target_include_directories(benchmark_reference_solvers PRIVATE ${UMFPACK_INCLUDE_DIR})
+        target_link_libraries(benchmark_reference_solvers PRIVATE alod_core ${UMFPACK_LIBRARY} ${CHOLMOD_LIBRARY})
+    endif()
     add_executable(stress_checkpoint EXCLUDE_FROM_ALL tests/stress_checkpoint.cpp)
     target_link_libraries(stress_checkpoint PRIVATE alod_core)
     foreach(name cross_state bordered_solve kernel_lift zero_kernel patch_recovery relative_theta integration space_assembly)
@@ -74,6 +92,15 @@ if(ALOD_BUILD_TESTS)
     add_test(NAME asynchronous_restart COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_async_restart.py $<TARGET_FILE:alod_run>)
     add_test(NAME shared_audit_transport COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_shared_audit.py $<TARGET_FILE:alod_run>)
     set_tests_properties(shared_audit_transport PROPERTIES TIMEOUT 180 ENVIRONMENT "OMP_NUM_THREADS=2;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1")
+    add_executable(test_kernel_defect tests/test_kernel_defect.cpp)
+    target_link_libraries(test_kernel_defect PRIVATE alod_core)
+    add_test(NAME fused_kernel_defect COMMAND test_kernel_defect)
+    set_tests_properties(fused_kernel_defect PROPERTIES ENVIRONMENT "OMP_NUM_THREADS=4;OPENBLAS_NUM_THREADS=1")
+    add_executable(test_async_execution tests/test_async_execution.cpp)
+    target_link_libraries(test_async_execution PRIVATE alod_core)
+    add_test(NAME async_execution_context COMMAND test_async_execution)
+    add_test(NAME async_execution_equivalence COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_async_execution.py $<TARGET_FILE:alod_run>)
+    set_tests_properties(async_execution_context async_execution_equivalence PROPERTIES TIMEOUT 600 ENVIRONMENT "OMP_NUM_THREADS=4;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1")
     add_executable(test_incremental_integration tests/test_incremental_integration.cpp)
     target_link_libraries(test_incremental_integration PRIVATE alod_core)
     add_test(NAME incremental_integration COMMAND test_incremental_integration)

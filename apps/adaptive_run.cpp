@@ -2,6 +2,7 @@
 #include "alod/local_factor_cache.hpp"
 #include "alod/patch_cache.hpp"
 #include "alod/timing.hpp"
+#include "alod/execution.hpp"
 #include "adaptive_run.hpp"
 #include "fixed_support.hpp"
 #include "alod/adaptive.hpp"
@@ -19,7 +20,7 @@ using namespace lod2d;
 using namespace lod2d::helmholtz;
 struct Input {
     fixed::Input fixed;
-    int cycles=1,m=2,state_limit=0,gap=2,rank=24;
+    int cycles=1,m=2,state_limit=0,gap=2,rank=24,checkpoint_interval=0;
     std::size_t patch_entries=8000000,dense_entries=8000000;
     bool inherit=true,audit=false,emit=false;
     double radius=.6,exact_target=-1.;
@@ -42,7 +43,7 @@ Input parse(int argc,char** argv){
         {"rank-cap","24"},{"radius","0.6"},{"inherit","1"},{"audit","0"},{"emit-solution","0"},{"method","ALOD"},
         {"enrichment-tests","kernel_lift"},{"ell-mode","lazy"},{"ell-ratio-mode","raw"},{"ell-threshold","0"},{"ell-absolute-threshold","-1"},{"maximum-ell","4"},{"extra-checks",""},{"force-promotions",""},{"reference-theta","0.3,0.2"},
         {"maximum-patch-entries","8000000"},{"maximum-dense-entries","8000000"},
-        {"exact-target","-1"},{"exact-scope","nominal"},{"checkpoint-dir",""},{"resume",""},{"config-file",""},{"pause-state","-1"},{"pause-phase","accepted"}};
+        {"exact-target","-1"},{"exact-scope","nominal"},{"checkpoint-interval-cycles","0"},{"checkpoint-dir",""},{"resume",""},{"config-file",""},{"pause-state","-1"},{"pause-phase","accepted"}};
     std::vector<char*> forward{argv[0]};if(argc>1)forward.push_back(argv[1]);std::set<std::string> seen;
     for(int i=2;i<argc;++i){std::string arg=argv[i];auto eq=arg.find('=');auto key=arg.substr(2,eq-2);
         if(arg.starts_with("--")&&eq!=std::string::npos&&opts.contains(key)){
@@ -54,6 +55,7 @@ Input parse(int argc,char** argv){
     auto exact=numbers(opts.at("exact-target"));if(exact.size()!=1||(exact[0]<=0&&exact[0]!=-1))throw std::invalid_argument("exact target must be positive or -1");
     in.exact_target=exact[0];in.exact_scope=opts.at("exact-scope");if(in.exact_scope!="nominal"&&in.exact_scope!="training_max")throw std::invalid_argument("invalid exact scope");
     in.cycles=integer("cycles",0,1000);in.m=integer("m-ref",1,16);in.state_limit=integer("state-limit",0,10001);
+    in.checkpoint_interval=integer("checkpoint-interval-cycles",0,1000);
     in.checkpoint_dir=opts["checkpoint-dir"];in.resume=opts["resume"];in.config_file=opts["config-file"];in.pause_state=integer("pause-state",-1,10000);in.pause_phase=opts["pause-phase"];
     if(in.pause_phase!="accepted"&&in.pause_phase!="training"&&in.pause_phase!="ell")throw std::invalid_argument("invalid checkpoint pause phase");
     if(in.pause_state>=0&&in.checkpoint_dir.empty())throw std::invalid_argument("pause requires checkpoint-dir");
@@ -175,20 +177,31 @@ int adaptive_main(int argc,char** argv){
     // Declared after the borrowed view: future destruction joins the writer
     // before the view or mesh histories can be destroyed during unwinding.
     std::future<void> geometry_write;
+    const std::filesystem::path snapshot_directory=config.checkpoint_interval>0&&config.audit
+        ?std::filesystem::path(config.checkpoint_dir).parent_path()/"audit_snapshots":std::filesystem::path(config.checkpoint_dir);
+    const auto periodic_checkpoint=[&]{return config.checkpoint_interval>0&&cursor.coarse_cycle>0
+        &&cursor.cycle_complete(config.m)&&cursor.coarse_cycle%config.checkpoint_interval==0;};
     auto snapshot=[&](CheckpointPhase phase,const std::string& journal,bool check,const ComplexMatrix& values,const ComplexMatrix& phi,
-                      const std::vector<int>& cm,const std::vector<int>& fm,const std::string& identity,const LodSpace* accepted_space=nullptr){
+                      const std::vector<int>& cm,const std::vector<int>& fm,const std::string& identity,const LodSpace* accepted_space=nullptr,bool terminal=false){
         if(config.checkpoint_dir.empty())return;
-        PhaseTimer timing(phase==CheckpointPhase::Accepted?"checkpoint_accepted":"checkpoint_restart",cursor.state_id);
+        const bool forced=config.pause_state==cursor.state_id&&config.pause_phase==
+            (phase==CheckpointPhase::Accepted?"accepted":phase==CheckpointPhase::BeforeTraining?"training":"ell");
+        const bool durable=config.checkpoint_interval==0||forced||
+            (phase==CheckpointPhase::Accepted&&(terminal||periodic_checkpoint()));
+        if(!durable&&!(config.audit&&phase==CheckpointPhase::Accepted))return;
+        PhaseTimer timing(phase==CheckpointPhase::Accepted?(durable?"checkpoint_accepted":"audit_snapshot_publish"):"checkpoint_restart",cursor.state_id);
         Checkpoint s;
         if(std::getenv("ALOD_REFERENCE_EXECUTION")){s.coarse=coarse_history;s.fine=fine_history;s.P_node=reference.P_node;s.P_elem=reference.P_elem;s.P_dg=reference.P_dg;}
         s.raw_kernel=incoming;s.phi=phi;s.values=values;s.warm_full=warm_full;s.coarse_marks=cm;s.reference_marks=fm;
         for(const auto& m:input.members)s.computed_ids.push_back(m.id);
         s.cursor=cursor;s.ell=ell;s.last_check=config.policy.last_check;s.next_event=event_id;s.revision=revision;s.phase=phase;s.mesh_changed=mesh_changed;s.check_pending=check;
         s.committed_lines=committed_lines;s.journal_hash=prefix_hash;s.journal=journal;s.mathematics_key=key;s.config_json=config_json;s.members_text=members_text;s.space_identity=identity;
-        if(geometry_write.valid()){PhaseTimer wait("checkpoint_geometry_wait",cursor.state_id);geometry_write.get();}
-        auto published=save_checkpoint(config.checkpoint_dir,s,accepted_space?&accepted_space->trial():nullptr,
+        if(geometry_write.valid()){PhaseTimer wait(durable?"checkpoint_geometry_wait":"audit_snapshot_geometry_wait",cursor.state_id);geometry_write.get();}
+        auto published=save_checkpoint(snapshot_directory,s,accepted_space?&accepted_space->trial():nullptr,
             accepted_space&&!std::getenv("ALOD_REFERENCE_EXECUTION")?&accepted_space->reduced():nullptr,
-            !std::getenv("ALOD_REFERENCE_EXECUTION"),checkpoint_geometry.get());
+            !std::getenv("ALOD_REFERENCE_EXECUTION"),checkpoint_geometry.get(),durable&&snapshot_directory==std::filesystem::path(config.checkpoint_dir));
+        if(durable&&snapshot_directory!=std::filesystem::path(config.checkpoint_dir))
+            retain_checkpoint(published,config.checkpoint_dir,!std::getenv("ALOD_REFERENCE_EXECUTION")&&checkpoint_geometry?checkpoint_geometry->object_name:"");
         if(phase==CheckpointPhase::Accepted&&accepted_space&&checkpoint_geometry)
             publish_audit_snapshot(published,std::move(s),*accepted_space,*checkpoint_geometry);
     };
@@ -196,11 +209,12 @@ int adaptive_main(int argc,char** argv){
     for(int state=begin_state;state<states;++state){
         PhaseTimer state_timer("adaptive_state",state);
         if(!std::getenv("ALOD_REFERENCE_EXECUTION"))checkpoint_geometry=std::make_unique<CheckpointGeometryView>(CheckpointGeometryView{coarse_history,fine_history,reference.P_node,reference.P_elem,reference.P_dg});
-        if(checkpoint_geometry&&!config.checkpoint_dir.empty()&&!std::getenv("ALOD_CHECKPOINT_SYNC")){
+        const bool write_geometry=config.checkpoint_interval==0||config.audit||periodic_checkpoint()||state+1==states||config.pause_state==state;
+        if(write_geometry&&checkpoint_geometry&&!config.checkpoint_dir.empty()&&!std::getenv("ALOD_CHECKPOINT_SYNC")){
             auto* view=checkpoint_geometry.get();auto timing_file=PhaseTimer::thread_file;
             geometry_write=std::async(std::launch::async,[&,view,timing_file,state]{
-                PhaseTimer::thread_file=timing_file;PhaseTimer timer("checkpoint_geometry_background",state);
-                prepare_checkpoint_geometry(config.checkpoint_dir,*view);
+                PhaseTimer::thread_file=timing_file;PhaseTimer timer(config.checkpoint_interval>0&&config.audit?"audit_snapshot_geometry_background":"checkpoint_geometry_background",state);
+                prepare_checkpoint_geometry(snapshot_directory,*view);
             });
         }
         BufferedEvents events(pending_events);pending_events.clear();
@@ -220,10 +234,19 @@ int adaptive_main(int argc,char** argv){
             if(!was_resumed)snapshot(CheckpointPhase::BeforeTraining,events.buffer.str(),check,{},{},{},{},"");
             return 0;
         }
-        auto load_start=std::chrono::steady_clock::now();
-        ComplexMatrix loads;{PhaseTimer timing("load",state);loads=assemble_load_batch(reference.mesh,problems,quad,input.threads,
-            std::getenv("ALOD_REFERENCE_EXECUTION")||config.method=="AFEM"?nullptr:&source_moments,&source_reuse,members_text);}
-        double load_seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-load_start).count();
+        const bool overlap=asynchronous_execution(input.threads);
+        const int load_workers=overlap?std::min<int>(problems.size(),std::max(1,input.threads/2)):input.threads;
+        ComplexMatrix loads;double load_seconds=0;
+        auto assemble_load=[&]{
+            auto start=std::chrono::steady_clock::now();PhaseTimer timing("load",state);
+            auto result=assemble_load_batch(reference.mesh,problems,quad,input.threads,
+                std::getenv("ALOD_REFERENCE_EXECUTION")||config.method=="AFEM"?nullptr:&source_moments,&source_reuse,members_text);
+            return std::make_pair(std::move(result),std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count());
+        };
+        // Join before training, snapshots of accepted values, or mesh mutation.
+        std::future<std::pair<ComplexMatrix,double>> pending_load;
+        if(overlap&&config.method!="AFEM")pending_load=background_task(thread_budget(load_workers),assemble_load);
+        else {auto result=assemble_load();loads=std::move(result.first);load_seconds=result.second;}
         if(!was_resumed)snapshot(CheckpointPhase::BeforeTraining,events.buffer.str(),check,{},{},{},{},"");
 
         if(config.method=="AFEM"){
@@ -235,6 +258,7 @@ int adaptive_main(int argc,char** argv){
                 ComplexVector residual=ops.system*values.col(j)-loads.col(j),rhs=loads.col(j);for(int n:ops.dirichlet_nodes){residual[n]=0;rhs[n]=0;}pg=std::max(pg,residual.norm()/std::max(1e-30,rhs.norm()));}
             coarse_mass=strong;
         }else for(;;){
+            auto construction_scope=std::make_unique<ExecutionScope>(thread_budget(pending_load.valid()?input.threads-load_workers:input.threads));
             phase_start=std::chrono::steady_clock::now();
             {PhaseTimer timing("lod_construct",state);
             if(space)space=std::make_unique<LodSpace>(*space,ell);
@@ -243,7 +267,32 @@ int adaptive_main(int argc,char** argv){
             {PhaseTimer timing("riesz_prepare",state);if(!riesz)riesz=std::make_unique<AdditiveKernelRieszContext>(*space,input.riesz_policy=="n2"?RieszPatchPolicy::ManuscriptN2:RieszPatchPolicy::ArchivedSupportExpanded);
             }
             if(riesz->reference_identity()!=space->reference_identity())throw std::runtime_error("ell-only Riesz cache identity mismatch");
-            E=space->energy();prepare_seconds+=phase_time();phase_start=std::chrono::steady_clock::now();
+            E=space->energy();prepare_seconds+=phase_time();
+            if(pending_load.valid()){
+                PhaseTimer wait("load_wait",state);auto result=pending_load.get();loads=std::move(result.first);load_seconds=result.second;
+            }
+            construction_scope.reset();
+            LocalizationEigenConfig eig;eig.relative_tolerance=input.tolerance;eig.maximum_iterations=input.iterations;eig.dense_cross_check_max_dimension=input.dense;
+            eig.eigenvalue_relative_residual=config.policy.solution_scaled;
+            std::string warm_transport="cold";
+            if(warm_full.rows()==static_cast<int>(H.nodes.size())&&warm_full.cols()){
+                ComplexMatrix block(space->coarse_nodes().size(),warm_full.cols());
+                for(int j=0;j<block.rows();++j)block.row(j)=warm_full.row(space->coarse_nodes()[j]);
+                if(block.norm()>0){eig.warm_start=LocalizationWarmStart{space->identity()+":"+riesz->patch_policy_name()+":adjoint",block};warm_transport="coarse_nodal_injection";}
+            }
+            // Theta depends on the immutable LOD basis and kernel factors, not on
+            // the solution or greedy dictionary. Only its decision must wait for eta.
+            const bool overlap_theta=check&&overlap;
+            auto theta_budget=thread_budget(overlap_theta?std::max(1,input.threads/2):input.threads);
+            ExecutionScope foreground(thread_budget(overlap_theta?input.threads-theta_budget->load():input.threads));
+            auto compute_theta=[&,eig]{
+                auto start=std::chrono::steady_clock::now();PhaseTimer timing("theta",state);
+                auto result=localization_theta(*space,*riesz,eig);
+                return std::make_pair(std::move(result),std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count());
+            };
+            std::future<std::pair<LocalizationResult,double>> pending_theta;
+            if(overlap_theta)pending_theta=background_task(theta_budget,compute_theta);
+            phase_start=std::chrono::steady_clock::now();
             {PhaseTimer timing("training_or_lod_solve",state);
             if(input.problem=="E2"){
                 ComplexMatrix train_loads(loads.rows(),training.size());for(int j=0;j<train_loads.cols();++j)train_loads.col(j)=loads.col(training[j]);
@@ -263,18 +312,13 @@ int adaptive_main(int argc,char** argv){
             training_seconds+=phase_time();phase_start=std::chrono::steady_clock::now();
             {PhaseTimer timing("riesz_estimate",state);auto estimate=riesz->estimate(loads,values,input.theta);eta=estimate.eta;coarse_mass=estimate.element_eta_squared;}estimate_seconds+=phase_time();phase_start=std::chrono::steady_clock::now();
             if(!check)break;
-            LocalizationEigenConfig eig;eig.relative_tolerance=input.tolerance;eig.maximum_iterations=input.iterations;eig.dense_cross_check_max_dimension=input.dense;
-            eig.eigenvalue_relative_residual=config.policy.solution_scaled;
-            std::string warm_transport="cold";
-            if(warm_full.rows()==static_cast<int>(H.nodes.size())&&warm_full.cols()){
-                ComplexMatrix block(space->coarse_nodes().size(),warm_full.cols());
-                for(int j=0;j<block.rows();++j)block.row(j)=warm_full.row(space->coarse_nodes()[j]);
-                if(block.norm()>0){eig.warm_start=LocalizationWarmStart{space->identity()+":"+riesz->patch_policy_name()+":adjoint",block};warm_transport="coarse_nodal_injection";}
-            }
-            auto localization=[&]{PhaseTimer timing("theta",state);return localization_theta(*space,*riesz,eig);}();accepted_theta=localization.theta;theta_ell=ell;
+            // Return the foreground team before waiting. Subsequent Riesz calls
+            // reclaim the full budget; no second set of patch factors is built.
+            theta_budget->store(input.threads);
+            auto measured=[&]{if(!pending_theta.valid())return compute_theta();PhaseTimer wait("theta_wait",state);return pending_theta.get();}();
+            auto localization=std::move(measured.first);theta_seconds+=measured.second;accepted_theta=localization.theta;theta_ell=ell;
             warm_full=ComplexMatrix::Zero(H.nodes.size(),localization.warm_start.block.cols());
             for(int j=0;j<static_cast<int>(space->coarse_nodes().size());++j)warm_full.row(space->coarse_nodes()[j])=localization.warm_start.block.row(j);
-            theta_seconds+=phase_time();
             double solution_scale=std::max(1e-12,std::sqrt(std::max(0.,values.col(nominal).dot(E.cast<Complex>()*values.col(nominal)).real())));
             auto raw_ratio=localization_ratio(localization.theta,eta[nominal]);
             auto scaled_ratio=localization_ratio(solution_scale*localization.theta,eta[nominal]);
@@ -295,6 +339,9 @@ int adaptive_main(int argc,char** argv){
             std::cout<<",\"criterion_satisfied\":"<<(!absolute_exceeded&&!ratio_exceeded?"true":"false");
             std::cout<<",\"ritz_eigenvalue_relative\":"<<(eig.eigenvalue_relative_residual?"true":"false");
             std::cout<<",\"mesh_revision\":"<<revision<<",\"ritz_iterations\":"<<localization.spectrum.iterations<<",\"ritz_residual\":"<<localization.spectrum.relative_residual
+                <<",\"theta_operator_applications\":"<<localization.spectrum.operator_applications
+                <<",\"theta_operator_columns\":"<<localization.spectrum.operator_columns
+                <<",\"theta_operator_seconds\":"<<localization.spectrum.operator_seconds
                 <<",\"warm_transport\":\""<<warm_transport<<"\",\"identity\":\""<<localization.identity<<"\"}\n";
             config.policy.last_check=state;
             if(!promote)break;
@@ -371,7 +418,7 @@ int adaptive_main(int argc,char** argv){
         std::cout<<",\"target_reached\":"<<(target_reached?"true":"false")<<",\"exact_target_ratio\":";if(exact_ratio>=0)std::cout<<exact_ratio;else std::cout<<"null";
         if(config.emit){std::cout<<",\"solution\":";fixed::complex_matrix(values);}
         std::cout<<",\"wall_seconds\":"<<std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count()<<"}\n"<<std::flush;
-        snapshot(CheckpointPhase::Accepted,events.buffer.str(),false,values,regional.phi,cm.marked_elements,fm.marked_elements,space?space->identity():"AFEM",space.get());
+        snapshot(CheckpointPhase::Accepted,events.buffer.str(),false,values,regional.phi,cm.marked_elements,fm.marked_elements,space?space->identity():"AFEM",space.get(),terminal);
         auto journal=events.buffer.str();committed_lines+=std::count(journal.begin(),journal.end(),'\n');prefix_hash=journal_hash(journal,prefix_hash);
         events.publish();
         if(config.pause_state==state&&config.pause_phase=="accepted")return 0;

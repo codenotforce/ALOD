@@ -4,8 +4,9 @@
 
 `ell_absolute_threshold` is the manually supplied value of tau(k) for the
 configured wavenumber. Nonnegative finite values enable the gate; `-1` disables
-it for archived configurations. Current paper presets explicitly set 0.2.
-There is no inferred formula for tau(k).
+it for archived configurations. Current production presets explicitly store
+`3.2/k`, as requested: 0.4, 0.2, 0.1, 0.05 and 0.025 for k=8,16,32,64,128.
+The runtime still consumes a manual scalar; it does not infer a scaling law.
 
 At each scheduled lazy check, promote if either `Theta > tau(k)` or the existing
 balance ratio exceeds its threshold. Equality does not promote. Both gates use
@@ -51,10 +52,19 @@ See [workflow review](workflow_reuse.md) for lifetime, thread and timing details
 
 ## Recovery contract
 
-- Training boundaries, every ell promotion and accepted states are automatically
-  checkpointed, not just explicit test pauses. Work interrupted inside a solve
-  restarts at the latest completed boundary; partial sparse factorizations and
-  individual greedy iterations are not serialized.
+- With `checkpoint_interval_cycles=0`, training boundaries, ell promotions and
+  accepted states retain the compatibility checkpoint policy. Current production
+  presets use 5: only completed cycles divisible by five and the final accepted
+  state become automatic restart points. Exact-target and state-limit endings
+  count as final states. Explicit diagnostic pauses also retain a restart point.
+  Partial sparse factorizations and individual greedy iterations are not serialized.
+- Periodic-mode per-state audit transactions live in `audit_snapshots`; the
+  automatic recovery search uses only `checkpoints`. Scheduled points hard-link
+  their transaction and geometry into `checkpoints`, with a copy fallback on
+  filesystems without hard links. A restart preserves superseded later snapshots
+  in recovery folders before recomputing the interval. Audit coverage is not
+  reduced to checkpoint states. Retained audit inputs still require disk I/O
+  and storage; reducing restart frequency does not eliminate that cost.
 - `--resume auto` searches newest transactions first, verifies the complete
   checksum, recovers a missing/stale pointer and repairs an uncommitted journal
   tail. A corrupt newest snapshot is retained in `checkpoints/recovery` while
@@ -79,8 +89,10 @@ See [workflow review](workflow_reuse.md) for lifetime, thread and timing details
   Older binaries cannot read v3 checkpoints.
   Metadata inspection verifies the file without reconstructing its dense arrays.
 - A startup interruption before the first checkpoint restarts at state zero
-  only when the frozen configuration/member table match and the numerical
-  journal is empty. Checkpointing does not make disk exhaustion or loss of all checkpoint files
+  only when the frozen configuration/member table match. In periodic mode,
+  any preliminary journal and audit snapshots are preserved as recovery evidence
+  before replay; compatibility mode requires an empty journal.
+  Checkpointing does not make disk exhaustion or loss of all checkpoint files
   recoverable. Resource failures preserve the last completed transaction.
 
 The campaign supervisor supports `--resume` for unfinished adaptive jobs and
@@ -158,3 +170,65 @@ The subsequent [integration optimization](integration_optimization.md) reduced
 audit error integration by 44% and complete workflow time by 18% on the same
 three-state probe. Load and strong-residual times changed little at that size;
 see the alternating-run measurements before extrapolating to larger jobs.
+
+
+## Overlap inside an adaptive state
+
+The current implementation starts load assembly while constructing the LOD space
+and preparing kernel Riesz factors. Once both are ready, a scheduled localization
+check can run concurrently with solution/training and the coarse estimator:
+
+- Theta uses only the current immutable LOD basis, operators and kernel factors.
+  Concurrent Riesz applications have private workspaces and atomic usage counters.
+  Factors and patch geometry are not duplicated.
+- The foreground still waits for both Theta and eta before deciding whether to
+  promote ell. It joins the old task before replacing the space, publishing an
+  accepted state or refining a mesh. The greedy training order is unchanged.
+- While both computations are active, they divide the configured OpenMP budget.
+  When the foreground finishes, subsequent background patch applications reclaim
+  the full budget. A 32-thread adaptive run does not launch two 32-worker patch
+  teams. Audit workers retain their separate configured budget.
+
+`ALOD_ASYNC_DISABLE=1` selects sequential execution for controlled comparisons.
+It is an operational switch, not a mathematical checkpoint parameter. Timing logs
+include `load_wait`, `theta_wait`, `theta_denominator`, `theta_defect`,
+`theta_cancellation_projection`, `theta_ritz`, `riesz_patch_apply` and
+`riesz_scatter`. Threaded writes are serialized as complete JSONL records.
+`theta_seconds` measures the full Theta task, rather than only the foreground's
+wait. Concurrent phase durations must not be added to infer wall time.
+
+## Bounded audit batch pipeline
+
+Full audits overlap reference/frozen solves with quadrature for adjacent batches.
+A persistent background lane performs load and error integration in order,
+reusing its OpenMP team. The foreground alone accesses mutable reference/reduced
+solver contexts. Numerical factors are constructed once per audited state.
+
+The lane retains at most one running and one queued task. At most one next load
+and one previous batch await consumption; outputs preserve sample order. Error
+integration caches have a single writer. Ownership survives exceptions, and the
+lane drains before borrowed mesh/operator objects are destroyed. Worker exceptions
+propagate through futures and prevent an audit-complete record.
+
+The foreground reserves one worker and the quadrature lane uses the remaining
+workers (31 for a 32-thread audit). Load and integration deliberately share this
+lane: competing quadrature teams caused a regression in the initial timing tests.
+Integral work is partitioned using the actual task budget, avoiding unequal
+chunk counts after a team is resized. The final drain returns the full team
+to the lane. This controls ALOD's OpenMP
+teams; separately threaded BLAS libraries still require an appropriate external
+thread policy. Validation uses single-thread BLAS, as in existing regression tests.
+
+The pipeline requires at least three threads and more than one batch. Fresh
+training diagnostics and exact audits that directly reuse all accepted values
+stay sequential. Additional retained dense buffers are checked against
+`ALOD_ASYNC_BUFFER_BYTES`, default 1073741824 bytes. Above this budget the audit
+uses its sequential path; reducing batch size or explicitly increasing this
+budget can enable overlap on larger meshes. This is a retained-buffer budget,
+not a cap on total process RSS or on existing sparse factors.
+
+Regression coverage compares E1/E2 serial and concurrent trajectories, promotions,
+resume, full/exact multi-batch audits, memory-budget fallback, concurrent Riesz
+applications, worker reuse, exception propagation and queue draining. New binaries
+are validated independently; already running production processes keep their
+original executable and scheduling behavior.

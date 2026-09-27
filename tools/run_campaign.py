@@ -1,5 +1,6 @@
 """Linux tmux supervisor: restartable jobs and memory guards, no CPU binding."""
 import argparse,json,os,signal,subprocess,sys,time,shutil
+from campaign_schedule import validate_dependencies, ready
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 GIB=1024**3
@@ -19,6 +20,7 @@ def main():
  from execution import run_lease
  with run_lease(a.campaign/'campaign'):
   a.campaign=a.campaign.resolve();a.build=a.build.resolve();spec=json.loads((a.campaign/'campaign.json').read_text())
+  validate_dependencies(spec['jobs'])
   status_path=a.campaign/'status.json'
   previous={}
   if status_path.exists():
@@ -54,13 +56,15 @@ def main():
    free_slots=[i for i in range(len(slots)) if i not in {x['slot'] for x in active}]
    committed=sum(max(0,x['memory_gib']-x.get('rss_gib',0)) for x in active)
    for slot in free_slots:
-    index=next((i for i,j in enumerate(pending) if memory_available()/GIB-committed-j['memory_gib']>=spec['reserve_gib']),None)
+    index=next((i for i,j in enumerate(pending) if ready(j,done) and memory_available()/GIB-committed-j['memory_gib']>=spec['reserve_gib']),None)
     if index is None or shutil.disk_usage(a.campaign).free<spec['disk_reserve_gib']*GIB:break
     j=pending.pop(index);cmd=[sys.executable,str(ROOT/'tools/campaign_job.py'),'--campaign',str(a.campaign),'--name',j['name'],'--build',str(a.build)]
     handle=(logs/f'{j["name"]}.log').open('a');process=subprocess.Popen(cmd,stdout=handle,stderr=subprocess.STDOUT,env=env,start_new_session=True)
     x=dict(name=j['name'],slot=slot,cpu_binding=None,pid=process.pid,process=process,handle=handle,memory_gib=j['memory_gib'],started_at=now,command=cmd)
     active.append(x);committed+=j['memory_gib'];print(json.dumps(dict(event='started',name=j['name'],pid=process.pid,cpu_binding=None)),flush=True)
    save()
+   if pending and not active and not any(ready(j,done) for j in pending):
+    save('blocked_by_failed_dependency');raise SystemExit(1)
    with (a.campaign/'resources.jsonl').open('a') as f:f.write(json.dumps(dict(time=now,available_gib=memory_available()/GIB,active=[dict(name=x['name'],rss_gib=x.get('rss_gib',0),cpu_percent=x.get('cpu_percent',0)) for x in active]))+'\n')
    if active or pending:time.sleep(5)
   save('complete' if all(x['exit_code']==0 for x in done) else 'finished_with_failures')

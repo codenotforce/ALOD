@@ -4,6 +4,7 @@
 # an old checkpoint without an enrichment policy must retain archived adjoint
 # tests rather than silently switching to the current kernel-lift formulation.
 COMPATIBILITY_DEFAULTS = {
+    "checkpoint_interval_cycles": 0,
     "exact_target": -1.0,
     "exact_scope": "nominal",
     "audit_mode": "full",

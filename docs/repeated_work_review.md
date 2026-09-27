@@ -43,37 +43,23 @@ The unused component matrices are omitted on this path. Other callers retain
 components by default. Constraint rank detection, Schur solves, saddle fallback,
 residual gates and basis assembly remain unchanged.
 
-## Remaining opportunities requiring separate validation
+## Disposition of the original optimization opportunities
 
-1. Local corrector reuse across adaptive states: cache only patches whose local
-   mesh, boundary data, interpolation constraints and operator values are all
-   unchanged. Element IDs alone are insufficient. Measure cache hit rates and
-   bound retained factor memory before introducing persistent factor caches.
-2. Load/strong-residual fusion: accumulate source moments while assembling loads
-   and reuse them in the later residual calculation. An expanded squared-norm
-   formula can suffer cancellation when the residual is small; it needs a
-   verified stable fallback before replacing direct quadrature.
-3. Audit reduced-operator reuse: accepted checkpoints could also carry the small
-   reduced matrix, avoiding its assembly in each audit. Basis/operator identity
-   and serialization validation must cover this additional cached object.
-4. Checkpoint I/O: immutable mesh sections could be shared between restart and
-   accepted snapshots. Transactional recovery and corruption tests must remain
-   valid. Removing checksums or accepted snapshots would weaken the current
-   recovery contract and is not implemented.
-5. Patch constraint rank detection and dense Schur work remain potentially
-   expensive. Sparse or iterative alternatives require conditioning and
-   convergence evidence; they are not automatic substitutes for the current
-   checked direct solves.
+The following list distinguishes implementation progress after this dated review
+from the measurements below. It is not a new performance claim.
 
-6. E2 enrichment orthogonalization currently evaluates E*v inside the loop over
-   existing dictionary columns, in each of two passes. Maintaining E*v with
-   cached E*phi columns could replace repeated fine-grid sparse products with
-   vector updates. This changes floating-point evaluation order, so kernel,
-   orthogonality, training-stop and compression checks need dedicated E2/E3
-   validation. It is identified but not changed in this patch.
+| Original opportunity | Current disposition |
+|---|---|
+| Cross-state corrector and local factor reuse | Implemented with exact identities and bounded retention; see [deep reuse](deep_reuse.md). |
+| Load/source-moment reuse in strong residuals | Implemented with checked fallback; see [five optimizations](five_optimizations.md) and [integration](integration_optimization.md). |
+| Accepted reduced-operator reuse in audits | Implemented in checkpoint restoration; see [workflow reuse](workflow_reuse.md). |
+| Shared immutable checkpoint geometry | Implemented; background geometry preparation is also available. Dense state payload publication remains synchronous. |
+| Repeated energy products during E2 orthogonalization/training | Prepared/reduced-coordinate products and POD screening now cover this work; see [space optimization](space_optimization.md) and [deep reuse](deep_reuse.md). |
+| Sparse/iterative alternatives to expensive local rank/Schur work | Still require conditioning, acceptance and performance evidence; not an automatic replacement. |
 
-E1 has no enrichment training. Its timings cannot establish E2/E3 training
-speedups. The original full E1 deployment and its result logs are preserved.
+Checksums and restart/audit transaction contracts remain enforced. E1 has no
+regional enrichment training, so its timings cannot establish E2 training speedups.
+The original experiment logs and measurements below remain unchanged.
 
 ## Measured validation
 

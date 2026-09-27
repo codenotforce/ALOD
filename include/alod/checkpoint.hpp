@@ -40,7 +40,10 @@ std::string checkpoint_metadata(const Checkpoint&, bool has_basis=false,int form
 // Immutable, checksummed little-endian files. A temporary is verified before
 // rename; latest is replaced only after the new checkpoint is committed.
 std::filesystem::path save_checkpoint(const std::filesystem::path& directory,const Checkpoint&, const ComplexSparseMatrix* accepted_trial=nullptr,
-    const ComplexSparseMatrix* accepted_reduced=nullptr,bool share_geometry=false,const CheckpointGeometryView* geometry=nullptr);
+    const ComplexSparseMatrix* accepted_reduced=nullptr,bool share_geometry=false,const CheckpointGeometryView* geometry=nullptr,bool update_latest=true);
+// Retain an audit transaction as a restart point without serializing it again.
+// Geometry is linked first; the restart pointer is published last.
+void retain_checkpoint(const std::filesystem::path& file,const std::filesystem::path& directory,const std::string& geometry_file);
 // Check the complete checksum while reading only the metadata into memory.
 std::string inspect_checkpoint(const std::filesystem::path&,std::uint64_t maximum_bytes=UINT64_MAX);
 Checkpoint load_checkpoint(const std::filesystem::path& file,std::uint64_t maximum_bytes=UINT64_MAX);

@@ -152,9 +152,9 @@
       "origin_scope": "initial_project_input",
       "origin": "ALOD_SUBPROJECT_AGENT_PLAN_20260909.md",
       "origin_sha256": "5e4544f14cf014a4732477283ec5ea64cb28e2506d8cb13162c768597c3c9ae2",
-      "sha256": "19f7632ad43e0f89f431417cbc1a9538b9d242dc8528b810d09db901f93f3255",
+      "sha256": "b2f2d7e288fc0561082084b61a0b4d367ddbafce43e611861db81ce79d936888",
       "snapshot": "initial-user-plan",
-      "modification": "Plan retained in Chinese at user request; portable paths and P0/P1/P2 completion status recorded, including both verified manuscript/archive definition differences. P3/P4 phase status, user-selected E2 lazy timing, discovered source differences and explicit deferred campaigns updated. P5/P6 completion, bounded validation and explicit P7/P8 follow-up scope recorded; plan remains in Chinese. Version 4 review: explicit kernel/archived policies, normalized localization, numerical recovery, variable-wavenumber support or updated documentation; see docs/paper_v4_review.md.",
+      "modification": "Plan retained in Chinese at user request; portable paths and P0/P1/P2 completion status recorded, including both verified manuscript/archive definition differences. P3/P4 phase status, user-selected E2 lazy timing, discovered source differences and explicit deferred campaigns updated. P5/P6 completion, bounded validation and explicit P7/P8 follow-up scope recorded; plan remains in Chinese. Version 4 review: explicit kernel/archived policies, normalized localization, numerical recovery, variable-wavenumber support or updated documentation; see docs/paper_v4_review.md. Ordered 2026-09-27 production deployment: prescribed inverse-kappa thresholds, 28-cycle E1/E2 runs, five-cycle restart points and separate all-state audit snapshots. Scoped OpenMP execution budgets and phase instrumentation support bounded asynchronous work.",
       "copyright": "Inherited; no repository license found. See NOTICE.md."
     },
     {
@@ -542,9 +542,9 @@
       "origin_scope": "legacy",
       "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/model.cpp",
       "origin_sha256": "4da71e4c9b289d4939acffa750fb727a5f8829bd061febd168bbbfe6ef8e30bf",
-      "sha256": "c648e61182a84b8b5f9e54cbd48bc95b04a7fd6eab270e879a91bd56d7302d0a",
+      "sha256": "db2bf7a256323707b03e20d41e5b14b3be90ef49a8e5348e2d2e4482b7845d9b",
       "snapshot": "E2-production",
-      "modification": "Fixed-state two-sided direct-Schur assembly, shared batch PG factor and immutable identities; excludes controller and audit machinery. P6 adds ell-only reconstruction from validated reference operators/interpolation. Release LOD temporary basis storage before reduced factorization or avoid duplicate selected-region Riesz scatter; arithmetic order retained. Accepted-basis checkpoint reuse, earlier resource release, or deterministic member/element tiling for requested thread counts. Direct corrector assembly skips unused component matrices. Added bounded cross-state corrector cache and checked reduced-operator restoration. Exact numbering-independent local reuse, bounded Riesz factor retention, or reduced-coordinate training and immutable hierarchy transfer; original provenance retained.",
+      "modification": "Fixed-state two-sided direct-Schur assembly, shared batch PG factor and immutable identities; excludes controller and audit machinery. P6 adds ell-only reconstruction from validated reference operators/interpolation. Release LOD temporary basis storage before reduced factorization or avoid duplicate selected-region Riesz scatter; arithmetic order retained. Accepted-basis checkpoint reuse, earlier resource release, or deterministic member/element tiling for requested thread counts. Direct corrector assembly skips unused component matrices. Added bounded cross-state corrector cache and checked reduced-operator restoration. Exact numbering-independent local reuse, bounded Riesz factor retention, or reduced-coordinate training and immutable hierarchy transfer; original provenance retained. Scoped OpenMP execution budgets and phase instrumentation support bounded asynchronous work.",
       "copyright": "Inherited; no repository license found. See NOTICE.md."
     },
     {
@@ -562,9 +562,9 @@
       "origin_scope": "legacy",
       "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/adaptive/kernel_residual.cpp",
       "origin_sha256": "db07ff1fa841913cdf967460d2b6d17059a6f242d5dd035dadeeb616d872f6f7",
-      "sha256": "6f713e9cdb3bd7b9f57587eb479d808c122df1ca6edea94a3fbc0bb48beaed9c",
+      "sha256": "459353efa11e7a9f0ddc355e9fea7b414f8647e59f0188192ad6bb3c7dd43fb3",
       "snapshot": "E2-production",
-      "modification": "Extracted active-row QR reduction, restrictions and geometry; manuscript N2 and explicit archived support-expansion policies. Batched additive Schur/saddle body is from additive_kernel_riesz.inc. Preserves duplicate-patch multiplicity, deterministic reductions and selected/full identities; adds resource caps and local kernel residuals. Version 4 review: explicit kernel/archived policies, normalized localization, numerical recovery, variable-wavenumber support or updated documentation; see docs/paper_v4_review.md. Release LOD temporary basis storage before reduced factorization or avoid duplicate selected-region Riesz scatter; arithmetic order retained. Exact numbering-independent local reuse, bounded Riesz factor retention, or reduced-coordinate training and immutable hierarchy transfer; original provenance retained.",
+      "modification": "Extracted active-row QR reduction, restrictions and geometry; manuscript N2 and explicit archived support-expansion policies. Batched additive Schur/saddle body is from additive_kernel_riesz.inc. Preserves duplicate-patch multiplicity, deterministic reductions and selected/full identities; adds resource caps and local kernel residuals. Version 4 review: explicit kernel/archived policies, normalized localization, numerical recovery, variable-wavenumber support or updated documentation; see docs/paper_v4_review.md. Release LOD temporary basis storage before reduced factorization or avoid duplicate selected-region Riesz scatter; arithmetic order retained. Exact numbering-independent local reuse, bounded Riesz factor retention, or reduced-coordinate training and immutable hierarchy transfer; original provenance retained. Localization action reuse and action-only Riesz evaluation; mathematical operator and stopping tolerance retained. Scoped OpenMP execution budgets and phase instrumentation support bounded asynchronous work. Factor data and constrained solves shared with the optional fused defect operator.",
       "copyright": "Inherited; no repository license found. See NOTICE.md.",
       "additional_origins": [
         {
@@ -588,9 +588,9 @@
       "origin_scope": "legacy",
       "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/adaptive/certificates.cpp",
       "origin_sha256": "e939ee9638c41cfc630e79136878859109a3c4703eb3d77e737c288fc4c7ec49",
-      "sha256": "5e14a8a82e4bae8467ed017ec7e0ccf461490435fa48b2cdc41cb0506de655e7",
+      "sha256": "671e64f69ec1ef386b35e9aeb272da106bf3b93d21711b830c2fc5854d572b85",
       "snapshot": "E2-production",
-      "modification": "Extracted reference_defect_spectrum_matrix_free block Ritz iteration and corrector defect/coarse-energy construction. Reuses prepared additive Riesz factors; strict warm-start identities, explicit nonconvergence, no strict certification driver. Version 4 review: explicit kernel/archived policies, normalized localization, numerical recovery, variable-wavenumber support or updated documentation; see docs/paper_v4_review.md.",
+      "modification": "Extracted reference_defect_spectrum_matrix_free block Ritz iteration and corrector defect/coarse-energy construction. Reuses prepared additive Riesz factors; strict warm-start identities, explicit nonconvergence, no strict certification driver. Version 4 review: explicit kernel/archived policies, normalized localization, numerical recovery, variable-wavenumber support or updated documentation; see docs/paper_v4_review.md. Localization action reuse and action-only Riesz evaluation; mathematical operator and stopping tolerance retained. Scoped OpenMP execution budgets and phase instrumentation support bounded asynchronous work. Parallel and patch-local defect actions with an independent global convergence check.",
       "copyright": "Inherited; no repository license found. See NOTICE.md."
     },
     {
@@ -650,10 +650,26 @@
       "origin_scope": "legacy",
       "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/operators.cpp",
       "origin_sha256": "35c4f1ba9dc60b248be7e04a219f5a630e954718d8dab1be63583f8d115d296f",
-      "sha256": "c5ae3543d247c38fdc27950b9906c841c8eb15ad0609c59a59aebc2da270d5f6",
+      "sha256": "5ee090da5e32ef5255e566bf3f89e968fb348f3c2786e30eff303d88a10a5236",
       "snapshot": "E2-production",
-      "modification": "Derived fused audit integrator retains triangle geometry, quadrature and per-member element reduction from the imported operators; adds bounded RHS batching and one reusable reference FEM factor. Reusable quadrature storage with geometric growth, parameter-only normalization, or joint exact evaluation; numerical formulas and quadrature policies unchanged. Accepted-basis checkpoint reuse, earlier resource release, or deterministic member/element tiling for requested thread counts. Shared quadrature and geometry for identical member contexts with deterministic reductions. Optional bounded source moments assembled alongside loads.",
+      "modification": "Derived fused audit integrator retains triangle geometry, quadrature and per-member element reduction from the imported operators; adds bounded RHS batching and one reusable reference FEM factor. Reusable quadrature storage with geometric growth, parameter-only normalization, or joint exact evaluation; numerical formulas and quadrature policies unchanged. Accepted-basis checkpoint reuse, earlier resource release, or deterministic member/element tiling for requested thread counts. Shared quadrature and geometry for identical member contexts with deterministic reductions. Optional bounded source moments assembled alongside loads. Reference FEM factorization uses 64-bit UMFPACK indices, METIS ordering for large systems, and failure diagnostics. Scoped OpenMP execution budgets and phase instrumentation support bounded asynchronous work.",
       "copyright": "Inherited; no repository license found. See NOTICE.md."
+    },
+    {
+      "path": "src/estimator/riesz_internal.hpp",
+      "origin_scope": "legacy",
+      "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/adaptive/kernel_residual.cpp",
+      "origin_sha256": "db07ff1fa841913cdf967460d2b6d17059a6f242d5dd035dadeeb616d872f6f7",
+      "sha256": "ed7bf48d5e4362defe4f0ed66d1295cf647e8a38a7c6615a84f994a49cbb3e19",
+      "snapshot": "E2-production",
+      "modification": "Immutable factor data and the constrained Schur/saddle solve extracted into a shared internal implementation for estimator and defect actions.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md.",
+      "additional_origins": [
+        {
+          "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/adaptive/additive_kernel_riesz.inc",
+          "sha256": "def46c5a096476f6c881c2beb02c347cdfe3d65ec1b97268c4ccc865dd657e89"
+        }
+      ]
     }
   ]
 }
