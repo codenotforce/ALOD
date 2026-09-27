@@ -11,6 +11,7 @@
 #include "alod/batch.hpp"
 #include "../src/lod/fingerprint.hpp"
 #include <chrono>
+#include <future>
 #include <numeric>
 namespace {
 using namespace alod;
@@ -21,7 +22,8 @@ struct Input {
     int cycles=1,m=2,state_limit=0,gap=2,rank=24;
     std::size_t patch_entries=8000000,dense_entries=8000000;
     bool inherit=true,audit=false,emit=false;
-    double radius=.6;
+    double radius=.6,exact_target=-1.;
+    std::string exact_scope="nominal";
     std::vector<double> ref_theta{.3,.2};
     std::string method="ALOD";
     std::string checkpoint_dir,resume,config_file,pause_phase="accepted";
@@ -40,7 +42,7 @@ Input parse(int argc,char** argv){
         {"rank-cap","24"},{"radius","0.6"},{"inherit","1"},{"audit","0"},{"emit-solution","0"},{"method","ALOD"},
         {"enrichment-tests","kernel_lift"},{"ell-mode","lazy"},{"ell-ratio-mode","raw"},{"ell-threshold","0"},{"ell-absolute-threshold","-1"},{"maximum-ell","4"},{"extra-checks",""},{"force-promotions",""},{"reference-theta","0.3,0.2"},
         {"maximum-patch-entries","8000000"},{"maximum-dense-entries","8000000"},
-        {"checkpoint-dir",""},{"resume",""},{"config-file",""},{"pause-state","-1"},{"pause-phase","accepted"}};
+        {"exact-target","-1"},{"exact-scope","nominal"},{"checkpoint-dir",""},{"resume",""},{"config-file",""},{"pause-state","-1"},{"pause-phase","accepted"}};
     std::vector<char*> forward{argv[0]};if(argc>1)forward.push_back(argv[1]);std::set<std::string> seen;
     for(int i=2;i<argc;++i){std::string arg=argv[i];auto eq=arg.find('=');auto key=arg.substr(2,eq-2);
         if(arg.starts_with("--")&&eq!=std::string::npos&&opts.contains(key)){
@@ -49,6 +51,8 @@ Input parse(int argc,char** argv){
     }
     in.fixed=fixed::parse(forward.size(),forward.data());in.policy.problem=in.fixed.problem;
     auto integer=[&](std::string key,int lo,int hi){auto v=numbers(opts.at(key));if(v.size()!=1||v[0]!=std::floor(v[0])||v[0]<lo||v[0]>hi)throw std::invalid_argument("invalid "+key);return static_cast<int>(v[0]);};
+    auto exact=numbers(opts.at("exact-target"));if(exact.size()!=1||(exact[0]<=0&&exact[0]!=-1))throw std::invalid_argument("exact target must be positive or -1");
+    in.exact_target=exact[0];in.exact_scope=opts.at("exact-scope");if(in.exact_scope!="nominal"&&in.exact_scope!="training_max")throw std::invalid_argument("invalid exact scope");
     in.cycles=integer("cycles",0,1000);in.m=integer("m-ref",1,16);in.state_limit=integer("state-limit",0,10001);
     in.checkpoint_dir=opts["checkpoint-dir"];in.resume=opts["resume"];in.config_file=opts["config-file"];in.pause_state=integer("pause-state",-1,10000);in.pause_phase=opts["pause-phase"];
     if(in.pause_phase!="accepted"&&in.pause_phase!="training"&&in.pause_phase!="ell")throw std::invalid_argument("invalid checkpoint pause phase");
@@ -83,7 +87,7 @@ Input parse(int argc,char** argv){
 }
 std::string read_text(const std::string& path){std::ifstream in(path);if(!in)throw std::runtime_error("cannot read configuration or member table");return std::string(std::istreambuf_iterator<char>(in),{});}
 std::string mathematics_key(const Input& c,const std::string& members){
-    FingerprintBuilder f;f.add_string("ALOD-adaptive-schema-1-p56");auto& p=c.fixed;for(const auto& s:{p.problem,p.policy,p.riesz_policy,c.method,members})f.add_string(s);
+    FingerprintBuilder f;if(c.exact_target>0){f.add_string("exact-target-v1");f.add_double(c.exact_target);f.add_string(c.exact_scope);}f.add_string("ALOD-adaptive-schema-1-p56");auto& p=c.fixed;for(const auto& s:{p.problem,p.policy,p.riesz_policy,c.method,members})f.add_string(s);
     for(int n:{p.level,p.gap,p.ell,int(p.graded),p.iterations,p.dense,c.m,c.gap,c.rank,int(c.inherit),c.policy.maximum,int(c.policy.mode)})f.add_i64(n);
     if(c.policy.absolute_threshold>=0){f.add_string("lazy-absolute-theta-v1");f.add_double(c.policy.absolute_threshold);}
     // Preserve archived keys only for the archived raw policy.
@@ -161,12 +165,14 @@ int adaptive_main(int argc,char** argv){
         config.policy.last_check=saved.last_check;mesh_changed=saved.mesh_changed;committed_lines=saved.committed_lines;prefix_hash=saved.journal_hash;
         if(saved.phase==CheckpointPhase::Accepted){
             committed_lines+=std::count(saved.journal.begin(),saved.journal.end(),'\n');prefix_hash=journal_hash(saved.journal,prefix_hash);
-            if(cursor.state_id+1>=states)return 0;
+            if(cursor.state_id+1>=states||saved.journal.find("\"target_reached\":true")!=std::string::npos)return 0;
             advance(saved.coarse_marks,saved.reference_marks);
         }else {pending_events=saved.journal;resumed_current=true;resumed_check=saved.check_pending;}
         begin_state=cursor.state_id;
     }
+    std::vector<SourceMomentData> source_moments;SourceMomentReuse source_reuse;ExactIntegrationReuse exact_reuse;
     std::unique_ptr<CheckpointGeometryView> checkpoint_geometry;
+    std::future<void> geometry_write;
     auto snapshot=[&](CheckpointPhase phase,const std::string& journal,bool check,const ComplexMatrix& values,const ComplexMatrix& phi,
                       const std::vector<int>& cm,const std::vector<int>& fm,const std::string& identity,const LodSpace* accepted_space=nullptr){
         if(config.checkpoint_dir.empty())return;
@@ -177,6 +183,7 @@ int adaptive_main(int argc,char** argv){
         for(const auto& m:input.members)s.computed_ids.push_back(m.id);
         s.cursor=cursor;s.ell=ell;s.last_check=config.policy.last_check;s.next_event=event_id;s.revision=revision;s.phase=phase;s.mesh_changed=mesh_changed;s.check_pending=check;
         s.committed_lines=committed_lines;s.journal_hash=prefix_hash;s.journal=journal;s.mathematics_key=key;s.config_json=config_json;s.members_text=members_text;s.space_identity=identity;
+        if(geometry_write.valid()){PhaseTimer wait("checkpoint_geometry_wait",cursor.state_id);geometry_write.get();}
         auto published=save_checkpoint(config.checkpoint_dir,s,accepted_space?&accepted_space->trial():nullptr,
             accepted_space&&!std::getenv("ALOD_REFERENCE_EXECUTION")?&accepted_space->reduced():nullptr,
             !std::getenv("ALOD_REFERENCE_EXECUTION"),checkpoint_geometry.get());
@@ -187,6 +194,13 @@ int adaptive_main(int argc,char** argv){
     for(int state=begin_state;state<states;++state){
         PhaseTimer state_timer("adaptive_state",state);
         if(!std::getenv("ALOD_REFERENCE_EXECUTION"))checkpoint_geometry=std::make_unique<CheckpointGeometryView>(CheckpointGeometryView{coarse_history,fine_history,reference.P_node,reference.P_elem,reference.P_dg});
+        if(checkpoint_geometry&&!config.checkpoint_dir.empty()&&!std::getenv("ALOD_CHECKPOINT_SYNC")){
+            auto* view=checkpoint_geometry.get();auto timing_file=PhaseTimer::thread_file;
+            geometry_write=std::async(std::launch::async,[&,view,timing_file,state]{
+                PhaseTimer::thread_file=timing_file;PhaseTimer timer("checkpoint_geometry_background",state);
+                prepare_checkpoint_geometry(config.checkpoint_dir,*view);
+            });
+        }
         BufferedEvents events(pending_events);pending_events.clear();
         const auto start=std::chrono::steady_clock::now();bool terminal=state+1==states;
         if(reference.mesh.nodes.size()*members.size()>config.dense_entries)
@@ -200,13 +214,15 @@ int adaptive_main(int argc,char** argv){
         RegionalResult regional;double pg=0;std::optional<double> accepted_theta;int theta_ell=-1;
         bool was_resumed=resumed_current;
         bool check=resumed_current?resumed_check:(config.policy.due(state,ell,terminal)||config.force.contains(state));resumed_current=false;
-        if(!was_resumed)snapshot(CheckpointPhase::BeforeTraining,events.buffer.str(),check,{},{},{},{},"");
-        if(config.pause_state==state&&config.pause_phase=="training")return 0;
+        if(config.pause_state==state&&config.pause_phase=="training"){
+            if(!was_resumed)snapshot(CheckpointPhase::BeforeTraining,events.buffer.str(),check,{},{},{},{},"");
+            return 0;
+        }
         auto load_start=std::chrono::steady_clock::now();
-        std::vector<SourceMomentData> source_moments;
         ComplexMatrix loads;{PhaseTimer timing("load",state);loads=assemble_load_batch(reference.mesh,problems,quad,input.threads,
-            std::getenv("ALOD_REFERENCE_EXECUTION")||config.method=="AFEM"?nullptr:&source_moments);}
+            std::getenv("ALOD_REFERENCE_EXECUTION")||config.method=="AFEM"?nullptr:&source_moments,&source_reuse,members_text);}
         double load_seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-load_start).count();
+        if(!was_resumed)snapshot(CheckpointPhase::BeforeTraining,events.buffer.str(),check,{},{},{},{},"");
 
         if(config.method=="AFEM"){
             auto ops=assemble_helmholtz_operators(H,input.wavenumber);E=ops.stiffness+input.wavenumber*input.wavenumber*ops.mass;
@@ -306,9 +322,20 @@ int adaptive_main(int argc,char** argv){
             PhaseTimer::counter("patch_cache_bytes",limits.patch_cache->bytes(),state);
         }
         PhaseTimer::counter("source_moment_members",source_moments.size(),state);
-        source_moments.clear();source_moments.shrink_to_fit();
+
         strong_seconds=phase_time();
         Eigen::VectorXd energy(loads.cols());for(int j=0;j<loads.cols();++j)energy[j]=std::sqrt(std::max(0.,values.col(j).dot(E.cast<Complex>()*values.col(j)).real()));
+        double exact_ratio=-1.;bool target_reached=false;
+        if(config.exact_target>0){
+            PhaseTimer target_timer("exact_target_check",state);
+            std::vector<int> columns=config.exact_scope=="nominal"?std::vector<int>{nominal}:training;
+            std::vector<Problem> selected;ComplexMatrix checked(values.rows(),columns.size());
+            for(int j=0;j<static_cast<int>(columns.size());++j){selected.push_back(problems[columns[j]]);checked.col(j)=values.col(columns[j]);}
+            auto errors=integrate_error_batch(reference.mesh,E,checked,selected,paper_quadrature(input.problem),input.threads,&exact_reuse,members_text+config.exact_scope);
+            exact_ratio=0.;
+            for(int j=0;j<errors.exact_norm.size();++j){if(errors.exact_norm[j]<=1e-12)throw std::runtime_error("exact target has near-zero normalization");exact_ratio=std::max(exact_ratio,errors.exact_error[j]/errors.exact_norm[j]);}
+            target_reached=exact_ratio<=config.exact_target;terminal|=target_reached;
+        }
         auto cm=mark_family(coarse_mass,energy,members,input.ids,input.theta);
         auto next=cursor;next.advance(config.m);
         auto fm=mark_family(strong,energy,members,input.ids,config.ref_theta[next.reference_sweep-1]);
@@ -339,6 +366,7 @@ int adaptive_main(int argc,char** argv){
             <<",\"kernel_residual\":"<<regional.kernel_residual<<",\"base_orthogonality\":"<<regional.base_orthogonality<<",\"gram_residual\":"<<regional.gram_residual
             <<",\"enrichment_tests\":\""<<(config.tests==EnrichmentTests::KernelLift?"kernel_lift":"adjoint")<<"\",\"kernel_lift_residual\":"<<regional.accepted.kernel_lift_residual<<",\"aot_factorizations\":"<<cache.factorizations()<<",\"aot_solved_columns\":"<<cache.solved_columns()<<",\"aot_identity\":\""<<cache.identity()<<"\",\"targets\":";fixed::vector(regional.targets);
         std::cout<<",\"next_phase\":\""<<(next.reference_sweep==1?"coarse_and_reference":"reference_only")<<"\",\"complete_horizon\":"<<(state+1==horizon?"true":"false");
+        std::cout<<",\"target_reached\":"<<(target_reached?"true":"false")<<",\"exact_target_ratio\":";if(exact_ratio>=0)std::cout<<exact_ratio;else std::cout<<"null";
         if(config.emit){std::cout<<",\"solution\":";fixed::complex_matrix(values);}
         std::cout<<",\"wall_seconds\":"<<std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count()<<"}\n"<<std::flush;
         snapshot(CheckpointPhase::Accepted,events.buffer.str(),false,values,regional.phi,cm.marked_elements,fm.marked_elements,space?space->identity():"AFEM",space.get());

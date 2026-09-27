@@ -100,3 +100,7 @@ is claimed. The two-load kernel profile has maximum relative discrepancy
 preserve the 14,208 E1 and 1,650 E2 historical audit rows and reject local
 absolute paths. All new documentation is English; the original plan remains
 an intentionally Chinese historical document with a versioned update.
+
+## 2026-09-27 implementation update
+
+Exact-target termination, exact-only audits, the scientific diagnostic menu and the version 4 result-delivery pipeline are now implemented; see [scientific workflows](scientific_workflow.md). These supersede the corresponding pending implementation statements above. Full new-binary production experiments and late-state resource validation remain deferred. Delivery explicitly records the supplied E1 family-control interpolation/first-crossing discrepancy.

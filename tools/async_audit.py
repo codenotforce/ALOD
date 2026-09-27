@@ -5,7 +5,7 @@ from pathlib import Path
 from checkpoint_io import atomic_text, digest
 
 class AuditQueue:
-    def __init__(self, output, executable, members, workers=1, threads=None, *, drain_workers=None, shared_endpoint=None):
+    def __init__(self, output, executable, members, workers=1, threads=None, *, drain_workers=None, shared_endpoint=None, audit_mode="full"):
         if type(workers) is not int or workers<1:raise ValueError('audit workers must be positive')
         drain_workers=workers if drain_workers is None else drain_workers
         if type(drain_workers) is not int or drain_workers<workers:raise ValueError("invalid audit drain workers")
@@ -17,7 +17,7 @@ class AuditQueue:
         self.pool=ThreadPoolExecutor(max_workers=drain_workers,thread_name_prefix='alod-audit')
         self.lock=threading.Lock();self.stopped=False
         self.local=threading.local();self.native_workers=[]
-        self.shared_endpoint=shared_endpoint
+        self.shared_endpoint=shared_endpoint;self.audit_mode=audit_mode
         self.persistent=not os.environ.get('ALOD_AUDIT_ONESHOT') and self.executable.stem=='alod_run'
 
     def native_worker(self):
@@ -66,21 +66,21 @@ class AuditQueue:
         with self.lock:
             self.jobs[name].update(status='running',started_at=time.time());self.persist()
         try:
-            sha=digest(checkpoint);base=self.output/'audits'/(sha[:16]+'-shared')
+            sha=digest(checkpoint);base=self.output/'audits'/(sha[:16]+'-'+self.audit_mode)
             # A killed worker's directory is immutable evidence; retries get new names.
             candidates=[base]+sorted(base.parent.glob(base.name+'-retry-*'))
             found=None
             for candidate in candidates:
                 try:
                     m=json.loads((candidate/'run.json').read_text())
-                    if m.get('audit_complete') and m['checkpoint_sha256']==sha and m['member_ids']==self.members and m['output_sha256']==digest(candidate/'samples.jsonl'):
+                    if m.get('audit_mode','full')==self.audit_mode and m.get('audit_complete') and m['checkpoint_sha256']==sha and m['member_ids']==self.members and m['output_sha256']==digest(candidate/'samples.jsonl'):
                         found=candidate;break
                 except (OSError,ValueError,KeyError):pass
             if found is None:
                 found=base;attempt=0
                 while found.exists():
                     attempt+=1;found=base.with_name(base.name+f'-retry-{attempt}')
-                audit(checkpoint,found,self.executable,batch_size=8,threads=self.threads,cancel=self.cancel,execution_context=self.execution_context,native_worker=self.native_worker())
+                audit(checkpoint,found,self.executable,batch_size=8,threads=self.threads,cancel=self.cancel,execution_context=self.execution_context,native_worker=self.native_worker(),audit_mode=self.audit_mode)
             samples=[json.loads(line) for line in (found/'samples.jsonl').read_text().splitlines() if json.loads(line)['kind']=='sample']
             state=int(name.split('-')[1])
             if len(samples)!=len(self.members) or {r['sample'] for r in samples}!=set(self.members) or any(r['state_id']!=state for r in samples):

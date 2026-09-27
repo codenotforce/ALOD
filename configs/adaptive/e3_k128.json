@@ -10,7 +10,7 @@
   "threads": 0,
   "maximum_nodes": 4000000,
   "theta": 0.15,
-  "ritz_tolerance": 1e-9,
+  "ritz_tolerance": 1e-09,
   "ritz_iterations": 750,
   "dense_threshold": 64,
   "member_ids": [
@@ -42,5 +42,8 @@
   "ell_ratio_mode": "solution_scaled",
   "ell_threshold": 0.3,
   "enrichment_tests": "kernel_lift",
-  "ell_absolute_threshold": 0.2
+  "ell_absolute_threshold": 0.2,
+  "exact_target": 0.01,
+  "exact_scope": "nominal",
+  "audit_mode": "exact"
 }

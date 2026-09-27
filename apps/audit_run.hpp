@@ -1,8 +1,10 @@
 #pragma once
+#include "alod/batch.hpp"
 #include "alod/checkpoint.hpp"
 #include <memory>
 #include <ostream>
 struct AuditWorkerState {
+    alod::ExactIntegrationReuse exact_reuse;
     std::unique_ptr<alod::Checkpoint> prepared;
     std::string prepared_path, hierarchy_key;
     std::shared_ptr<void> snapshot_owner;

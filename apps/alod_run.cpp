@@ -1,4 +1,5 @@
 #include "alod/problems.hpp"
+#include "mesh_export.hpp"
 #include "alod/mesh_state.hpp"
 #include "helmholtz/boundary.h"
 #include "helmholtz/operators.h"
@@ -36,6 +37,10 @@ int main(int argc,char** argv) {
     std::cout<<"{\"compiler\":"<<alod::json_string(__VERSION__)<<",\"eigen\":\""<<EIGEN_WORLD_VERSION<<'.'<<EIGEN_MAJOR_VERSION<<'.'<<EIGEN_MINOR_VERSION<<"\",\"openmp\":"<<_OPENMP<<",\"sparse_backend\":\"SuiteSparse UMFPACK and Eigen SparseLU\",\"checkpoint_schema\":3}\n";return 0;
  }
  if(argc>1&&std::string(argv[1])=="adaptive")return with_shared_audits([&]{return adaptive_main(argc-1,argv+1);});
+ if(argc==4&&std::string(argv[1])=="checkpoint-mesh"){
+    try{auto state=alod::load_checkpoint(argv[2]);export_mesh_pair(argv[3],state.coarse.mesh,state.fine.mesh);return 0;}
+    catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}
+ }
  if(argc==4&&std::string(argv[1])=="pack-checkpoint"){
     try{auto state=alod::load_checkpoint(argv[2]);auto file=alod::save_checkpoint(argv[3],state);
         std::cout<<alod::json_string(file.filename().string())<<'\n';return 0;}
@@ -54,7 +59,7 @@ int main(int argc,char** argv) {
     if(argc<3)throw std::invalid_argument("expected problem and baseline method; see --help");
     const std::string id=argv[1],method=argv[2];
     if(method!="AFEM" && method!="UFEM" && method!="SLOD")throw std::invalid_argument("method must be AFEM, UFEM or SLOD");
-    std::map<std::string,std::string> opts{{"reference-gap","4"},{"wavenumber","16"},{"initial-level","2"},{"states","3"},{"theta","0.15"},{"target","0"},{"maximum-nodes","20000"},{"threads","0"},{"emit-solution","0"}};
+    std::map<std::string,std::string> opts{{"mesh-output",""},{"reference-gap","4"},{"wavenumber","16"},{"initial-level","2"},{"states","3"},{"theta","0.15"},{"target","0"},{"maximum-nodes","20000"},{"threads","0"},{"emit-solution","0"}};
     std::set<std::string> seen;
     for(int i=3;i<argc;++i){std::string arg=argv[i];auto equal=arg.find('=');
         if(!arg.starts_with("--")||equal==std::string::npos)throw std::invalid_argument("options require --name=value");
@@ -124,6 +129,7 @@ int main(int argc,char** argv) {
         if(!values.allFinite()||!std::isfinite(relative)||!std::isfinite(residual)||residual>1e-9)
             throw std::runtime_error("baseline finite-value/residual gate failed");
         bool reached=target>0 && relative<=target;
+        if(reached||step+1==states)export_mesh_pair(opts["mesh-output"],mesh,evaluation_mesh);
         std::cout<<"{\"problem\":\""<<id<<"\",\"method\":\""<<method<<"\",\"state\":"<<step
             <<",\"wavenumber\":"<<wavenumber<<",\"H_max\":"<<alod::mesh_diameter(mesh)<<",\"h_max\":"<<alod::mesh_diameter(evaluation_mesh)<<",\"nodes\":"<<mesh.nodes.size()<<",\"elements\":"<<mesh.elems.size()
             <<",\"free_dof\":"<<mesh.nodes.size()-dirichlet_nodes(mesh).size()

@@ -105,6 +105,9 @@ std::string save_geometry(const std::filesystem::path& directory,const Checkpoin
 }
 void atomic_text(const std::filesystem::path& target,const std::string& text){auto temp=target;temp+=".tmp";{std::ofstream out(temp,std::ios::binary);out<<text;out.flush();if(!out)throw std::runtime_error("checkpoint pointer write failed");}sync_file(temp);std::filesystem::rename(temp,target);sync_file(target.parent_path());}
 }
+void prepare_checkpoint_geometry(const std::filesystem::path& directory,const CheckpointGeometryView& view){
+    Checkpoint empty;save_geometry(directory,empty,&view);view.prepared=true;
+}
 std::uint64_t journal_hash(const std::string& text,std::uint64_t hash){for(unsigned char c:text)hash=(hash^c)*1099511628211ULL;return hash;}
 std::string json_string(const std::string& text){std::ostringstream out;out<<'"';for(unsigned char c:text){if(c=='"'||c=='\\')out<<'\\'<<c;else if(c<32)out<<"\\u"<<std::hex<<std::setw(4)<<std::setfill('0')<<int(c)<<std::dec;else out<<c;}out<<'"';return out.str();}
 std::string matrix_hash(const ComplexMatrix& matrix){FingerprintBuilder hash;hash.add_i64(matrix.rows());hash.add_i64(matrix.cols());for(int j=0;j<matrix.cols();++j)for(int i=0;i<matrix.rows();++i)hash.add_complex(matrix(i,j));return hash.finish();}
@@ -121,7 +124,7 @@ std::filesystem::path save_checkpoint(const std::filesystem::path& directory,con
     std::filesystem::create_directories(directory);std::ostringstream name;name<<"state-"<<std::setw(6)<<std::setfill('0')<<s.cursor.state_id<<"-phase-"<<int(s.phase)<<"-ell-"<<s.ell<<".bin";
     auto file=directory/name.str(),temp=file;temp+=".tmp";
     if(std::filesystem::exists(file))throw std::runtime_error("refusing to overwrite an immutable checkpoint");
-    const std::string geometry=share_geometry?save_geometry(directory,s,view):"";
+    const std::string geometry=share_geometry?(view&&view->prepared?view->object_name:save_geometry(directory,s,view)):"";
     {Writer w(temp);w.u(format==3?magic_shared:basis.cols()?magic_basis:magic);w.str(checkpoint_metadata(s,basis.cols()>0,format,view));
         if(format==3){w.str(geometry);w.u(basis.cols()>0);w.u(reduced.cols()>0);}
         w.str(s.mathematics_key);w.str(s.config_json);w.str(s.members_text);w.str(s.space_identity);w.str(s.journal);

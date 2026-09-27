@@ -152,7 +152,7 @@
       "origin_scope": "initial_project_input",
       "origin": "ALOD_SUBPROJECT_AGENT_PLAN_20260909.md",
       "origin_sha256": "5e4544f14cf014a4732477283ec5ea64cb28e2506d8cb13162c768597c3c9ae2",
-      "sha256": "3464af89a037830edbae384b3792e47800e3778439af386802458f72dfdc2936",
+      "sha256": "19f7632ad43e0f89f431417cbc1a9538b9d242dc8528b810d09db901f93f3255",
       "snapshot": "initial-user-plan",
       "modification": "Plan retained in Chinese at user request; portable paths and P0/P1/P2 completion status recorded, including both verified manuscript/archive definition differences. P3/P4 phase status, user-selected E2 lazy timing, discovered source differences and explicit deferred campaigns updated. P5/P6 completion, bounded validation and explicit P7/P8 follow-up scope recorded; plan remains in Chinese. Version 4 review: explicit kernel/archived policies, normalized localization, numerical recovery, variable-wavenumber support or updated documentation; see docs/paper_v4_review.md.",
       "copyright": "Inherited; no repository license found. See NOTICE.md."
@@ -650,7 +650,7 @@
       "origin_scope": "legacy",
       "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/operators.cpp",
       "origin_sha256": "35c4f1ba9dc60b248be7e04a219f5a630e954718d8dab1be63583f8d115d296f",
-      "sha256": "a21bdbc4b07b024643a704099085729e9fd74f21b1e982a34685ee28fef41205",
+      "sha256": "c5ae3543d247c38fdc27950b9906c841c8eb15ad0609c59a59aebc2da270d5f6",
       "snapshot": "E2-production",
       "modification": "Derived fused audit integrator retains triangle geometry, quadrature and per-member element reduction from the imported operators; adds bounded RHS batching and one reusable reference FEM factor. Reusable quadrature storage with geometric growth, parameter-only normalization, or joint exact evaluation; numerical formulas and quadrature policies unchanged. Accepted-basis checkpoint reuse, earlier resource release, or deterministic member/element tiling for requested thread counts. Shared quadrature and geometry for identical member contexts with deterministic reductions. Optional bounded source moments assembled alongside loads.",
       "copyright": "Inherited; no repository license found. See NOTICE.md."

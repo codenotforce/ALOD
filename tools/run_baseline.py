@@ -58,7 +58,7 @@ def main():
     env = runtime_environment(c["threads"])
     # Stream potentially large state output. Paths and host details are not serialized.
     with (a.output/'states.jsonl').open('w',encoding='utf-8') as output, (a.output/'stderr.log').open('w',encoding='utf-8') as errors:
-        result=subprocess.run([str(exe),*command(c)],stdout=output,stderr=errors,env=env)
+        result=subprocess.run([str(exe),*command(c),f"--mesh-output={(a.output/'mesh.json').resolve()}"],stdout=output,stderr=errors,env=env)
     record['status']='completed' if result.returncode==0 else 'failed'
     record['exit_code']=result.returncode
     count=0;last=None

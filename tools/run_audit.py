@@ -35,7 +35,17 @@ class AuditExecutionContext:
             raise ValueError('audit executable changed after launch snapshot')
 
 
-def audit(checkpoint, output, executable, *, member_ids=None, batch_size=8, fresh=False, rank_zero=True, threads=None, pure=False, ell_override=0, quadrature_boost=0, refinement_steps=0, timeout=604800, cancel=None, reuse_basis=True, execution_context=None, native_worker=None):
+def audit(checkpoint, output, executable, *, member_ids=None, batch_size=8, fresh=False, rank_zero=True, threads=None, pure=False, ell_override=0, quadrature_boost=0, refinement_steps=0, timeout=604800, cancel=None, reuse_basis=True, execution_context=None, native_worker=None, audit_mode="full", retrain_shared=False, radius=None, rank_cap=None, reference_levels=0, region_radius=-1., two_level=False, export_mesh=False, drop_enrichment=False, localization=False):
+    if type(reference_levels) is not int or not 0<=reference_levels<=3:raise ValueError('invalid reference levels')
+    if rank_cap is not None and (type(rank_cap) is not int or not 1<=rank_cap<=24):raise ValueError('invalid rank cap')
+    import math
+    for value in (radius,region_radius):
+        if value is not None and (type(value) not in (float,int) or not math.isfinite(value)):raise ValueError('invalid diagnostic radius')
+    if radius is not None and radius<0:raise ValueError('invalid radius')
+    if region_radius<=0 and region_radius!=-1:raise ValueError('invalid region radius')
+    if (radius is not None or rank_cap is not None) and not retrain_shared:raise ValueError('rank/radius controls require shared retraining')
+    if audit_mode not in ("full","exact"):raise ValueError("invalid audit mode")
+    if audit_mode=="exact" and (fresh or refinement_steps):raise ValueError("exact-only audit cannot request reference/fresh diagnostics")
     setup_start=time.monotonic()
     if type(ell_override) is not int or not 0<=ell_override<=4 or type(quadrature_boost) is not int or not 0<=quadrature_boost<=8:
         raise ValueError("invalid diagnostic override")
@@ -84,7 +94,7 @@ def audit(checkpoint, output, executable, *, member_ids=None, batch_size=8, fres
     output.mkdir(parents=True, exist_ok=False)
     table = output/"members.txt"
     write_members(table, rows)
-    manifest = dict(status="running", checkpoint=checkpoint.name, checkpoint_sha256=digest(checkpoint),
+    manifest = dict(localization=localization,drop_enrichment=drop_enrichment,retrain_shared=retrain_shared,diagnostic_radius=radius,diagnostic_rank_cap=rank_cap,reference_levels=reference_levels,region_radius=region_radius,two_level=two_level,export_mesh=export_mesh,audit_mode=audit_mode,status="running", checkpoint=checkpoint.name, checkpoint_sha256=digest(checkpoint),
                     executable_sha256=context.executable_sha256, config=config, member_ids=member_ids,
                     ell_override=ell_override, quadrature_boost=quadrature_boost, refinement_steps=refinement_steps, batch_size=batch_size, reuse_basis=reuse_basis, fresh=fresh, rank_zero=rank_zero, threads=fixed["threads"],
                     solver_completed=False, validation_passed=False, audit_complete=False, paper_complete=False)
@@ -98,9 +108,9 @@ def audit(checkpoint, output, executable, *, member_ids=None, batch_size=8, fres
         env = runtime_environment(fixed["threads"])
         env["ALOD_TIMING_FILE"]=str((output/"timings.jsonl").resolve())
 
-        runtime = [f"--reuse-basis={int(reuse_basis)}", f"--enrichment-tests={config.get('enrichment_tests','adjoint')}", f"--refinement-steps={refinement_steps}", f"--ell-override={ell_override}", f"--quadrature-boost={quadrature_boost}", f"--checkpoint={checkpoint.resolve()}", f"--batch-size={batch_size}",
+        runtime = [f"--localization={int(localization)}",f"--drop-enrichment={int(drop_enrichment)}",f"--retrain-shared={int(retrain_shared)}",f"--reference-levels={reference_levels}",f"--region-radius={region_radius}",f"--two-level={int(two_level)}",f"--mesh-output={(output/'mesh.json').resolve() if export_mesh else ''}",f"--audit-mode={audit_mode}",f"--reuse-basis={int(reuse_basis)}", f"--enrichment-tests={config.get('enrichment_tests','adjoint')}", f"--refinement-steps={refinement_steps}", f"--ell-override={ell_override}", f"--quadrature-boost={quadrature_boost}", f"--checkpoint={checkpoint.resolve()}", f"--batch-size={batch_size}",
                    "--audit-ids="+",".join(map(str, member_ids)), f"--fresh={int(fresh)}", f"--rank-zero={int(rank_zero)}",
-                   f"--method={config['method']}", f"--radius={config['radius']}", f"--rank-cap={config['rank_cap']}",
+                   f"--method={config['method']}", f"--radius={config['radius'] if radius is None else radius}", f"--rank-cap={config['rank_cap'] if rank_cap is None else rank_cap}",
                    f"--maximum-patch-entries={config['maximum_patch_entries']}", f"--maximum-dense-entries={config['maximum_dense_entries']}"]
         native_args=[str(executable.resolve()), *arguments(fixed, table.resolve()), *runtime]
         if native_worker:
@@ -148,6 +158,16 @@ def audit(checkpoint, output, executable, *, member_ids=None, batch_size=8, fres
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--localization',action='store_true')
+    p.add_argument('--drop-enrichment',action='store_true')
+    p.add_argument('--retrain-shared',action='store_true')
+    p.add_argument('--radius',type=float)
+    p.add_argument('--rank-cap',type=int)
+    p.add_argument('--reference-levels',type=int,default=0)
+    p.add_argument('--region-radius',type=float,default=-1.)
+    p.add_argument('--two-level',action='store_true')
+    p.add_argument('--export-mesh',action='store_true')
+    p.add_argument("--audit-mode",choices=["full","exact"],default="full")
     p.add_argument("--checkpoint", type=Path, required=True)
     p.add_argument("--output", type=Path, required=True)
     p.add_argument("--executable", type=Path, default=ROOT/"build/alod_run")
@@ -163,7 +183,7 @@ def main():
     p.add_argument("--no-rank-zero", action="store_true")
     p.add_argument("--rebuild-lod", action="store_true", help="independently rebuild patches instead of restoring the accepted basis")
     a = p.parse_args()
-    print(json.dumps(audit(a.checkpoint, a.output, a.executable, member_ids=None if a.member_ids is None else [int(i) for i in a.member_ids.split(',')], batch_size=a.batch_size, fresh=a.fresh, rank_zero=not a.no_rank_zero, threads=a.threads, pure=a.pure, ell_override=a.ell_override, quadrature_boost=a.quadrature_boost, refinement_steps=a.refinement_steps, timeout=a.timeout, reuse_basis=not a.rebuild_lod)))
+    print(json.dumps(audit(a.checkpoint, a.output, a.executable, audit_mode=a.audit_mode,localization=a.localization,drop_enrichment=a.drop_enrichment,retrain_shared=a.retrain_shared,radius=a.radius,rank_cap=a.rank_cap,reference_levels=a.reference_levels,region_radius=a.region_radius,two_level=a.two_level,export_mesh=a.export_mesh, member_ids=None if a.member_ids is None else [int(i) for i in a.member_ids.split(',')], batch_size=a.batch_size, fresh=a.fresh, rank_zero=not a.no_rank_zero, threads=a.threads, pure=a.pure, ell_override=a.ell_override, quadrature_boost=a.quadrature_boost, refinement_steps=a.refinement_steps, timeout=a.timeout, reuse_basis=not a.rebuild_lod)))
 
 
 if __name__ == "__main__":

@@ -79,11 +79,11 @@ def recover_journal(path, metadata):
 
 
 def validate_resume_config(old, new):
-    defaults = dict(ell_absolute_threshold=-1.,wavenumber=16,ell_ratio_mode="raw",ell_threshold=0.,enrichment_tests="adjoint")
+    defaults = dict(exact_target=-1.,exact_scope="nominal",audit_mode="full",ell_absolute_threshold=-1.,wavenumber=16,ell_ratio_mode="raw",ell_threshold=0.,enrichment_tests="adjoint")
     old, new = {**defaults, **old}, {**defaults, **new}
     if set(old)!=set(new):raise ValueError("resume configuration fields differ")
     increases = {"cycles", "state_limit", "maximum_nodes", "maximum_patch_entries", "maximum_dense_entries"}
-    operational = {"audit", "emit_solution", "threads"}
+    operational = {"audit_mode", "audit", "emit_solution", "threads"}
     for key in old:
         if key in operational:
             continue

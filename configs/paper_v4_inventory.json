@@ -1,0 +1,76 @@
+{
+  "schema": 1,
+  "manuscript": "ALOD version4 arxiv.tex",
+  "manuscript_sha256": "6cd4194e28e0cd58ff0d0ff9e6c588e96377502b69e70fa09717f71a9b9026d0",
+  "figures": [
+    "e1_final_meshes",
+    "e1_error_dof",
+    "e2_final_meshes",
+    "e2_error_dof",
+    "kappa_error_dof"
+  ],
+  "tables": [
+    "adaptive-config",
+    "e1-terminal-results",
+    "e1-family-control",
+    "e2-terminal-results",
+    "kappa-target-summary"
+  ],
+  "settings": [
+    [
+      "Wavenumber k",
+      16,
+      16,
+      "8, 16, 32, 64, 128"
+    ],
+    [
+      "Initial coarse/fine levels",
+      "6/10",
+      "6/10",
+      "Wavenumber-dependent (see observed-run-config)"
+    ],
+    [
+      "Coarse marking theta_H",
+      0.15,
+      0.15,
+      0.15
+    ],
+    [
+      "Fine refinements per cycle",
+      2,
+      2,
+      2
+    ],
+    [
+      "Fine marking fractions",
+      "(0.3, 0.2)",
+      "(0.3, 0.2)",
+      "(0.3, 0.2)"
+    ],
+    [
+      "Initial / maximum ell",
+      "2 / 4",
+      "2 / 4",
+      "2 / 4"
+    ],
+    [
+      "Balance threshold",
+      0.3,
+      0.3,
+      0.3
+    ],
+    [
+      "Defect threshold",
+      0.2,
+      0.2,
+      0.2
+    ],
+    [
+      "Scale floor",
+      1e-12,
+      1e-12,
+      1e-12
+    ]
+  ],
+  "settings_scope": "Declared manuscript settings, separate from observed archive configurations."
+}

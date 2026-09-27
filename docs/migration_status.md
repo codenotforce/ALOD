@@ -1,5 +1,7 @@
 # Migration status
 
+2026-09-27 follow-up: [scientific workflows](scientific_workflow.md) implement exact-target termination, exact-only auditing, the offline diagnostic menu and version 4 figure/table delivery. Incremental integration and background checkpoint geometry preparation are also available. Full new-binary campaigns remain deferred.
+
 Current follow-up: [cross-state reuse, coordinate training and shared asynchronous audits](deep_reuse.md). This update supersedes earlier pending statements about local factor reuse, intermediate fine-grid training vectors and resident/shared audit execution. Full production validation remains separate.
 
 Version 4 update (2026-09-22): see [the current implementation review](paper_v4_review.md). Numerical policies and performance statements below describe their original migration stage unless explicitly updated.

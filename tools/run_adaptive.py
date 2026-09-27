@@ -14,7 +14,7 @@ from checkpoint_io import atomic_text, digest, inspect, recover_journal, validat
 from run_fixed import DEFAULT as FIXED, validate as validate_fixed, write_members, member_text
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT = dict(FIXED, method="ALOD", cycles=1, m_ref=2, state_limit=0,
+DEFAULT = dict(FIXED, exact_target=-1., exact_scope="nominal", audit_mode="full", method="ALOD", cycles=1, m_ref=2, state_limit=0,
                minimum_gap=2, reference_theta=[0.3, 0.2], ell_mode="lazy",
                ell_ratio_mode="raw", ell_threshold=0., ell_absolute_threshold=-1., enrichment_tests="kernel_lift",
                maximum_ell=4, extra_checks=[], force_promotions=[],
@@ -24,7 +24,7 @@ DEFAULT = dict(FIXED, method="ALOD", cycles=1, m_ref=2, state_limit=0,
 
 
 def validate(config):
-    if isinstance(config, dict): config = {"ell_absolute_threshold":-1.,"wavenumber":16,"ell_ratio_mode":"raw","ell_threshold":0.,"enrichment_tests":"adjoint", **config}
+    if isinstance(config, dict): config = {"exact_target":-1.,"exact_scope":"nominal","audit_mode":"full","ell_absolute_threshold":-1.,"wavenumber":16,"ell_ratio_mode":"raw","ell_threshold":0.,"enrichment_tests":"adjoint", **config}
     if not isinstance(config, dict) or set(config) != set(DEFAULT):
         raise ValueError("adaptive configuration must have exactly the documented fields")
     if config["ell_ratio_mode"] not in ("raw","solution_scaled") or config["enrichment_tests"] not in ("kernel_lift","adjoint"):
@@ -34,6 +34,8 @@ def validate(config):
     tau=config["ell_absolute_threshold"]
     if type(tau) not in (int,float) or not math.isfinite(tau) or (tau<0 and tau!=-1):
         raise ValueError("ell_absolute_threshold must be nonnegative or -1 (disabled)")
+    if type(config['exact_target']) not in (int,float) or not math.isfinite(config['exact_target']) or (config['exact_target']<=0 and config['exact_target']!=-1):raise ValueError('invalid exact target')
+    if config['exact_scope'] not in ('nominal','training_max') or config['audit_mode'] not in ('full','exact'):raise ValueError('invalid exact scope or audit mode')
     fixed = {key: config[key] for key in FIXED}
     # The common member/schema validator has a deliberately smaller P2 limit.
     cap = config["maximum_nodes"]
@@ -79,7 +81,7 @@ def arguments(config, table):
         return str(int(value)) if type(value) is bool else str(value)
     return ["adaptive", config["problem"], f"--members={table}"] + [
         f"--{key.replace('_', '-')}={text(value)}" for key, value in config.items()
-        if key not in ("problem", "member_ids")]
+        if key not in ("problem", "member_ids", "audit_mode")]
 
 
 def run(config, output, executable, timeout=3600, *, resume=None, pause_state=None, pause_phase="accepted", audit_workers=1, audit_threads=None, audit_drain_workers=None):
@@ -89,7 +91,7 @@ def run(config, output, executable, timeout=3600, *, resume=None, pause_state=No
 
 
 def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=None, pause_phase="accepted", audit_workers=1, audit_threads=None, audit_drain_workers=None):
-    config = {"ell_absolute_threshold":-1.,"wavenumber":16,"ell_ratio_mode":"raw","ell_threshold":0.,"enrichment_tests":"adjoint", **config}
+    config = {"exact_target":-1.,"exact_scope":"nominal","audit_mode":"full","ell_absolute_threshold":-1.,"wavenumber":16,"ell_ratio_mode":"raw","ell_threshold":0.,"enrichment_tests":"adjoint", **config}
     setup_start = time.monotonic()
     output, executable = Path(output), Path(executable)
     rows = validate(config)
@@ -129,7 +131,7 @@ def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=N
     manifest = dict(config=config, table_sha256=sha(table), executable_sha256=sha(executable),
                     status="running", scope="P5 checkpointed adaptive trajectory", solver_completed=False, validation_passed=False, audit_complete=False, paper_complete=False)
     mathematical = {key:value for key,value in config.items() if key not in
-                    ('cycles','state_limit','maximum_nodes','maximum_patch_entries','maximum_dense_entries','threads','audit','emit_solution')}
+                    ('cycles','state_limit','maximum_nodes','maximum_patch_entries','maximum_dense_entries','threads','audit','audit_mode','emit_solution')}
     manifest['experiment_id'] = hashlib.sha256((json.dumps(mathematical,sort_keys=True)+member_text(rows)).encode()).hexdigest()[:24]
     from runtime_provenance import provenance
     manifest['provenance'] = provenance(executable)
@@ -154,7 +156,7 @@ def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=N
                 shared_endpoint=Path(socket_directory.name)/'worker.sock'
                 env['ALOD_AUDIT_SOCKET']=str(shared_endpoint)
                 env['ALOD_SHARED_AUDIT_WORKERS']=str(audit_drain_workers)
-            queue=AuditQueue(output,executable,config["member_ids"],audit_workers,audit_threads,drain_workers=audit_drain_workers,shared_endpoint=shared_endpoint)
+            queue=AuditQueue(output,executable,config["member_ids"],audit_workers,audit_threads,drain_workers=audit_drain_workers,shared_endpoint=shared_endpoint,audit_mode=config["audit_mode"])
             queue.discover()
         effective = output / "effective.json"
         atomic_text(effective, json.dumps(config, indent=2)+"\n")
@@ -188,8 +190,16 @@ def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=N
         accepted = [e for e in events if e["kind"] == "accepted"]
         expected = 1 + config["cycles"] * config["m_ref"]
         expected = min(expected, config["state_limit"] or expected)
-        paused = pause_state is not None and len(accepted) < expected
-        if [e["state_id"] for e in accepted] != list(range(len(accepted))) or (not paused and len(accepted) != expected):
+        target_reached=bool(accepted and accepted[-1].get('target_reached'))
+        if target_reached:
+            ratio=accepted[-1].get('exact_target_ratio')
+            if config['exact_target']<=0 or not isinstance(ratio,(int,float)) or not 0<=ratio<=config['exact_target']:raise ValueError('invalid exact target evidence')
+            manifest['target_state_id']=accepted[-1]['state_id']
+            manifest['target_ratio']=ratio
+        manifest['target_reached']=target_reached
+        manifest['termination_reason']='exact_target' if target_reached else 'horizon'
+        paused = not target_reached and pause_state is not None and len(accepted) < expected
+        if [e["state_id"] for e in accepted] != list(range(len(accepted))) or (not paused and not target_reached and len(accepted) != expected):
             raise RuntimeError("accepted-state sequence is incomplete")
         manifest.update(status="paused" if paused else "complete", solver_completed=not paused, validation_passed=True, accepted_states=len(accepted),
                         ell_checks=sum(e["kind"] == "ell_check" for e in events),
@@ -209,7 +219,7 @@ def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=N
                 process.wait(timeout=30)
                 if process.returncode:raise RuntimeError('shared audit server failed during drain')
             if not paused:manifest["status"]="complete"
-            manifest["audit_complete"] = not audit_failures and len(accepted)==expected
+            manifest["audit_complete"] = not audit_failures and (len(accepted)==expected or target_reached)
             manifest["audit_failures"] = audit_failures
             if audit_failures:
                 manifest["status"] = "audit_failed"
@@ -226,7 +236,7 @@ def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=N
         except Exception as error:
             manifest["status"] = "postprocess_failed"
             manifest["postprocess_error"] = str(error)
-        manifest["paper_complete"] = bool("canonical_tables" in manifest and manifest["solver_completed"] and manifest["validation_passed"] and manifest["audit_complete"] and manifest["complete_horizon"] and config["member_ids"] == list(range(48)) and len(accepted) >= (33 if config["problem"]=="E2" and config["enrichment_tests"]=="adjoint" else 97 if config["method"]=="AFEM" else 51))
+        manifest["paper_complete"] = bool(config["audit_mode"]=="full" and "canonical_tables" in manifest and manifest["solver_completed"] and manifest["validation_passed"] and manifest["audit_complete"] and manifest["complete_horizon"] and config["member_ids"] == list(range(48)) and len(accepted) >= (33 if config["problem"]=="E2" and config["enrichment_tests"]=="adjoint" else 97 if config["method"]=="AFEM" else 51))
     except BaseException:
         manifest["status"] = "failed"
         raise

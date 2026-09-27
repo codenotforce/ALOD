@@ -29,7 +29,9 @@ struct CheckpointGeometryView {
     const MeshState &coarse,&fine;
     const Sparse &P_node,&P_elem,&P_dg;
     mutable std::string object_name,coarse_hash,fine_hash;
+    mutable bool prepared=false;
 };
+void prepare_checkpoint_geometry(const std::filesystem::path&,const CheckpointGeometryView&);
 std::string json_string(const std::string&);
 std::uint64_t journal_hash(const std::string&,std::uint64_t prefix=14695981039346656037ULL);
 std::string matrix_hash(const ComplexMatrix&);
