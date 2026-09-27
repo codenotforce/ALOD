@@ -22,6 +22,7 @@
 #ifndef ALOD_LEGACY_ORACLE
 #include "adaptive_run.hpp"
 #include "audit_run.hpp"
+#include "shared_audit.hpp"
 #include "supervised.hpp"
 #include "alod/checkpoint.hpp"
 #endif
@@ -29,11 +30,12 @@
 int main(int argc,char** argv) {
 #ifndef ALOD_LEGACY_ORACLE
  supervised_parent();
+ if(argc==2&&std::string(argv[1])=="audit-worker")return audit_worker_main();
  if(argc>1&&std::string(argv[1])=="audit")return audit_main(argc-1,argv+1);
  if(argc==2&&std::string(argv[1])=="build-info"){
     std::cout<<"{\"compiler\":"<<alod::json_string(__VERSION__)<<",\"eigen\":\""<<EIGEN_WORLD_VERSION<<'.'<<EIGEN_MAJOR_VERSION<<'.'<<EIGEN_MINOR_VERSION<<"\",\"openmp\":"<<_OPENMP<<",\"sparse_backend\":\"SuiteSparse UMFPACK and Eigen SparseLU\",\"checkpoint_schema\":3}\n";return 0;
  }
- if(argc>1&&std::string(argv[1])=="adaptive")return adaptive_main(argc-1,argv+1);
+ if(argc>1&&std::string(argv[1])=="adaptive")return with_shared_audits([&]{return adaptive_main(argc-1,argv+1);});
  if(argc==4&&std::string(argv[1])=="pack-checkpoint"){
     try{auto state=alod::load_checkpoint(argv[2]);auto file=alod::save_checkpoint(argv[3],state);
         std::cout<<alod::json_string(file.filename().string())<<'\n';return 0;}

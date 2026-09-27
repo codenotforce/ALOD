@@ -1,4 +1,6 @@
 #include "alod/estimator.hpp"
+#include "alod/local_factor_cache.hpp"
+#include <bit>
 #include "../lod/fingerprint.hpp"
 #include "helmholtz/boundary.h"
 #include <Eigen/QR>
@@ -106,6 +108,8 @@ ConstraintReduction reduce_constraints(
         std::unique(candidate_rows.begin(), candidate_rows.end()),
         candidate_rows.end());
 
+    std::unordered_map<int,int> row_index;
+    for(int i=0;i<static_cast<int>(candidate_rows.size());++i)row_index[candidate_rows[i]]=i;
     ConstraintReduction result;
     if (candidate_rows.empty()) {
         result.matrix.resize(0, discrete_dofs.size());
@@ -117,11 +121,7 @@ ConstraintReduction reduce_constraints(
         const int discrete = discrete_dofs[local];
         for (Eigen::SparseMatrix<double>::InnerIterator it(
                  interpolation, discrete); it; ++it) {
-            const auto found = std::lower_bound(
-                candidate_rows.begin(), candidate_rows.end(), it.row());
-            candidates(
-                static_cast<int>(found - candidate_rows.begin()), local) =
-                it.value();
+            candidates(row_index.at(it.row()), local) = it.value();
         }
     }
     std::vector<int> active_candidate_rows;
@@ -265,6 +265,9 @@ std::vector<KernelRieszPatch> build_kernel_riesz_patches(const LodSpace& space,R
         total_entries+=touched_rows.size()*patch.discrete_dofs.size();
         if(total_entries>space.limits().maximum_patch_entries)
             throw std::runtime_error("Riesz patch storage resource limit exceeded");
+        // Preserve the production local solve ordering. Reuse requires exact
+        // restricted matrix/constraint equality in that ordering; a changed
+        // ordering may miss the cache but must not perturb greedy tie decisions.
         auto reduced=reduce_constraints(space.interpolation(),patch.discrete_dofs);
         patch.constraints=std::move(reduced.matrix);
         patch.active_constraint_rows=std::move(reduced.active_rows);
@@ -275,15 +278,18 @@ std::vector<KernelRieszPatch> build_kernel_riesz_patches(const LodSpace& space,R
 } // namespace
 // Batched Schur/saddle implementation extracted from the archived E2 production source.
 struct AdditiveKernelRieszContext::Impl {
-    struct Group {
-        KernelRieszPatch patch;
-        std::vector<int> nodes;
-        Eigen::SparseMatrix<double> energy;
+    struct Factors {
         Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> energy_factor;
         Eigen::MatrixXd inverse_constraints;
         Eigen::LDLT<Eigen::MatrixXd> schur_factor;
         Eigen::SparseLU<ComplexSparseMatrix> saddle_factor;
         bool schur = true;
+    };
+    struct Group {
+        KernelRieszPatch patch;
+        std::vector<int> nodes;
+        Eigen::SparseMatrix<double> energy;
+        std::shared_ptr<Factors> factors;
     };
     std::vector<std::unique_ptr<Group>> groups;
     std::vector<KernelRieszPatch> patches;
@@ -373,15 +379,26 @@ AdditiveKernelRieszContext::AdditiveKernelRieszContext(
         const auto &c = g.patch.constraints;
         const int n = g.energy.rows(), m = c.rows();
         if(m==n)return; // The constrained space is exactly zero; no factor is used.
-        g.schur = m <= 256;
-        if (g.schur) {
-            g.energy_factor.compute(g.energy);
-            if (g.energy_factor.info() != Eigen::Success)
+        std::string key;
+        auto word=[&](std::uint64_t x){for(int j=0;j<8;++j)key.push_back(char(x>>(8*j)));};
+        auto real=[&](double x){word(std::bit_cast<std::uint64_t>(x));};
+        if(space.limits().riesz_cache && m<=256){
+            word(n);word(m);word(g.energy.nonZeros());
+            for(int j=0;j<n;++j)for(Sparse::InnerIterator it(g.energy,j);it;++it){word(it.row());word(it.col());real(it.value());}
+            for(int j=0;j<c.size();++j)real(c.data()[j]);
+            g.factors=std::static_pointer_cast<Impl::Factors>(space.limits().riesz_cache->find(key));
+            if(g.factors)return;
+        }
+        g.factors=std::make_shared<Impl::Factors>();auto& f=*g.factors;
+        f.schur = m <= 256;
+        if (f.schur) {
+            f.energy_factor.compute(g.energy);
+            if (f.energy_factor.info() != Eigen::Success)
                 throw std::runtime_error("AS energy factorization failed");
             if (m) {
-                g.inverse_constraints = g.energy_factor.solve(c.transpose());
-                g.schur_factor.compute(c * g.inverse_constraints);
-                if (g.schur_factor.info() != Eigen::Success)
+                f.inverse_constraints = f.energy_factor.solve(c.transpose());
+                f.schur_factor.compute(c * f.inverse_constraints);
+                if (f.schur_factor.info() != Eigen::Success)
                     throw std::runtime_error("AS Schur factorization failed");
             }
         } else {
@@ -396,9 +413,14 @@ AdditiveKernelRieszContext::AdditiveKernelRieszContext(
             }
             ComplexSparseMatrix saddle(n+m,n+m);
             saddle.setFromTriplets(entries.begin(),entries.end());
-            g.saddle_factor.compute(saddle);
-            if (g.saddle_factor.info() != Eigen::Success)
+            f.saddle_factor.compute(saddle);
+            if (f.saddle_factor.info() != Eigen::Success)
                 throw std::runtime_error("AS saddle factorization failed");
+        }
+        if(!key.empty()){
+            // Dense upper bound for retained LDLT fill and Schur workspaces.
+            const std::size_t bytes=sizeof(double)*(std::size_t(n)*n*2+std::size_t(n)*m*2+std::size_t(m)*m*4)+std::size_t(n)*128+1024;
+            space.limits().riesz_cache->insert(std::move(key),g.factors,bytes);
         }
     });
     p.preparation_seconds = std::chrono::duration<double>(
@@ -462,22 +484,26 @@ AdditiveKernelRieszContext::Result AdditiveKernelRieszContext::apply_selected(
             local_values[index] = ComplexMatrix::Zero(n,input.cols());
             return;
         }
+        // Cached Schur/LDLT factors are immutable. Eigen's dense-RHS solves
+        // write only the caller-owned destination, so independent patches can
+        // share the factor without serializing their back substitutions.
+        const auto& f=*g.factors;
         ComplexMatrix r(n,input.cols()), x(n,input.cols());
         for (int i=0;i<n;++i) r.row(i)=rhs.row(dofs[i]);
         ComplexMatrix multipliers = ComplexMatrix::Zero(m,input.cols());
-        if (g.schur) {
-            x.real() = g.energy_factor.solve(r.real());
-            x.imag() = g.energy_factor.solve(r.imag());
+        if (f.schur) {
+            x.real() = f.energy_factor.solve(r.real());
+            x.imag() = f.energy_factor.solve(r.imag());
             if (m) {
                 const ComplexMatrix cr = c.cast<Complex>() * x;
-                multipliers.real() = g.schur_factor.solve(cr.real());
-                multipliers.imag() = g.schur_factor.solve(cr.imag());
-                x -= g.inverse_constraints.cast<Complex>() * multipliers;
+                multipliers.real() = f.schur_factor.solve(cr.real());
+                multipliers.imag() = f.schur_factor.solve(cr.imag());
+                x -= f.inverse_constraints.cast<Complex>() * multipliers;
             }
         } else {
             ComplexMatrix b = ComplexMatrix::Zero(n+m,input.cols());
             b.topRows(n)=r;
-            const ComplexMatrix sol = g.saddle_factor.solve(b);
+            const ComplexMatrix sol = f.saddle_factor.solve(b);
             x=sol.topRows(n); multipliers=sol.bottomRows(m);
         }
         if (!x.allFinite()) throw std::runtime_error("AS solve is not finite");

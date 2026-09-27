@@ -4,6 +4,8 @@ import hashlib
 import json
 import math
 import os
+import sys
+import tempfile
 from pathlib import Path
 import subprocess
 import time
@@ -139,14 +141,20 @@ def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=N
         atomic_text(output / "run.json", json.dumps(manifest, indent=2) + "\n")
     save()
     start = time.monotonic()
-    queue=None;process=None
+    queue=None;process=None;socket_directory=None;shared_endpoint=None
     try:
         from execution import runtime_environment
         env=runtime_environment(config["threads"])
         env["ALOD_TIMING_FILE"]=str((output/"timings.jsonl").resolve())
         if config["audit"]:
             from async_audit import AuditQueue
-            queue=AuditQueue(output,executable,config["member_ids"],audit_workers,audit_threads,drain_workers=audit_drain_workers)
+            if (sys.platform=='linux' and config['method']=='ALOD' and not os.environ.get('ALOD_REFERENCE_EXECUTION')
+                    and not os.environ.get('ALOD_AUDIT_ONESHOT') and not os.environ.get('ALOD_AUDIT_DISK_ONLY')):
+                socket_directory=tempfile.TemporaryDirectory(prefix='alod-audit-')
+                shared_endpoint=Path(socket_directory.name)/'worker.sock'
+                env['ALOD_AUDIT_SOCKET']=str(shared_endpoint)
+                env['ALOD_SHARED_AUDIT_WORKERS']=str(audit_drain_workers)
+            queue=AuditQueue(output,executable,config["member_ids"],audit_workers,audit_threads,drain_workers=audit_drain_workers,shared_endpoint=shared_endpoint)
             queue.discover()
         effective = output / "effective.json"
         atomic_text(effective, json.dumps(config, indent=2)+"\n")
@@ -161,9 +169,10 @@ def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=N
                                        stdout=out, stderr=err, env=env)
             while process.poll() is None:
                 if queue:queue.discover()
+                if shared_endpoint is not None and Path(str(shared_endpoint)+'.done').exists():break
                 if time.monotonic()-solver_start>timeout:raise subprocess.TimeoutExpired(process.args,timeout)
                 time.sleep(.1)
-            result=process
+            result=subprocess.CompletedProcess(process.args,0) if process.poll() is None and shared_endpoint is not None else process
             if queue:queue.discover()
         manifest['solver_wall_seconds'] = time.monotonic()-solver_start
         manifest['solver_finished_at']=time.time()
@@ -194,6 +203,11 @@ def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=N
             if not paused:manifest["status"]="auditing"
             save()
             audit_failures = queue.finish(accepted)
+            if shared_endpoint is not None and process.poll() is None:
+                from native_audit import shutdown_shared
+                shutdown_shared(shared_endpoint)
+                process.wait(timeout=30)
+                if process.returncode:raise RuntimeError('shared audit server failed during drain')
             if not paused:manifest["status"]="complete"
             manifest["audit_complete"] = not audit_failures and len(accepted)==expected
             manifest["audit_failures"] = audit_failures
@@ -204,7 +218,7 @@ def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=N
         manifest['audit_wall_seconds'] = time.monotonic()-start if config['audit'] else 0
         manifest['audit_workers']=audit_workers;manifest['audit_threads']=audit_threads
         manifest['audit_drain_workers']=audit_drain_workers
-        manifest['audit_execution']='concurrent_same_executable'
+        manifest['audit_execution']='shared_memory_and_persistent_workers' if shared_endpoint else 'persistent_checkpoint_workers'
         manifest['checkpoint_bytes'] = sum(path.stat().st_size for path in (output/'checkpoints').rglob('*.bin'))
         from export_results import export
         try:
@@ -222,6 +236,7 @@ def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=N
             try:process.wait(timeout=5)
             except subprocess.TimeoutExpired:process.kill();process.wait()
         if queue:queue.close()
+        if socket_directory is not None:socket_directory.cleanup()
         # Preserve the last accepted cursor even when a later resource or
         # numerical gate stops the run; checkpoints remain independently usable.
         log = output / "solver.jsonl"

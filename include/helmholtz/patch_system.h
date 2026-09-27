@@ -45,6 +45,9 @@ public:
     // Exact per-node/per-element dependencies, computed once per hierarchy.
     std::vector<std::string> dependency_records() const;
     std::string dependency_key(int target,const std::vector<std::uint64_t>& versions) const;
+    // Numbering-independent exact local dependency key, before matrix/QR assembly.
+    void prepare_local_dependencies();
+    std::string local_dependency_key(const HelmholtzPatchSystem&) const;
     // Exact fine-element support of a coarse patch.  Equal supports imply an
     // equal local Helmholtz energy block and are used only to schedule
     // DirectSchur solves with factorization affinity.
@@ -60,6 +63,7 @@ private:
     const Eigen::SparseMatrix<double> &patches_;
     const HelmholtzOperators &operators_;
     std::vector<std::vector<int>> children_;
+    std::vector<std::vector<std::pair<int,double>>> interpolation_dependencies_;
     std::vector<int> fine_incidence_;
     std::vector<char> fine_dirichlet_;
     std::vector<char> fine_natural_boundary_;

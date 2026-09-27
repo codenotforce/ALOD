@@ -309,6 +309,77 @@ std::string HelmholtzPatchAssembler::dependency_key(int target,const std::vector
     return key;
 }
 
+void HelmholtzPatchAssembler::prepare_local_dependencies(){
+    interpolation_dependencies_.resize(fine_.nodes.size());
+    for(int v=0;v<quasi_interpolation_.outerSize();++v){
+        auto& rows=interpolation_dependencies_[v];
+        for(Eigen::SparseMatrix<double>::InnerIterator it(quasi_interpolation_,v);it;++it)rows.emplace_back(it.row(),it.value());
+        std::sort(rows.begin(),rows.end(),[&](const auto& a,const auto& b){
+            const auto& x=coarse_.nodes[a.first];const auto& y=coarse_.nodes[b.first];
+            return x.x()!=y.x()?x.x()<y.x():x.y()<y.y();
+        });
+    }
+}
+std::string HelmholtzPatchAssembler::local_dependency_key(const HelmholtzPatchSystem& system) const {
+    auto vertices=system.local_vertices;
+    std::sort(vertices.begin(),vertices.end(),[&](int a,int b){
+        return fine_.nodes[a].x()!=fine_.nodes[b].x()?fine_.nodes[a].x()<fine_.nodes[b].x():fine_.nodes[a].y()<fine_.nodes[b].y();
+    });
+    if(interpolation_dependencies_.size()!=fine_.nodes.size())throw std::logic_error("local dependencies were not prepared");
+    std::string key;key.reserve(vertices.size()*256+512);
+    // Equivalent translated patches have the same discrete local problem.
+    // Actual operator, constraint and RHS entries still require exact equality.
+    const Point2 origin=coarse_.nodes[coarse_.elems[system.target_element][0]];
+    auto point=[&](std::string& out,const Point2& p){dependency_real(out,p.x()-origin.x());dependency_real(out,p.y()-origin.y());};
+    dependency_real(key,operators_.wavenumber);
+    for(int v:coarse_.elems[system.target_element])point(key,coarse_.nodes[v]);
+    dependency_word(key,vertices.size());
+    std::unordered_map<int,int> local;local.reserve(vertices.size()*2);
+    for(int i=0;i<static_cast<int>(vertices.size());++i){
+        int v=vertices[i];local.emplace(v,i);point(key,fine_.nodes[v]);
+    }
+    // Equal operators under a permutation need not produce bitwise equal QR
+    // solves. Preserve the production arithmetic order as part of the identity:
+    // otherwise parallel cache insertion can choose a different rounding path.
+    std::unordered_map<int,bool> seen_constraints;
+    std::vector<int> constraint_order;
+    for(int v:system.local_vertices){
+        dependency_word(key,local.at(v));
+        for(Eigen::SparseMatrix<double>::InnerIterator it(quasi_interpolation_,v);it;++it)
+            if(seen_constraints.emplace(it.row(),true).second)constraint_order.push_back(it.row());
+    }
+    dependency_word(key,constraint_order.size());
+    for(int row:constraint_order)point(key,coarse_.nodes[row]);
+    std::vector<std::pair<int,Complex>> entries;entries.reserve(16);
+    for(int v:vertices){
+        entries.clear();
+        for(ComplexSparseMatrix::InnerIterator it(operators_.system,v);it;++it){
+            auto row=local.find(it.row());if(row!=local.end())entries.emplace_back(row->second,it.value());
+        }
+        std::sort(entries.begin(),entries.end(),[](const auto& a,const auto& b){return a.first<b.first;});
+        dependency_word(key,entries.size());
+        for(const auto& [r,a]:entries){dependency_word(key,r);dependency_real(key,a.real());dependency_real(key,a.imag());}
+        // Only interpolation restricted to the actual local unknowns matters.
+        const auto& constraints=interpolation_dependencies_[v];dependency_word(key,constraints.size());
+        for(const auto& [row,value]:constraints){point(key,coarse_.nodes[row]);dependency_real(key,value);}
+    }
+    // Target contributions define the three RHS columns. No global element or
+    // coarse-node number enters the identity. Preserve triangle vertex order.
+    std::vector<std::string> children;
+    for(int e:children_[system.target_element]){
+        std::string row;row.reserve(264);
+        for(int v:fine_.elems[e])point(row,fine_.nodes[v]);
+        for(int j=0;j<9;++j){auto a=operators_.element_blocks[e].data()[j];dependency_real(row,a.real());dependency_real(row,a.imag());}
+        for(int i=0;i<3;++i)for(int j=0;j<3;++j)
+            dependency_real(row,fine_dg_prolongation_.coeff(3*e+i,3*system.target_element+j));
+        children.push_back(std::move(row));
+    }
+    // Target element accumulation order also affects floating-point RHS values.
+    dependency_word(key,children.size());
+    for(const auto& row:children)key+=row;
+    return key;
+}
+
 std::size_t HelmholtzPatchAssembler::patch_cost(int target) const {
     if (target < 0 || target >= patch_count())
         throw std::out_of_range("Helmholtz patch target is out of range");

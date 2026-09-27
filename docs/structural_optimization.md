@@ -1,5 +1,7 @@
 # Structural optimization review and implementation
 
+Current follow-up: [cross-state reuse, coordinate training and shared asynchronous audits](deep_reuse.md). This update supersedes earlier pending statements about local factor reuse, intermediate fine-grid training vectors and resident/shared audit execution. Full production validation remains separate.
+
 The pre-change baseline is commit `8b4e03f` on `codex/p0-p1`. The isolated server validation directory is `deep-20260926` under the project root. Previously deployed experiments and their binaries are unchanged.
 
 ## Implemented changes

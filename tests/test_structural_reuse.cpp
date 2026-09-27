@@ -47,7 +47,10 @@ int main(int argc,char** argv){try{
     LodSpace cached(changed.coarse,changed.reference,wavenumber,2,InterpolationPolicy::ManuscriptAreaWeighted,limits);
     LodLimits cold_limits=limits;cold_limits.patch_cache.reset();
     LodSpace cold(changed.coarse,changed.reference,wavenumber,2,InterpolationPolicy::ManuscriptAreaWeighted,cold_limits);
-    require((cached.trial()-cold.trial()).norm()==0,"refinement dependency invalidation failed");
+    // Matching includes arithmetic order, so reuse preserves the original bits.
+    const double reuse_error=(cached.trial()-cold.trial()).norm()/std::max(1.,cold.trial().norm());
+    require(reuse_error==0,"refinement dependency invalidation failed");
+    std::cout<<"Corrector relative difference="<<reuse_error<<'\n';
     require(limits.patch_cache->bytes()<=32*1024*1024,"dependency storage exceeded bound");
     std::vector<Problem> problems;
     for(int j=0;j<6;++j)problems.push_back(lod2d::helmholtz::benchmarks::make_parameterized_boundary_gaussian_s_paper_case(8.*(j+1),.1*j,.1*j,.3*j,80.,lod2d::Point2(-.4-.03*j,.4+.02*j)));

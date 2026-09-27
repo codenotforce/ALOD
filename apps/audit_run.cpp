@@ -1,11 +1,14 @@
+#include "audit_run.hpp"
 #include "alod/timing.hpp"
 #include "fixed_support.hpp"
 #include "alod/checkpoint.hpp"
 #include "alod/batch.hpp"
 #include "alod/regional.hpp"
 #include <chrono>
+#include <bit>
 using namespace alod;
-int audit_main(int argc,char** argv){try{
+int audit_main(int argc,char** argv,AuditWorkerState* worker,std::ostream* output,std::ostream* error){
+    auto& out=output?*output:std::cout;auto& err=error?*error:std::cerr;try{
     PhaseTimer process_timer("audit_process",-1);
     std::map<std::string,std::string> options{{"reuse-basis","1"},{"enrichment-tests","adjoint"},{"refinement-steps","0"},{"ell-override","0"},{"quadrature-boost","0"},{"checkpoint",""},{"batch-size","8"},{"fresh","0"},{"rank-zero","1"},{"audit-ids",""},{"method","ALOD"},{"radius",".6"},{"rank-cap","24"},{"maximum-patch-entries","8000000"},{"maximum-dense-entries","8000000"}};
     std::vector<char*> forward{argv[0]};if(argc>1)forward.push_back(argv[1]);std::set<std::string> seen;
@@ -15,7 +18,10 @@ int audit_main(int argc,char** argv){try{
     if(policy!="kernel_lift"&&policy!="adjoint")throw std::invalid_argument("invalid enrichment tests");
     auto tests=policy=="kernel_lift"?EnrichmentTests::KernelLift:EnrichmentTests::ArchivedAdjoint;
     auto input=fixed::parse(forward.size(),forward.data());PhaseTimer::probe(input.threads);
-    auto snapshot=[&]{PhaseTimer timing("checkpoint_load",-1);return load_checkpoint(options["checkpoint"]);}();
+    const bool shared_snapshot=worker&&worker->prepared&&worker->prepared_path==options["checkpoint"];
+    auto snapshot=[&]{PhaseTimer timing(shared_snapshot?"checkpoint_transfer":"checkpoint_load",-1);
+        if(shared_snapshot){auto owned=std::move(worker->prepared);return std::move(*owned);}
+        return load_checkpoint(options["checkpoint"]);}();
     PhaseTimer state_timer("audit_state",snapshot.cursor.state_id);
     if(snapshot.phase!=CheckpointPhase::Accepted)throw std::invalid_argument("audit requires an accepted checkpoint");
     // The accepted journal binds the test policy, including direct CLI audits.
@@ -39,14 +45,34 @@ int audit_main(int argc,char** argv){try{
     std::map<int,std::string> parameter_ids;{std::ifstream table(input.members_path);std::string row;while(std::getline(table,row)){std::istringstream parsed(row);int id;if(parsed>>id)parameter_ids[id]=std::to_string(journal_hash(row));}}
     auto start=std::chrono::steady_clock::now();auto seconds=[&]{return std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();};
     LodLimits limits;limits.maximum_reference_nodes=input.cap;limits.threads=input.threads;{std::size_t n;auto v=std::stoull(options["maximum-patch-entries"],&n);if(n!=options["maximum-patch-entries"].size()||v<1||v>64000000000ULL)throw std::invalid_argument("invalid patch entry bound");limits.maximum_patch_entries=v;}limits.maximum_dense_entries=integer("maximum-dense-entries",1,1000000000);
-    if(snapshot.fine.mesh.nodes.size()*static_cast<std::size_t>(batch)>limits.maximum_dense_entries)throw std::runtime_error("audit batch exceeds dense allocation bound");
+    if(static_cast<std::size_t>(snapshot.values.rows())*static_cast<std::size_t>(batch)>limits.maximum_dense_entries)throw std::runtime_error("audit batch exceeds dense allocation bound");
     std::unique_ptr<LodSpace> space;std::unique_ptr<AdditiveKernelRieszContext> riesz;AdjointTestCache aot;std::unique_ptr<RegionalEvaluator> coupled;
     lod2d::helmholtz::HelmholtzOperators afem_operators;
     const bool restored_basis=integer("reuse-basis",0,1)&&!afem&&snapshot.lod_trial.cols()&&(!ell_override||ell_override==snapshot.ell);
+    if(shared_snapshot&&!restored_basis&&snapshot.fine.mesh.nodes.empty())
+        snapshot=load_checkpoint(options["checkpoint"]); // Explicit rebuild diagnostics need full geometry.
     if(!afem){
         PhaseTimer timing(restored_basis?"lod_restore":"lod_rebuild",snapshot.cursor.state_id);
-        if(restored_basis)space=std::make_unique<LodSpace>(snapshot.coarse.mesh,snapshot.reference(),input.wavenumber,snapshot.ell,input.policy=="area"?InterpolationPolicy::ManuscriptAreaWeighted:InterpolationPolicy::ArchivedArithmetic,limits,snapshot.lod_trial,std::getenv("ALOD_REFERENCE_EXECUTION")?nullptr:&snapshot.lod_reduced);
+        const std::string hierarchy_key=snapshot.geometry_file+":"+std::to_string(std::bit_cast<std::uint64_t>(input.wavenumber))+":"+input.policy;
+        const bool shared_hierarchy=restored_basis&&worker&&worker->hierarchy&&!snapshot.geometry_file.empty()&&worker->hierarchy_key==hierarchy_key;
+        if(shared_hierarchy){
+            space=std::make_unique<LodSpace>(worker->hierarchy,snapshot.ell,input.policy=="area"?InterpolationPolicy::ManuscriptAreaWeighted:InterpolationPolicy::ArchivedArithmetic,limits,snapshot.lod_trial,&snapshot.lod_reduced);
+            PhaseTimer::counter("audit_hierarchy_hits",1,snapshot.cursor.state_id);
+        }
+        else if(restored_basis)space=std::make_unique<LodSpace>(snapshot.coarse.mesh,snapshot.reference(),input.wavenumber,snapshot.ell,input.policy=="area"?InterpolationPolicy::ManuscriptAreaWeighted:InterpolationPolicy::ArchivedArithmetic,limits,snapshot.lod_trial,std::getenv("ALOD_REFERENCE_EXECUTION")?nullptr:&snapshot.lod_reduced);
         else space=std::make_unique<LodSpace>(snapshot.coarse.mesh,snapshot.reference(),input.wavenumber,snapshot.ell,input.policy=="area"?InterpolationPolicy::ManuscriptAreaWeighted:InterpolationPolicy::ArchivedArithmetic,limits);
+        if(worker){
+            worker->hierarchy.reset();worker->hierarchy_key.clear();
+            const auto h=space->hierarchy();std::size_t bytes=0;
+            auto sparse_bytes=[](const auto& a){return std::size_t(a.nonZeros())*(sizeof(typename std::decay_t<decltype(a)>::Scalar)+sizeof(int))+std::size_t(a.cols()+1)*sizeof(int);};
+            for(const Sparse* a:{&h->interpolation,&h->coarse_basis,&h->energy,&h->reference.P_node,&h->reference.P_elem,&h->reference.P_dg,&h->operators.stiffness,&h->operators.mass,&h->operators.boundary_mass})bytes+=sparse_bytes(*a);
+            bytes+=sparse_bytes(h->operators.system)+h->operators.element_blocks.size()*sizeof(Eigen::Matrix3cd);
+            bytes+=(h->coarse.nodes.size()+h->reference.mesh.nodes.size())*64+(h->coarse.elems.size()+h->reference.mesh.elems.size())*64;
+            std::size_t cap=64ULL*1024*1024;
+            if(const char* value=std::getenv("ALOD_AUDIT_HIERARCHY_BYTES")){std::string text(value);if(text.empty()||text.find_first_not_of("0123456789")!=std::string::npos)throw std::invalid_argument("invalid audit hierarchy budget");cap=std::stoull(text);}
+            if(bytes<=cap&&!snapshot.geometry_file.empty()){worker->hierarchy=h;worker->hierarchy_key=hierarchy_key;}
+            PhaseTimer::counter("audit_retained_hierarchy_bytes",worker->hierarchy?bytes:0,snapshot.cursor.state_id);
+        }
         if(space->identity()!=snapshot.space_identity)throw std::invalid_argument("checkpoint/audit operator or space identity mismatch");
         if(ell_override && ell_override!=snapshot.ell)space=std::make_unique<LodSpace>(*space,ell_override);
         if(input.problem=="E2"){if(fresh)riesz=std::make_unique<AdditiveKernelRieszContext>(*space,input.riesz_policy=="n2"?RieszPatchPolicy::ManuscriptN2:RieszPatchPolicy::ArchivedSupportExpanded);coupled=std::make_unique<RegionalEvaluator>(*space,aot,true,tests);}}
@@ -62,7 +88,7 @@ int audit_main(int argc,char** argv){try{
     const Sparse& E=afem?afem_energy:space->energy();
     const auto reference_mesh_hash=mesh_fingerprint(audit_mesh),dictionary_hash=matrix_hash(snapshot.phi);
     auto reference_ptr=[&]{PhaseTimer timing("reference_factor",snapshot.cursor.state_id);return std::make_unique<ReferenceFemContext>(operators);}();auto& reference=*reference_ptr;double prepare_seconds=seconds(),load_seconds=0,error_seconds=0,coupled_seconds=0,fresh_seconds=0;
-    auto q=paper_quadrature(input.problem);q.base_triangle_order+=quadrature_boost;q.gaussian_triangle_order+=quadrature_boost;q.singular_triangle_order+=quadrature_boost;std::cout<<std::setprecision(17);int completed=0;
+    auto q=paper_quadrature(input.problem);q.base_triangle_order+=quadrature_boost;q.gaussian_triangle_order+=quadrature_boost;q.singular_triangle_order+=quadrature_boost;out<<std::setprecision(17);int completed=0;
     std::unique_ptr<AuditIntegrationGeometry> integration_geometry;
     if(!std::getenv("ALOD_REFERENCE_EXECUTION")){PhaseTimer timing("audit_geometry",snapshot.cursor.state_id);
         integration_geometry=std::make_unique<AuditIntegrationGeometry>(audit_mesh,input.threads);}
@@ -91,29 +117,29 @@ int audit_main(int argc,char** argv){try{
         PhaseTimer metrics_timer("sample_metrics",snapshot.cursor.state_id);
         for(int j=0;j<count;++j){const auto& member=selected[begin+j];double n=errors.exact_norm[j];auto norm=[&](const ComplexVector& x){return std::sqrt(std::max(0.,x.dot(E.cast<Complex>()*x).real()));};
             double gap=afem?0:norm((ref.col(j)-values.col(j)).eval());
-            std::cout<<"{\"kind\":\"sample\",\"state_id\":"<<snapshot.cursor.state_id<<",\"sample\":"<<member.id<<",\"role\":"<<json_string(member.role)<<",\"nominal\":"<<(member.id==0?"true":"false")
-                <<",\"marking_member\":"<<(std::find(input.ids.begin(),input.ids.end(),member.id)!=input.ids.end()?"true":"false")<<",\"ell\":";if(afem)std::cout<<"null";else std::cout<<(ell_override?ell_override:snapshot.ell);std::cout<<",\"rank\":"<<snapshot.phi.cols()<<",\"energy\":"<<errors.energy[j]
-                <<",\"exact_norm\":"<<n<<",\"exact_error\":"<<errors.exact_error[j]<<",\"e\":"<<errors.exact_error[j]<<",\"f\":";if(afem)std::cout<<"null";else std::cout<<floors[j];
-            std::cout<<",\"g\":";if(afem)std::cout<<"null";else std::cout<<gap;
-            auto ratio=[&](double x){if(n>1e-12)std::cout<<x/n;else std::cout<<"null";};
-            std::cout<<",\"E\":";ratio(errors.exact_error[j]);std::cout<<",\"E_ref\":";if(afem)std::cout<<"null";else ratio(floors[j]);std::cout<<",\"F\":";if(afem)std::cout<<"null";else ratio(floors[j]);std::cout<<",\"G\":";if(afem)std::cout<<"null";else ratio(gap);
+            out<<"{\"kind\":\"sample\",\"state_id\":"<<snapshot.cursor.state_id<<",\"sample\":"<<member.id<<",\"role\":"<<json_string(member.role)<<",\"nominal\":"<<(member.id==0?"true":"false")
+                <<",\"marking_member\":"<<(std::find(input.ids.begin(),input.ids.end(),member.id)!=input.ids.end()?"true":"false")<<",\"ell\":";if(afem)out<<"null";else out<<(ell_override?ell_override:snapshot.ell);out<<",\"rank\":"<<snapshot.phi.cols()<<",\"energy\":"<<errors.energy[j]
+                <<",\"exact_norm\":"<<n<<",\"exact_error\":"<<errors.exact_error[j]<<",\"e\":"<<errors.exact_error[j]<<",\"f\":";if(afem)out<<"null";else out<<floors[j];
+            out<<",\"g\":";if(afem)out<<"null";else out<<gap;
+            auto ratio=[&](double x){if(n>1e-12)out<<x/n;else out<<"null";};
+            out<<",\"E\":";ratio(errors.exact_error[j]);out<<",\"E_ref\":";if(afem)out<<"null";else ratio(floors[j]);out<<",\"F\":";if(afem)out<<"null";else ratio(floors[j]);out<<",\"G\":";if(afem)out<<"null";else ratio(gap);
             auto saved=std::find(snapshot.computed_ids.begin(),snapshot.computed_ids.end(),member.id);
-            std::cout<<",\"accepted_solution_distance\":";
-            if(saved==snapshot.computed_ids.end())std::cout<<"null";
-            else std::cout<<norm((values.col(j)-snapshot.values.col(saved-snapshot.computed_ids.begin())).eval());
-            std::cout<<",\"wavenumber\":"<<input.wavenumber<<",\"source_ell\":"<<snapshot.ell<<",\"quadrature_boost\":"<<quadrature_boost;
-            std::cout<<",\"reference_residual\":"<<audited_reference_residual<<",\"refinement_steps\":"<<refinement_steps;
-            std::cout<<",\"parameter_id\":"<<json_string(parameter_ids.at(member.id))<<",\"reference_mesh_hash\":"<<json_string(reference_mesh_hash)<<",\"dictionary_hash\":"<<json_string(dictionary_hash)<<",\"solution_hash\":"<<json_string(matrix_hash(values.col(j)));
-            std::cout<<",\"ratio_status\":\""<<(n>1e-12?"finite":"near_zero_exact_norm")<<"\",\"reference_status\":\""<<(afem?"not_applicable":"available")<<"\",\"PG_residual\":"<<(afem?reference.relative_residual():pg);
-            if(rankzero&&!afem)std::cout<<",\"base_gap\":"<<(coupled?norm((ref.col(j)-base.col(j)).eval()):gap)<<",\"as_correction_energy\":"<<(coupled?norm((values.col(j)-base.col(j)).eval()):0.);
+            out<<",\"accepted_solution_distance\":";
+            if(saved==snapshot.computed_ids.end())out<<"null";
+            else out<<norm((values.col(j)-snapshot.values.col(saved-snapshot.computed_ids.begin())).eval());
+            out<<",\"wavenumber\":"<<input.wavenumber<<",\"source_ell\":"<<snapshot.ell<<",\"quadrature_boost\":"<<quadrature_boost;
+            out<<",\"reference_residual\":"<<audited_reference_residual<<",\"refinement_steps\":"<<refinement_steps;
+            out<<",\"parameter_id\":"<<json_string(parameter_ids.at(member.id))<<",\"reference_mesh_hash\":"<<json_string(reference_mesh_hash)<<",\"dictionary_hash\":"<<json_string(dictionary_hash)<<",\"solution_hash\":"<<json_string(matrix_hash(values.col(j)));
+            out<<",\"ratio_status\":\""<<(n>1e-12?"finite":"near_zero_exact_norm")<<"\",\"reference_status\":\""<<(afem?"not_applicable":"available")<<"\",\"PG_residual\":"<<(afem?reference.relative_residual():pg);
+            if(rankzero&&!afem)out<<",\"base_gap\":"<<(coupled?norm((ref.col(j)-base.col(j)).eval()):gap)<<",\"as_correction_energy\":"<<(coupled?norm((values.col(j)-base.col(j)).eval()):0.);
             if(fresh&&!afem){t=seconds();ComplexVector u;int rank=0;if(input.problem=="E2"){auto trained=train_regional(*space,*riesz,aot,loads.col(j),{radius,rankcap,false,tests});u=trained.accepted.values.col(0);rank=trained.phi.cols();}else u=space->solve(loads.col(j)).values.col(0);
                 double error=lod2d::helmholtz::compute_helmholtz_error(audit_mesh,u,input.wavenumber,member.problem.exact,member.problem.exact_gradient,q,member.problem.quadrature_context).energy;fresh_seconds+=seconds()-t;
-                std::cout<<",\"fresh_rank\":"<<rank<<",\"fresh_e\":"<<error<<",\"fresh_g\":"<<norm((ref.col(j)-u).eval())<<",\"shared_fresh_signed_percent\":";if(error>1e-12)std::cout<<100*(errors.exact_error[j]-error)/error;else std::cout<<"null";}
-            std::cout<<"}\n";++completed;
+                out<<",\"fresh_rank\":"<<rank<<",\"fresh_e\":"<<error<<",\"fresh_g\":"<<norm((ref.col(j)-u).eval())<<",\"shared_fresh_signed_percent\":";if(error>1e-12)out<<100*(errors.exact_error[j]-error)/error;else out<<"null";}
+            out<<"}\n";++completed;
         }
     }
-    std::cout<<"{\"kind\":\"audit_complete\",\"state_id\":"<<snapshot.cursor.state_id<<",\"samples\":"<<completed<<",\"batch_size\":"<<batch<<",\"reference_factorizations\":1,\"aot_factorizations\":"<<aot.factorizations()
-        <<",\"lod_basis_reused\":"<<(restored_basis?"true":"false")<<",\"lod_patch_rebuilds\":"<<(!afem&&!restored_basis?1:0)<<",\"threads\":"<<input.threads<<",\"prepare_seconds\":"<<prepare_seconds<<",\"load_seconds\":"<<load_seconds<<",\"error_seconds\":"<<error_seconds<<",\"reference_factor_seconds\":"<<reference.factor_seconds()<<",\"reference_solve_seconds\":"<<reference.solve_seconds()
+    out<<"{\"kind\":\"audit_complete\",\"state_id\":"<<snapshot.cursor.state_id<<",\"samples\":"<<completed<<",\"batch_size\":"<<batch<<",\"reference_factorizations\":1,\"aot_factorizations\":"<<aot.factorizations()
+        <<",\"snapshot_transferred\":"<<(shared_snapshot?"true":"false")<<",\"lod_basis_reused\":"<<(restored_basis?"true":"false")<<",\"lod_patch_rebuilds\":"<<(!afem&&!restored_basis?1:0)<<",\"threads\":"<<input.threads<<",\"prepare_seconds\":"<<prepare_seconds<<",\"load_seconds\":"<<load_seconds<<",\"error_seconds\":"<<error_seconds<<",\"reference_factor_seconds\":"<<reference.factor_seconds()<<",\"reference_solve_seconds\":"<<reference.solve_seconds()
         <<",\"coupled_seconds\":"<<coupled_seconds<<",\"fresh_seconds\":"<<fresh_seconds<<",\"wall_seconds\":"<<seconds()<<"}\n";
     return 0;
-}catch(const std::exception& e){std::cerr<<"alod_audit: "<<e.what()<<'\n';return 1;}}
+}catch(const std::exception& e){err<<"alod_audit: "<<e.what()<<'\n';return 1;}}

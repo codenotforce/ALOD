@@ -8,6 +8,8 @@ Version 4 now uses kernel-lifted enrichment tests and normalized lazy localizati
 
 Current execution supports a manual lazy absolute-defect gate, concurrent audits through the same numerical executable, automatic checkpoint recovery, and unpinned runtime-selected threads. See [execution and recovery](docs/async_execution.md).
 
+Current Linux runs also support bounded shared-memory audit snapshots, resident audit workers, exact cross-state local reuse and reduced-coordinate training. See [deep reuse and audit ownership](docs/deep_reuse.md) for defaults, fallback modes and validation.
+
 ## Build and test
 
 Linux or WSL with GCC 11 or newer, CMake 3.20 or newer, Eigen 3.3 or newer, OpenMP, SuiteSparse/UMFPACK, BLAS and Python 3.10 or newer is required. The tested environment is Ubuntu 22.04. UMFPACK is a required dependency. Native Windows builds have not been validated.

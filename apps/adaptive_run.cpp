@@ -1,3 +1,5 @@
+#include "shared_audit.hpp"
+#include "alod/local_factor_cache.hpp"
 #include "alod/patch_cache.hpp"
 #include "alod/timing.hpp"
 #include "adaptive_run.hpp"
@@ -126,9 +128,12 @@ int adaptive_main(int argc,char** argv){
     LodLimits limits;limits.maximum_reference_nodes=input.cap;limits.threads=input.threads;
     limits.maximum_patch_entries=config.patch_entries;limits.maximum_dense_entries=config.dense_entries;
     if(!std::getenv("ALOD_REFERENCE_EXECUTION")){
-        std::size_t cap=0; // Opt in only when patch reuse offsets identity/copy costs.
+        std::size_t cap=64ULL*1024*1024; // Bounded cross-state corrector retention.
         if(const char* value=std::getenv("ALOD_PATCH_CACHE_BYTES")){std::string text(value);if(text.empty()||text.find_first_not_of("0123456789")!=std::string::npos)throw std::invalid_argument("invalid ALOD_PATCH_CACHE_BYTES");cap=std::stoull(text);}
         if(cap)limits.patch_cache=std::make_shared<LodPatchCache>(cap);
+        cap=64ULL*1024*1024;
+        if(const char* value=std::getenv("ALOD_RIESZ_CACHE_BYTES")){std::string text(value);if(text.empty()||text.find_first_not_of("0123456789")!=std::string::npos)throw std::invalid_argument("invalid ALOD_RIESZ_CACHE_BYTES");cap=std::stoull(text);}
+        if(cap)limits.riesz_cache=std::make_shared<LocalFactorCache>(cap);
     }
     auto advance=[&](const std::vector<int>& coarse_marks,const std::vector<int>& reference_marks){
         PhaseTimer timing("mesh_transition",cursor.state_id);
@@ -172,9 +177,11 @@ int adaptive_main(int argc,char** argv){
         for(const auto& m:input.members)s.computed_ids.push_back(m.id);
         s.cursor=cursor;s.ell=ell;s.last_check=config.policy.last_check;s.next_event=event_id;s.revision=revision;s.phase=phase;s.mesh_changed=mesh_changed;s.check_pending=check;
         s.committed_lines=committed_lines;s.journal_hash=prefix_hash;s.journal=journal;s.mathematics_key=key;s.config_json=config_json;s.members_text=members_text;s.space_identity=identity;
-        save_checkpoint(config.checkpoint_dir,s,accepted_space?&accepted_space->trial():nullptr,
+        auto published=save_checkpoint(config.checkpoint_dir,s,accepted_space?&accepted_space->trial():nullptr,
             accepted_space&&!std::getenv("ALOD_REFERENCE_EXECUTION")?&accepted_space->reduced():nullptr,
             !std::getenv("ALOD_REFERENCE_EXECUTION"),checkpoint_geometry.get());
+        if(phase==CheckpointPhase::Accepted&&accepted_space&&checkpoint_geometry)
+            publish_audit_snapshot(published,std::move(s),*accepted_space,*checkpoint_geometry);
     };
     std::cout<<std::setprecision(17);
     for(int state=begin_state;state<states;++state){
@@ -287,6 +294,11 @@ int adaptive_main(int argc,char** argv){
             for(int j=0;j<loads.cols();++j){auto e=residual_mesh.estimate(space->operators(),values.col(j),loads.col(j),input.members[j].problem.source,quad,input.members[j].problem.quadrature_context,source_moments.empty()?nullptr:&source_moments[j]);
                 for(int i=0;i<strong.rows();++i)strong(i,j)=e.element_squared[i];}
         }
+        }
+        if(limits.riesz_cache){
+            PhaseTimer::counter("riesz_cache_hits",limits.riesz_cache->hits(),state);
+            PhaseTimer::counter("riesz_cache_misses",limits.riesz_cache->misses(),state);
+            PhaseTimer::counter("riesz_cache_bytes",limits.riesz_cache->bytes(),state);
         }
         if(limits.patch_cache){
             PhaseTimer::counter("patch_cache_hits",limits.patch_cache->hits(),state);

@@ -35,7 +35,7 @@ class AuditExecutionContext:
             raise ValueError('audit executable changed after launch snapshot')
 
 
-def audit(checkpoint, output, executable, *, member_ids=None, batch_size=8, fresh=False, rank_zero=True, threads=None, pure=False, ell_override=0, quadrature_boost=0, refinement_steps=0, timeout=604800, cancel=None, reuse_basis=True, execution_context=None):
+def audit(checkpoint, output, executable, *, member_ids=None, batch_size=8, fresh=False, rank_zero=True, threads=None, pure=False, ell_override=0, quadrature_boost=0, refinement_steps=0, timeout=604800, cancel=None, reuse_basis=True, execution_context=None, native_worker=None):
     setup_start=time.monotonic()
     if type(ell_override) is not int or not 0<=ell_override<=4 or type(quadrature_boost) is not int or not 0<=quadrature_boost<=8:
         raise ValueError("invalid diagnostic override")
@@ -45,7 +45,7 @@ def audit(checkpoint, output, executable, *, member_ids=None, batch_size=8, fres
     output, executable = Path(output), Path(executable)
     context = execution_context or AuditExecutionContext(executable)
     context.verify(executable)
-    checkpoint, metadata = inspect(checkpoint, executable.with_name("alod_run"))
+    checkpoint, metadata = native_worker.prepare(checkpoint,cancel,timeout) if native_worker else inspect(checkpoint, executable.with_name("alod_run"))
     if metadata["phase"] != 0:
         raise ValueError("only accepted checkpoints may be audited")
     if type(batch_size) is not int or not 1 <= batch_size <= 50:
@@ -102,10 +102,16 @@ def audit(checkpoint, output, executable, *, member_ids=None, batch_size=8, fres
                    "--audit-ids="+",".join(map(str, member_ids)), f"--fresh={int(fresh)}", f"--rank-zero={int(rank_zero)}",
                    f"--method={config['method']}", f"--radius={config['radius']}", f"--rank-cap={config['rank_cap']}",
                    f"--maximum-patch-entries={config['maximum_patch_entries']}", f"--maximum-dense-entries={config['maximum_dense_entries']}"]
-        with (output/"samples.jsonl").open("w") as out, (output/"stderr.log").open("w") as err:
-            from execution import cancellable_run
-            result = cancellable_run([str(executable.resolve()), *(["audit"] if executable.stem=="alod_run" else []), *arguments(fixed, table.resolve()), *runtime],
-                                    stdout=out, stderr=err, env=env, timeout=timeout, cancel=cancel)
+        native_args=[str(executable.resolve()), *arguments(fixed, table.resolve()), *runtime]
+        if native_worker:
+            result=native_worker.run(native_args,output,cancel,timeout)
+            manifest['native_worker_pid']=native_worker.process.pid
+            manifest['memory_snapshot']=getattr(native_worker,'memory_snapshot',False)
+        else:
+            with (output/"samples.jsonl").open("w") as out, (output/"stderr.log").open("w") as err:
+                from execution import cancellable_run
+                result = cancellable_run([native_args[0], *(["audit"] if executable.stem=="alod_run" else []), *native_args[1:]],
+                                        stdout=out, stderr=err, env=env, timeout=timeout, cancel=cancel)
         context.verify(executable)
         manifest["returncode"] = result.returncode
         if result.returncode:

@@ -1,5 +1,7 @@
 # Asynchronous audits, tighter localization, and bordered training solves
 
+Current follow-up: [cross-state reuse, coordinate training and shared asynchronous audits](deep_reuse.md). This update supersedes earlier pending statements about local factor reuse, intermediate fine-grid training vectors and resident/shared audit execution. Full production validation remains separate.
+
 ## Audit scheduling
 
 The active solver never waits for an audit. Checkpoints remain immutable and durable. The scheduler submits only as many jobs as can run; remaining states stay on disk rather than entering an unbounded executor backlog. Completed sample records are retained for the final export.

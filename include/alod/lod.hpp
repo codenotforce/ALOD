@@ -15,6 +15,7 @@ using Sparse = Eigen::SparseMatrix<double>;
 using InterpolationPolicy = lod2d::QuasiInterpolationPolicy;
 
 class LodPatchCache;
+class LocalFactorCache;
 
 // Fixed-state resource ceilings, checked before patch factors and dense RHS blocks.
 struct LodLimits {
@@ -23,6 +24,7 @@ struct LodLimits {
     std::size_t maximum_dense_entries = 8000000;
     int threads = omp_get_max_threads();
     std::shared_ptr<LodPatchCache> patch_cache;
+    std::shared_ptr<LocalFactorCache> riesz_cache;
 };
 struct LodSolution {
     ComplexMatrix values, coefficients;
@@ -36,6 +38,7 @@ struct LodHierarchyData {
     lod2d::helmholtz::HelmholtzOperators operators;
     std::vector<int> coarse_nodes;
     std::string reference_identity;
+    InterpolationPolicy policy=InterpolationPolicy::ManuscriptAreaWeighted;
 };
 class LodSpace {
 public:
@@ -48,6 +51,9 @@ public:
     LodSpace(lod2d::TriMesh, lod2d::RefineOutput, double, int,
              InterpolationPolicy, LodLimits, const ComplexSparseMatrix& accepted_trial,
              const ComplexSparseMatrix* accepted_reduced=nullptr);
+    // Restore another accepted basis over an immutable, already assembled hierarchy.
+    LodSpace(std::shared_ptr<const LodHierarchyData>, int, InterpolationPolicy,
+             LodLimits, const ComplexSparseMatrix&, const ComplexSparseMatrix* = nullptr);
     ~LodSpace();
     LodSpace(const LodSpace&) = delete;
     LodSpace& operator=(const LodSpace&) = delete;
@@ -75,7 +81,7 @@ public:
     // Sequential access to the state-owned factor; no additional factorization.
     ComplexMatrix solve_reduced(const ComplexMatrix& rhs) const;
 private:
-    LodSpace(lod2d::TriMesh, lod2d::RefineOutput, double, int, InterpolationPolicy, LodLimits, const LodSpace*, const ComplexSparseMatrix* = nullptr,const ComplexSparseMatrix* = nullptr);
+    LodSpace(lod2d::TriMesh, lod2d::RefineOutput, double, int, InterpolationPolicy, LodLimits, const LodSpace*, const ComplexSparseMatrix* = nullptr,const ComplexSparseMatrix* = nullptr, std::shared_ptr<const LodHierarchyData> = {});
     struct Impl;
     std::unique_ptr<Impl> impl_;
 };
