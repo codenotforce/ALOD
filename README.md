@@ -108,3 +108,5 @@ See [structural optimizations and remaining work](docs/structural_optimization.m
 See [audit scheduling, training updates, and global solve inventory](docs/async_training_optimization.md) for current runtime behavior.
 
 Scientific workflow additions: [exact targets, lightweight audits, diagnostics, current-paper delivery and incremental I/O/integration](docs/scientific_workflow.md).
+
+See [the code structure review and tuned plot conventions](docs/code_structure_review.md) for module boundaries and maintenance notes.

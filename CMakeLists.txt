@@ -46,11 +46,11 @@ target_link_libraries(alod_core PUBLIC Eigen3::Eigen OpenMP::OpenMP_CXX PRIVATE 
 
 add_executable(alod_fem_smoke apps/fem_smoke.cpp)
 target_link_libraries(alod_fem_smoke PRIVATE alod_core)
-add_executable(alod_run apps/alod_run.cpp apps/adaptive_run.cpp apps/audit_run.cpp apps/audit_worker.cpp apps/shared_audit.cpp)
+add_executable(alod_run apps/alod_run.cpp apps/adaptive_run.cpp apps/audit_run.cpp apps/audit_diagnostics.cpp apps/audit_worker.cpp apps/shared_audit.cpp)
 target_link_libraries(alod_run PRIVATE alod_core)
 add_executable(alod_fixed apps/alod_fixed.cpp)
 target_link_libraries(alod_fixed PRIVATE alod_core)
-add_executable(alod_audit apps/alod_audit.cpp apps/audit_run.cpp)
+add_executable(alod_audit apps/alod_audit.cpp apps/audit_run.cpp apps/audit_diagnostics.cpp)
 target_link_libraries(alod_audit PRIVATE alod_core)
 add_executable(alod_geometry apps/alod_geometry.cpp)
 target_link_libraries(alod_geometry PRIVATE alod_core)

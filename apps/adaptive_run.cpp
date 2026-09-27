@@ -172,6 +172,8 @@ int adaptive_main(int argc,char** argv){
     }
     std::vector<SourceMomentData> source_moments;SourceMomentReuse source_reuse;ExactIntegrationReuse exact_reuse;
     std::unique_ptr<CheckpointGeometryView> checkpoint_geometry;
+    // Declared after the borrowed view: future destruction joins the writer
+    // before the view or mesh histories can be destroyed during unwinding.
     std::future<void> geometry_write;
     auto snapshot=[&](CheckpointPhase phase,const std::string& journal,bool check,const ComplexMatrix& values,const ComplexMatrix& phi,
                       const std::vector<int>& cm,const std::vector<int>& fm,const std::string& identity,const LodSpace* accepted_space=nullptr){

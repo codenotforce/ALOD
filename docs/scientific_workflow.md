@@ -60,6 +60,13 @@ Checkpoint payload commit, checksum verification, `latest` publication and journ
 
 ## One-command version 4 delivery
 
+The plot renderer now preserves the tuned parameters of
+`generate_kernel_lift_figures.py` (E1/E2) and `plot_results.py` (E3).
+E3 uses all accepted states through the first one-percent crossing and writes
+`kappa_error_dof.pdf` and `.png`. E1/E2 retain their completed-H-step convention.
+Rendering, table arithmetic, data import and packaging are separate modules;
+see [the code structure review](code_structure_review.md).
+
 Install the optional plotting dependencies from `requirements-paper.txt`. The versioned inventory in `configs/paper_v4_inventory.json` is tied to the reviewed manuscript hash and contains five figures and five principal tables.
 
 For native results, prepare a schema-1 input file mapping scientific roles to run directories, relative to that file:

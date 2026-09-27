@@ -10,6 +10,7 @@ from pathlib import Path
 import subprocess
 import time
 
+from adaptive_config import with_compatibility_defaults
 from checkpoint_io import atomic_text, digest, inspect, recover_journal, validate_resume_config
 from run_fixed import DEFAULT as FIXED, validate as validate_fixed, write_members, member_text
 
@@ -24,7 +25,7 @@ DEFAULT = dict(FIXED, exact_target=-1., exact_scope="nominal", audit_mode="full"
 
 
 def validate(config):
-    if isinstance(config, dict): config = {"exact_target":-1.,"exact_scope":"nominal","audit_mode":"full","ell_absolute_threshold":-1.,"wavenumber":16,"ell_ratio_mode":"raw","ell_threshold":0.,"enrichment_tests":"adjoint", **config}
+    if isinstance(config, dict): config = with_compatibility_defaults(config)
     if not isinstance(config, dict) or set(config) != set(DEFAULT):
         raise ValueError("adaptive configuration must have exactly the documented fields")
     if config["ell_ratio_mode"] not in ("raw","solution_scaled") or config["enrichment_tests"] not in ("kernel_lift","adjoint"):
@@ -91,7 +92,7 @@ def run(config, output, executable, timeout=3600, *, resume=None, pause_state=No
 
 
 def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=None, pause_phase="accepted", audit_workers=1, audit_threads=None, audit_drain_workers=None):
-    config = {"exact_target":-1.,"exact_scope":"nominal","audit_mode":"full","ell_absolute_threshold":-1.,"wavenumber":16,"ell_ratio_mode":"raw","ell_threshold":0.,"enrichment_tests":"adjoint", **config}
+    config = with_compatibility_defaults(config)
     setup_start = time.monotonic()
     output, executable = Path(output), Path(executable)
     rows = validate(config)

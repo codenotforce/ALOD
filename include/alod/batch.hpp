@@ -22,6 +22,8 @@ public:
     const lod2d::TriMesh* mesh()const{return mesh_;}
     const std::array<Eigen::Vector2d,3>& gradients(int e)const{return gradients_.at(e);}
 };
+// Stores analytic jets only. Current numerical values/gradients are recomputed
+// on every call even for unchanged triangles; caching them would stale the error.
 struct ExactIntegrationReuse {std::size_t budget;LocalFactorCache entries;explicit ExactIntegrationReuse(std::size_t bytes=64ULL*1024*1024):budget(bytes),entries(bytes){}};
 struct ErrorBatch { Eigen::VectorXd exact_norm,exact_error,energy,reference_error; };
 ErrorBatch integrate_error_batch(const lod2d::TriMesh&,const Sparse& energy,const ComplexMatrix&,

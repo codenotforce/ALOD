@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "date": "2026-09-27",
+  "matplotlib_version": "3.10.0",
+  "reference_scripts": {
+    "E1_E2": {
+      "script": "generate_kernel_lift_figures.py",
+      "sha256": "e54b2b48941673ac87935206f263a4ef276f69f012104d37d1958160f83224c1"
+    },
+    "E3": {
+      "script": "plot_results.py",
+      "sha256": "18b105625b977d3805dc0a783474f1137173b3ffe68a0a7a28926185a2eb6bc9",
+      "renamed_output": "kappa_error_dof.pdf"
+    },
+    "sampling": "E1/E2: initial and completed H-steps. E3: all accepted states through first E <= 0.01."
+  },
+  "png_comparison": {
+    "e1_error_dof.png": {
+      "same_size": true,
+      "pixel_identical": true,
+      "different_channels": 0
+    },
+    "e1_final_meshes.png": {
+      "same_size": true,
+      "pixel_identical": true,
+      "different_channels": 0
+    },
+    "e2_error_dof.png": {
+      "same_size": true,
+      "pixel_identical": true,
+      "different_channels": 0
+    },
+    "e2_final_meshes.png": {
+      "same_size": true,
+      "pixel_identical": true,
+      "different_channels": 0
+    },
+    "kappa_error_dof.png": {
+      "same_size": true,
+      "pixel_identical": true,
+      "different_channels": 0
+    }
+  },
+  "scientific_tables_unchanged": true,
+  "server_regression": {
+    "passed": 6,
+    "failed": 0,
+    "seconds": 32.9
+  },
+  "local_python_tests": 33,
+  "full_production_rerun": false,
+  "portable_package_smoke": {
+    "executed_from_external_working_directory": true,
+    "synthetic_meshes": true,
+    "reported_partial": true
+  }
+}

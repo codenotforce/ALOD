@@ -1,4 +1,5 @@
 #include "audit_run.hpp"
+#include "audit_diagnostics.hpp"
 #include "mesh_export.hpp"
 #include "alod/timing.hpp"
 #include "fixed_support.hpp"
@@ -86,26 +87,14 @@ int audit_main(int argc,char** argv,AuditWorkerState* worker,std::ostream* outpu
         }
         if(space->identity()!=snapshot.space_identity)throw std::invalid_argument("checkpoint/audit operator or space identity mismatch");
         if(ell_override && ell_override!=snapshot.ell)space=std::make_unique<LodSpace>(*space,ell_override);
-        if(deepening){
-            long double bound=space->fine().nodes.size(),triangles=space->fine().elems.size();
-            for(int level=0;level<deepening;++level){bound+=triangles;triangles*=2;}
-            if(bound>input.cap)throw std::runtime_error("reference diagnostic exceeds conservative node limit");
-            auto fine=lod2d::refine_mesh_nvb(space->fine(),deepening);
-            if(fine.mesh.nodes.size()>static_cast<std::size_t>(input.cap))throw std::runtime_error("reference diagnostic exceeds node limit");
-            auto previous=space->hierarchy()->reference;
-            lod2d::RefineOutput lifted{fine.mesh,fine.P_node*previous.P_node,fine.P_elem*previous.P_elem,fine.P_dg*previous.P_dg};
-            snapshot.phi=(fine.P_node.cast<Complex>()*snapshot.phi).eval();
-            snapshot.values=(fine.P_node.cast<Complex>()*snapshot.values).eval();
-            // Re-embed the frozen trial/dictionary; do not retrain unless requested.
-            ComplexSparseMatrix basis=fine.P_node.cast<Complex>()*space->trial();
-            space=std::make_unique<LodSpace>(space->coarse(),std::move(lifted),input.wavenumber,ell_override?ell_override:snapshot.ell,
-                input.policy=="area"?InterpolationPolicy::ManuscriptAreaWeighted:InterpolationPolicy::ArchivedArithmetic,limits,basis);
-        }
+        if(deepening) audit_diagnostics::deepen_reference(
+            space, snapshot, deepening, ell_override ? ell_override : snapshot.ell,
+            input.wavenumber, input.policy == "area" ? InterpolationPolicy::ManuscriptAreaWeighted
+                                                    : InterpolationPolicy::ArchivedArithmetic, limits);
         if(two_level){
-            int current=ell_override?ell_override:snapshot.ell;if(current>=4)throw std::invalid_argument("two-level diagnostic needs ell < 4");
-            LodSpace other(*space,current+1);ComplexMatrix difference=ComplexMatrix(other.trial()-space->trial());
-            double square=std::real((difference.adjoint()*space->energy().cast<Complex>()*difference).trace());
-            out<<"{\"kind\":\"two_level_corrector\",\"ell\":"<<current<<",\"next_ell\":"<<current+1<<",\"basis_energy_frobenius\":"<<std::sqrt(std::max(0.,square))<<"}\n";
+            const int current=ell_override?ell_override:snapshot.ell;
+            const double difference = audit_diagnostics::two_level_corrector(*space,current);
+            out<<"{\"kind\":\"two_level_corrector\",\"ell\":"<<current<<",\"next_ell\":"<<current+1<<",\"basis_energy_frobenius\":"<<difference<<"}\n";
         }
         if(drop_enrichment)snapshot.phi.resize(space->fine().nodes.size(),0);
         if(retrain){
@@ -128,6 +117,10 @@ int audit_main(int argc,char** argv,AuditWorkerState* worker,std::ostream* outpu
     if(afem)afem_operators=lod2d::helmholtz::assemble_helmholtz_operators(snapshot.fine.mesh,input.wavenumber);
     const auto& audit_mesh=afem?snapshot.fine.mesh:space->fine();
     if(!afem)snapshot.fine=MeshState(lod2d::TriMesh{});
+    // Select once for the entire member family, rather than copying and filtering
+    // the same fine mesh again for every RHS. Disabled diagnostics allocate nothing.
+    lod2d::TriMesh region;
+    if(region_radius>0) region=audit_diagnostics::centroid_region(audit_mesh,region_radius);
     export_mesh_pair(options["mesh-output"],afem?audit_mesh:space->coarse(),audit_mesh);
     const auto& operators=afem?afem_operators:space->operators();
     Sparse afem_energy;if(afem)afem_energy=operators.stiffness+input.wavenumber*input.wavenumber*operators.mass;
@@ -189,8 +182,6 @@ int audit_main(int argc,char** argv,AuditWorkerState* worker,std::ostream* outpu
                 double error=lod2d::helmholtz::compute_helmholtz_error(audit_mesh,u,input.wavenumber,member.problem.exact,member.problem.exact_gradient,q,member.problem.quadrature_context).energy;fresh_seconds+=seconds()-t;
                 out<<",\"fresh_rank\":"<<rank<<",\"fresh_e\":"<<error<<",\"fresh_g\":"<<norm((ref.col(j)-u).eval())<<",\"shared_fresh_signed_percent\":";if(error>1e-12)out<<100*(errors.exact_error[j]-error)/error;else out<<"null";}
             if(region_radius>0){
-                lod2d::TriMesh region=audit_mesh;region.elems.clear();
-                for(auto tri:audit_mesh.elems){auto center=(audit_mesh.nodes[tri[0]]+audit_mesh.nodes[tri[1]]+audit_mesh.nodes[tri[2]])/3.;if(center.norm()<=region_radius)region.elems.push_back(tri);}
                 double region_error=0.,region_norm=0.;
                 if(!region.elems.empty()){
                     region_error=lod2d::helmholtz::compute_helmholtz_error(region,values.col(j),input.wavenumber,member.problem.exact,member.problem.exact_gradient,q,member.problem.quadrature_context).energy;

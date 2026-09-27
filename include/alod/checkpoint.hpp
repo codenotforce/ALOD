@@ -23,8 +23,9 @@ struct Checkpoint {
     std::string journal,mathematics_key,config_json,members_text,space_identity;
     lod2d::RefineOutput reference() const {return {fine.mesh,P_node,P_elem,P_dg};}
 };
-// Borrowed immutable geometry for synchronous publication. The owner must not
-// mutate these objects during the view's lifetime; create a new view on refinement.
+// Borrowed geometry shared with the background publisher. Join its future before
+// inspecting prepared/object_name, mutating the mesh, or destroying this view.
+// Create a new view on refinement; prepared refers to exactly one immutable mesh.
 struct CheckpointGeometryView {
     const MeshState &coarse,&fine;
     const Sparse &P_node,&P_elem,&P_dg;
