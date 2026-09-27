@@ -24,7 +24,7 @@ STYLE_PROVENANCE = {
         "sha256": "18b105625b977d3805dc0a783474f1137173b3ffe68a0a7a28926185a2eb6bc9",
         "renamed_output": "kappa_error_dof.pdf",
     },
-    "sampling": "E1/E2: initial and completed H-steps. E3: all accepted states through first E <= 0.01.",
+    "sampling": "ALOD: initial and completed H-steps in E1/E2/E3. E3 cutoff uses the first E <= 0.01 among all accepted states; baselines keep every point in that prefix.",
 }
 E12_STYLE = {
     "font.family": "serif",
@@ -198,6 +198,8 @@ def kappa_figure(runs):
             if not run:
                 continue
             rows = target_prefix(run)
+            if method == "ALOD":
+                rows = completed_cycles(dict(rows=rows))
             x = np.array([r["N_on"] for r in rows], float) / (k * k)
             y = np.array([r["E"] for r in rows])
             ax.loglog(

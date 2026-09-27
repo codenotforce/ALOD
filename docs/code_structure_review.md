@@ -79,3 +79,11 @@ restart, shared snapshots, incremental integration, checkpoint audits and source
 integrity. Local Python tests cover the distinct E3 sampling, promotion-event
 roundtrip, non-nominal residual rejection and terminal mesh selection. Evidence
 is retained in `provenance/plot_style_validation.json`.
+
+## Subsequent E3 display revision
+
+At the user's request, E3 ALOD now shows only the initial state and completed
+H-step endpoints, after applying the existing one-percent prefix cutoff. AFEM
+and LOD sampling is unchanged. Intermediate terminal states remain in tables
+and raw data, even when omitted from the curve. The earlier five-figure pixel
+comparison documents the previous display policy; E3 intentionally differs now.

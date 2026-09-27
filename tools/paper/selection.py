@@ -5,12 +5,12 @@ KAPPAS = (8, 16, 32, 64, 128)
 
 
 def completed_cycles(run):
-    """E1/E2 omit intermediate reference sweeps with repeated online dimension."""
+    """ALOD plots omit intermediate reference sweeps with repeated online dimension."""
     return [r for r in run["rows"] if r.get("cycle_complete", True) or r["state"] == 0]
 
 
 def target_prefix(run, target=0.01):
-    """E3 keeps *all* accepted states through the first crossing, including sweeps."""
+    """Find the cutoff on all accepted states before any display-only filtering."""
     rows = run["rows"]
     end = next((i + 1 for i, row in enumerate(rows) if row["E"] <= target), len(rows))
     return rows[:end]

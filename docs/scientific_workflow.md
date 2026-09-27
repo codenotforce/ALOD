@@ -62,8 +62,12 @@ Checkpoint payload commit, checksum verification, `latest` publication and journ
 
 The plot renderer now preserves the tuned parameters of
 `generate_kernel_lift_figures.py` (E1/E2) and `plot_results.py` (E3).
-E3 uses all accepted states through the first one-percent crossing and writes
-`kappa_error_dof.pdf` and `.png`. E1/E2 retain their completed-H-step convention.
+E3 writes `kappa_error_dof.pdf` and `.png`. Its ALOD curve now uses the same
+initial-state plus completed-H-step convention as E1/E2. The one-percent cutoff
+is evaluated on all accepted states before filtering; AFEM/LOD keep every point
+in that prefix. If the target or resource stop occurs during an incomplete cycle,
+that intermediate endpoint is omitted from the ALOD curve but retained in the
+scientific tables and raw data. Displayed points are joined on logarithmic axes.
 Rendering, table arithmetic, data import and packaging are separate modules;
 see [the code structure review](code_structure_review.md).
 
