@@ -54,25 +54,75 @@ Fresh output directories must be new; resume uses the original adaptive run.
 There is no hardware-based automatic thread-sizing or CPU-reserve mode.
 See the runtime guide before choosing checkpoint cleanup or audit concurrency.
 
-## Evidence and instructions
+## Instructions
 
-The September 27 frozen deployments completed E1/E2 at 28 cycles and 57
-accepted states each, plus E3 at k=8,16,32,64,128. Later optimizations have
-their own bounded/checkpoint validation; they were not all rerun through the
-full campaign. Source/configuration identity determines which results apply.
+### Experiment definitions
 
-The [P0 provenance guide](docs/provenance/p0/README.md) preserves historical
-acceptance context. The original migration plan is operator-local, ignored by
-Git and not required by a checkout. Current guides supersede early pending lists.
-Machine-readable evidence
-is under `docs/provenance/`; frozen numerical fixtures are under `tests/fixtures/`.
-Ownership and dependencies are described in [NOTICE](NOTICE.md).
+E1 and E2 are manufactured Helmholtz problems,
+$-\Delta u_\mu-k^2u_\mu=f_\mu$, with sources and boundary data derived from
+the specified exact solution $u_\mu$. The parameter $\mu$ identifies a
+right-hand-side case. Keep this exact solution distinct from the fine-grid
+Galerkin solution and the ALOD reconstruction.
+
+**E1: smooth localized oscillations.** On $\Omega=(0,1)^2$, use
+
+$$
+u_\mu(x,y)=x^2(1-x)^2\sin(\pi y)
+\exp\!\left(-80\bigl[(x-z_{x,\mu})^2+(y-z_{y,\mu})^2\bigr]\right)
+e^{\mathrm i kx}.
+$$
+
+The packet centre $z_\mu$ varies near the nominal centre $(3/4,1/2)$.
+The top/bottom edges are Dirichlet, the left edge is Neumann and the right
+edge is impedance. The main family preset uses $k=16$ without regional
+enrichment. Use [e1_main.json](configs/adaptive/e1_main.json) and the
+[E1 RHS table](data/rhs/rhs_e1.json); `wave_x` and `wave_y` specify the centre.
+
+**E2: corner singularity with localized oscillations.** On the L-shaped domain
+$\Omega=(-1,1)^2\setminus([0,1]\times[-1,0])$, let
+$w(x,y)=(1-x^2)^2(1-y^2)^2$ and define
+
+$$
+\begin{aligned}
+u_\mu(x,y)&=c_\mu w(x,y)r^{2/3}\sin(2\vartheta/3)\\
+&\quad+\alpha_\mu p_{z_\mu}(x,y)
+e^{\mathrm i[k(x-z_{x,\mu})+\varphi_\mu]},\\
+p_z(x,y)&=\frac{xy\,w(x,y)}{z_xz_y\,w(z_x,z_y)}
+e^{-80[(x-z_x)^2+(y-z_y)^2]}.
+\end{aligned}
+$$
+
+Here $(r,\vartheta)$ are polar coordinates about the reentrant corner,
+with $0\leq\vartheta\leq3\pi/2$. RHS cases vary the singular coefficient
+$c_\mu$, packet centre $z_\mu$, amplitude $\alpha_\mu$ and phase
+$\varphi_\mu$. The nominal case has $(c,\alpha,\varphi)=(1,0.5,0)$
+and $z=(-0.5,0.5)$. The reentrant edges are Dirichlet and the outer edges
+are impedance. The main preset uses $k=16$ and regional enrichment in
+$D=\Omega\cap B_{0.6}(0)$. Use
+[e2_main.json](configs/adaptive/e2_main.json) and the
+[E2 RHS table](data/rhs/rhs_e2.json).
+
+**E3: wavenumber scaling of the E1 nominal problem.** Solve the E1 nominal
+RHS case (ID 0, centre $(3/4,1/2)$) separately at
+$k\in\{8,16,32,64,128\}$, using the `e3_k*.json` presets in
+[configs/adaptive](configs/adaptive/). Each wavenumber defines its own
+Helmholtz operator. These presets target nominal relative exact energy error
+$\|u_0-U_0\|_k/\|u_0\|_k\leq0.01$, with $U_0$ the nominal ALOD
+reconstruction and
+$\|v\|_k^2=\|\nabla v\|_{L^2(\Omega)}^2+k^2\|v\|_{L^2(\Omega)}^2$.
+Initial meshes and stopping limits are set per preset.
+
+For E1/E2 family runs, use `training_ids` to select RHS cases that drive marking
+and enrichment; use `member_ids` to select cases included in the run and audit.
+Consult [configuration](docs/configuration.md) for overrides and
+[experiments](docs/experiments.md) for the campaign launcher.
+
+### Project conventions
+
+Use the maintained guides for current configuration and workflow instructions.
+Consult [NOTICE](NOTICE.md) for source ownership and dependencies.
 
 [AGENTS](AGENTS.md) and the [terminology skill](.agents/skills/alod-terminology/SKILL.md)
 govern agent work. Its [mathematical notation](.agents/skills/alod-terminology/references/mathematical-notation.md)
 and [implementation correspondence](.agents/skills/alod-terminology/references/implementation-correspondence.md)
-are explanatory references. Project guides/JSON use English; agent guidance
-may be bilingual. Use relative paths or symbolic
-environment roots in maintained text.
-
-Remote repository: [codenotforce/ALOD](https://github.com/codenotforce/ALOD).
+are explanatory references. 
