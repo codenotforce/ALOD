@@ -4,4 +4,4 @@ The numerical implementation is derived from the legacy LOD2d C++ project. Impor
 
 No project license file was found in the supplied source snapshots. This migration does not invent a license, remove existing ownership, or grant additional redistribution rights. Existing notices are retained. Eigen, SuiteSparse/UMFPACK, BLAS and OpenMP retain their respective upstream licenses. Dependencies are discovered by CMake and are not vendored here.
 
-Historical output fixtures are regression evidence, not newly reproduced production experiments. Server timing and resource observations describe the archived campaigns only.
+Historical output fixtures are regression evidence, not newly reproduced production experiments. Server timings and resource observations apply to their explicitly dated binaries and workloads, including bounded follow-up tests; they do not establish current full-campaign performance.

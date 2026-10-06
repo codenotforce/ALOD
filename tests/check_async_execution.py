@@ -42,6 +42,10 @@ with tempfile.TemporaryDirectory() as temporary:
             os.environ['ALOD_ASYNC_DISABLE'] = '1' if mode == 'serial' else '0'
             folder = root / (problem + '-' + mode)
             run(config, folder, exe)
+            timing = records(folder / 'timings.jsonl')
+            teams = [r for r in timing if r['event'] == 'team']
+            assert teams and all(1 <= r['workers'] <= r['requested_workers'] <= 4 for r in teams)
+            assert any(r['event'] == 'budget_return' for r in timing) == (mode == 'async')
             folders.append(folder)
         expected = records(folders[0] / 'solver.jsonl')
         trajectory(expected, records(folders[1] / 'solver.jsonl'))

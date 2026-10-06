@@ -134,8 +134,11 @@ LodSpace::LodSpace(TriMesh coarse,RefineOutput reference,double k,int ell,
     std::vector<double> residuals(correctors.size()), constraints(correctors.size());
     std::vector<std::string> errors(correctors.size());
 {PhaseTimer timing("lod_local_correctors",-1);
-#pragma omp parallel num_threads(execution_threads(limits.threads))
+    const int workers=execution_threads(limits.threads);
+#pragma omp parallel num_threads(workers)
     {
+#pragma omp master
+        PhaseTimer::team("lod_local_correctors",workers,omp_get_num_threads());
 #pragma omp for schedule(dynamic,1)
     for (int target=0;target<static_cast<int>(correctors.size());++target) {
         try {

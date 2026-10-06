@@ -1,6 +1,8 @@
-# Scientific workflows and current-paper delivery
+# Scientific workflow
 
-The pre-existing reuse work was committed and pushed as `1c8410f`. This follow-up adds exact-target termination, exact-only audits, offline scientific controls, the version 4 result-delivery pipeline, cross-refinement integration reuse and background checkpoint geometry preparation.
+This guide covers diagnostics and paper data. [Configuration](configuration.md)
+defines controls; [runtime](runtime.md) defines the retained inputs they need.
+Frozen scientific spaces and new diagnostic spaces must be labelled separately.
 
 ## Exact-error termination
 
@@ -44,19 +46,22 @@ Same-mesh E2 controls retrain the complete frozen training family with the reque
 
 The physical-region diagnostic uses the union of triangles whose centroids lie in the origin-centred disk of the requested radius. It reports the selected element count and region exact norm. It is an explicitly defined discrete region; it is not curved-cell integration over the exact circular boundary.
 
-## Incremental integration
 
-Source assembly retains the current family's element load moments, squared-source integrals and quadrature mass matrices. After refinement, an unchanged ordered physical triangle reuses those values. New children are integrated normally. Frozen family identity, quadrature policy and localized-feature context are checked. Global node numbers do not authorize reuse. Reductions into the new load vector retain their original element order. The existing source-moment budget accounts conservatively for old and new buffers during the transition.
 
-Exact-error integration can retain quadrature points and analytic values/gradients in a bounded 64 MiB cache per run target checker or resident audit worker. Geometry, family/member selection, wavenumber and quadrature settings participate in the identity. Discrete values and gradients are always recomputed, including on unchanged cells: they change when the numerical solution changes. A sampled working-set estimate bypasses retention when the mesh/family would exceed the budget, avoiding LRU churn on large grids. Concurrent audit workers own separate caches. This retention budget is additional to shared-snapshot and numerical-workspace budgets.
+## Error metrics
 
-`ALOD_INTEGRATION_COLD=1` disables both incremental paths for numerical comparisons. Counters report reused source elements and exact-jet hits/retained bytes. Restart rebuilds these optional caches from the durable scientific state; cached integrals are not checkpoint requirements.
-
-## Lower checkpoint blocking
-
-The adaptive process starts a single background task to fingerprint, serialize, verify and durably publish the current immutable mesh object while the main thread prepares the state. Load integration proceeds before the before-training checkpoint joins the task. An explicit pause-before-training request still publishes its restart point immediately. Later phase checkpoints for that same live mesh reuse the prepared object without rescanning it. Geometry views are joined before refinement or destruction, and background failures propagate to the numerical controller.
-
-Checkpoint payload commit, checksum verification, `latest` publication and journal publication retain their original order. A crash may leave an unused mesh object but cannot publish an uncommitted accepted state. Dense payload serialization remains synchronous; this optimization overlaps geometry work, not every checkpoint byte. `ALOD_CHECKPOINT_SYNC=1` restores synchronous geometry publication. Timers distinguish `checkpoint_geometry_background`, `checkpoint_geometry_wait`, `checkpoint_restart` and `checkpoint_accepted`; overlapping times must not be added as wall time.
+For one accepted state and RHS case,
+\[
+e=\|u_\mu-U_\mu\|_k,\quad f=\|u_\mu-u_{h,\mu}\|_k,\quad
+g=\|u_{h,\mu}-U_\mu\|_k.
+\]
+`E`, `F`/`E_ref`, `G` normalize these by exact_norm; near-zero denominators
+have explicit null/status handling. Only e<=f+g follows, not equality.
+`PG_residual` is algebraic, not a solution error. AFEM reference-gap fields are
+not applicable; exact-only reference fields are not computed, not zero.
+Audits solve additional RHS cases in the frozen space without retraining;
+`--fresh` deliberately trains from empty at the same mesh/ell, and E2 `--pure`
+adds the two pure-component cases. These diagnostics never feed adaptation.
 
 ## One-command version 4 delivery
 
@@ -69,7 +74,7 @@ in that prefix. If the target or resource stop occurs during an incomplete cycle
 that intermediate endpoint is omitted from the ALOD curve but retained in the
 scientific tables and raw data. Displayed points are joined on logarithmic axes.
 Rendering, table arithmetic, data import and packaging are separate modules;
-see [the code structure review](code_structure_review.md).
+see [architecture](architecture.md).
 
 Install the optional plotting dependencies from `requirements-paper.txt`. The versioned inventory in `configs/paper_v4_inventory.json` is tied to the reviewed manuscript hash and contains five figures and five principal tables.
 
@@ -109,27 +114,9 @@ Imports validate state continuity, unique state/member audits, frozen member cov
 
 The supplied manuscript has a reproducible inconsistency: its E1 family-control prose describes the first state with online dimension at least 2000, but the published values are log-budget interpolation at 2000. Delivery therefore includes both `e1-family-control` (published interpolated values) and `e1-family-first-crossing` (actual states), with an explicit scientific note. It does not silently edit the manuscript or claim the two quantities are equal.
 
-## Validation scope
 
-Bounded server tests exercise target crossing before the horizon, terminal resume, training-family targets, exact/full error agreement, zero auxiliary reference factors, cold/incremental parity, background/synchronous checkpoint parity and every applicable scientific diagnostic. A separate local-refinement test checks exact source/mass equality and error-jet reuse with changed numerical values. The historical delivery is also exercised against the supplied E1/E2/E3 exports. Later main production and final-checkpoint measurements are recorded in [the production protocol](production_campaign_20260927.md) and [Theta benchmarks](theta_fused_operator.md). Full campaigns after every subsequent optimization and sustained high-k resource/fault tests remain separate validation work.
 
-### Bounded performance evidence
-
-The alternating E2 benchmark uses three accepted states, 16 training/audit members, 32 adaptive threads and 32 threads per asynchronous audit worker. It measures two repetitions after warmup. Cold mode disables incremental integration and background geometry preparation; both full-audit modes retain all earlier optimizations.
-
-| Metric (seconds) | Cold, full audit | Incremental, full audit | Incremental, exact audit |
-| --- | ---: | ---: | ---: |
-| End-to-end wall time | 13.574 | 12.498 | 12.106 |
-| Adaptive subprocess | 11.917 | 10.863 | 11.062 |
-| Audit drain after adaptation | 1.404 | 1.381 | 0.793 |
-| Load integration | 1.095 | 0.493 | 0.498 |
-| Restart + accepted checkpoint blocking | 0.966 | 0.662 | 0.664 |
-
-The optimized full-audit run reuses 49,082 source-element records. Background geometry work totals about 0.256 seconds; only 0.036 seconds remains in the join. The large exact-jet working set is bypassed, keeping target-check cost at 0.159 seconds rather than retaining an ineffective cache. Exact auditing reuses all three accepted solution blocks and performs zero auxiliary reference factorizations. Full auditing performs three. All three modes produce equivalent accepted marks/ranks and exact errors. These small-run medians establish bounded evidence, not universal production speedups. Reproduce with `tools/benchmark_scientific.py`; machine-independent evidence is retained in `docs/provenance/scientific_workflow_validation.json`.
-
-Final validation passed all 52 server CTest cases (184.75 seconds) and all 29 local Python tests. The local-refinement test reduced source evaluations from 66,048 to 4,096, retained 62 exact-jet hits, and matched cold source moments and exact integrals bit for bit.
-
-## Scoped 25-cycle figures and separate 28-cycle convergence fits
+## Scoped figures and convergence fits
 
 `tools/paper_snapshot.py` implements the September 28 export request. It merges
 current ALOD runs with explicitly historical controls, plots initial state plus
@@ -143,3 +130,22 @@ windows (including a five-cycle E1 ALOD tail). Use the scoped exporter for the
 ten-cycle fit request; these two CLIs are not interchangeable. Both preserve
 source identities and historical/current origin labels. The scoped package has
 `full-runs.json.gz`, `plotted-runs.json.gz`, fit points and `reproduce.py`.
+
+
+## Fine-grid stability diagnostic
+
+With free-DOF Helmholtz matrix A and energy matrix E, the optional diagnostic
+estimates gamma_h(k)^2=lambda_min(A* E^-1 A,E), using inverse actions and checked
+Ritz residuals. This is fine-grid stability, not online LOD stability or a
+certified extreme bound. It never edits production thresholds.
+
+```sh
+cmake --build build --target alod_stability
+python3 tools/run_stability_calibration.py --executable build/alod_stability --output results/gamma-calibration
+```
+
+The resumable sweep uses k=8,16,32,64,128, reference levels 7,10,13,16,19,
+independent starts and mesh-sensitivity offsets. Use a fresh output after
+changing executable/definition. `--problem E2` defines a separate-domain study;
+E1 estimates cannot be silently reused for E2. Gamma-based production calibration
+was cancelled; the deployed threshold is the prescribed 3.2/k rule.

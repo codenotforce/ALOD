@@ -15,14 +15,19 @@ struct PhaseTimer {
     inline static thread_local std::string thread_file;
     inline static std::mutex output_mutex;
     const char* phase; int state,previous_state; Clock::time_point start=Clock::now();
-    static void record(const char* event,const char* phase,int state,double seconds,int workers=0){
+    static void record(const char* event,const char* phase,int state,double seconds,int workers=0,int requested_workers=0){
         const char* file=thread_file.empty()?std::getenv("ALOD_TIMING_FILE"):thread_file.c_str();if(!file||!*file)return;
         std::lock_guard<std::mutex> lock(output_mutex);
         std::ofstream out(file,std::ios::app);
         out<<std::setprecision(17)<<"{\"event\":\""<<event<<"\",\"phase\":\""<<phase
            <<"\",\"state_id\":"<<state<<",\"seconds\":"<<seconds
            <<",\"unix_seconds\":"<<std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count()
-           <<",\"workers\":"<<workers<<"}\n";
+           <<",\"workers\":"<<workers;
+        if(requested_workers)out<<",\"requested_workers\":"<<requested_workers;
+        out<<"}\n";
+    }
+    static void team(const char* phase,int requested,int observed){
+        record("team",phase,current_state,0,observed,requested);
     }
     static void counter(const char* name,std::size_t value,int state){
         const char* file=thread_file.empty()?std::getenv("ALOD_TIMING_FILE"):thread_file.c_str();if(!file||!*file)return;

@@ -59,22 +59,33 @@ ComplexMatrix KernelDefectOperator::apply_global(const ComplexMatrix& block) con
         throw std::invalid_argument("parallel defect block dimensions/values invalid");
     if(std::size_t(p.defect.rows())*block.cols()>r.dense_limit)
         throw std::runtime_error("parallel defect RHS resource limit exceeded");
-    const int workers=execution_threads(r.threads);
     ComplexMatrix rhs=ComplexMatrix::Zero(p.defect.rows(),block.cols());
     {PhaseTimer timer("theta_global_rhs",-1);
-    #pragma omp parallel for schedule(dynamic,256) num_threads(workers)
+    const int workers=execution_threads(r.threads);
+    #pragma omp parallel num_threads(workers)
+    {
+    #pragma omp master
+    PhaseTimer::team("theta_global_rhs",workers,omp_get_num_threads());
+    #pragma omp for schedule(dynamic,256)
     for(int row=0;row<p.defect.rows();++row)
         for(Impl::Rows::InnerIterator it(p.defect,row);it;++it)
             for(int j=0;j<block.cols();++j)rhs(row,j)+=it.value()*block(it.col(),j);
+    }
     }
     auto values=p.owner.apply_action(rhs);
     rhs.resize(0,0);
     ComplexMatrix result=ComplexMatrix::Zero(block.rows(),block.cols());
     {PhaseTimer timer("theta_global_dual",-1);
-    #pragma omp parallel for schedule(dynamic,4) num_threads(workers)
+    const int workers=execution_threads(r.threads);
+    #pragma omp parallel num_threads(workers)
+    {
+    #pragma omp master
+    PhaseTimer::team("theta_global_dual",workers,omp_get_num_threads());
+    #pragma omp for schedule(dynamic,4)
     for(int row=0;row<p.original.cols();++row)
         for(ComplexSparseMatrix::InnerIterator it(p.original,row);it;++it)
             for(int j=0;j<block.cols();++j)result(row,j)+=std::conj(it.value())*values(it.row(),j);
+    }
     }
     return result;
 }
@@ -114,10 +125,15 @@ ComplexMatrix KernelDefectOperator::apply(const ComplexMatrix& block) const {
     ComplexMatrix result=ComplexMatrix::Zero(block.rows(),block.cols());
     {PhaseTimer timer("theta_fused_gather",-1);
     const int workers=execution_threads(r.threads);
-    #pragma omp parallel for schedule(static) num_threads(workers)
+    #pragma omp parallel num_threads(workers)
+    {
+    #pragma omp master
+    PhaseTimer::team("theta_fused_gather",workers,omp_get_num_threads());
+    #pragma omp for schedule(static)
     for(int row=0;row<result.rows();++row)
         for(const auto& [group,local]:p.contributions[row])
             for(int j=0;j<block.cols();++j)result(row,j)+=projected[group](local,j);
+    }
     }
     return result;
 }

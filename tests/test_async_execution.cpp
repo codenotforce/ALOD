@@ -5,7 +5,55 @@
 #include <iostream>
 using namespace alod;
 void require(bool value,const char* message) {if(!value)throw std::runtime_error(message);}
+int observed_team() {
+    const int requested=execution_threads(4);
+    int observed=0;
+    #pragma omp parallel num_threads(requested)
+    {
+        #pragma omp master
+        observed=omp_get_num_threads();
+    }
+    return observed;
+}
+void check_completion_handoff() {
+    // Background wins: a live foreground observes a larger actual team.
+    for(bool fail:{false,true}) {
+        ConcurrentBudgetPair pair(4,2,"test_background_wins");
+        std::promise<void> release;auto gate=release.get_future();
+        auto task=background_task(pair.budget(0),[&,pair]{
+            auto done=pair.completion(0);gate.wait();
+            if(fail)throw std::runtime_error("injected paired task failure");
+        });
+        auto foreground_done=pair.completion(1);
+        int before,after;bool caught=false;
+        {ExecutionScope scope(pair.budget(1));before=observed_team();release.set_value();
+            try{task.get();}catch(const std::runtime_error&){caught=true;}
+            after=observed_team();}
+        foreground_done.finish();foreground_done.finish();
+        require(before==2&&after==4,"background completion did not expand foreground team");
+        require(caught==fail,"paired task exception lost");
+        require(pair.budget(0)->load()==0&&pair.budget(1)->load()==0,"completed shares were not released");
+    }
+    // Foreground wins: the waiting child observes the returned share.
+    ConcurrentBudgetPair pair(4,2,"test_foreground_wins");
+    std::promise<void> ready,release;auto gate=release.get_future();
+    auto task=background_task(pair.budget(0),[&,pair]{
+        auto done=pair.completion(0);const int before=observed_team();
+        ready.set_value();gate.wait();return std::pair{before,observed_team()};
+    });
+    bool foreground_failed=false;
+    try {
+        auto done=pair.completion(1);ExecutionScope scope(pair.budget(1));ready.get_future().wait();
+        throw std::runtime_error("injected foreground failure");
+    }catch(const std::runtime_error&){foreground_failed=true;}
+    release.set_value();const auto teams=task.get();
+    require(foreground_failed&&teams.first==2&&teams.second==4,"foreground exception did not expand background team");
+    ConcurrentBudgetPair serial(1,0,"test_no_background");
+    {auto done=serial.completion(0);}
+    require(serial.budget(1)->load()==1,"absent task changed serial budget");
+}
 int main(){try{
+    check_completion_handoff();
     const auto coarse=lod2d::refine_mesh_nvb(make_problem("E2").initial_mesh,3).mesh;
     LodLimits limits;limits.threads=4;
     LodSpace space(coarse,lod2d::refine_mesh_nvb(coarse,2),16,1,

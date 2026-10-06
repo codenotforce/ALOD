@@ -30,6 +30,8 @@ __pycache__/
 .DS_Store
 Thumbs.db
 # Machine-specific settings and credentials
+# Operator-local planning history; retain the file locally.
+/ALOD_SUBPROJECT_AGENT_PLAN_20260909.md
 .env
 .env.*
 *.local.json

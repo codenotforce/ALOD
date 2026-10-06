@@ -68,7 +68,13 @@ struct AdditiveKernelRieszContext::Impl {
         std::mutex mutex;
         const int workers=execution_threads(threads);
 #ifdef _OPENMP
-        #pragma omp parallel for schedule(dynamic, 1) num_threads(workers)
+        #pragma omp parallel num_threads(workers)
+#endif
+        {
+#ifdef _OPENMP
+        #pragma omp master
+        PhaseTimer::team("riesz_patches",workers,omp_get_num_threads());
+        #pragma omp for schedule(dynamic, 1)
 #endif
         for (int i = 0; i < static_cast<int>(groups.size()); ++i) {
             try { fn(i); }
@@ -76,6 +82,7 @@ struct AdditiveKernelRieszContext::Impl {
                 std::lock_guard<std::mutex> lock(mutex);
                 if (!failure) failure = std::current_exception();
             }
+        }
         }
         if (failure) std::rethrow_exception(failure);
     }

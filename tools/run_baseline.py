@@ -48,14 +48,21 @@ def main():
     if not exe.is_file():raise ValueError('baseline executable is missing; build the release preset first')
     a.output.mkdir(parents=True,exist_ok=False)
     canonical=json.dumps(c,sort_keys=True,separators=(',',':')).encode()
+    from execution import runtime_environment
+    env = runtime_environment(c["threads"])
     record={'config':c,'config_sha256':hashlib.sha256(canonical).hexdigest(),
         'executable_sha256':hashlib.sha256(exe.read_bytes()).hexdigest(),
-        'arguments':command(c),'BLAS_threads':1,'status':'running'}
+        'arguments':command(c),'BLAS_threads':None,
+        'thread_environment':{key:env.get(key) for key in (
+            'OMP_NUM_THREADS','OMP_DYNAMIC','OMP_THREAD_LIMIT',
+            'OPENBLAS_NUM_THREADS','OPENBLAS_DEFAULT_NUM_THREADS','GOTO_NUM_THREADS',
+            'MKL_NUM_THREADS','MKL_DOMAIN_NUM_THREADS','MKL_DYNAMIC',
+            'BLIS_NUM_THREADS','VECLIB_MAXIMUM_THREADS')},
+        'thread_environment_scope':'requested settings; null uses runtime defaults; actual BLAS team is not measured',
+        'status':'running'}
     manifest=a.output/'run.json'
     def save():manifest.write_text(json.dumps(record,indent=2)+'\n',encoding='utf-8')
     save()
-    from execution import runtime_environment
-    env = runtime_environment(c["threads"])
     # Stream potentially large state output. Paths and host details are not serialized.
     with (a.output/'states.jsonl').open('w',encoding='utf-8') as output, (a.output/'stderr.log').open('w',encoding='utf-8') as errors:
         result=subprocess.run([str(exe),*command(c),f"--mesh-output={(a.output/'mesh.json').resolve()}"],stdout=output,stderr=errors,env=env)

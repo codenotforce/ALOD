@@ -5,6 +5,7 @@ import hashlib
 import io
 import json
 import math
+import posixpath
 import re
 import subprocess
 from collections import Counter
@@ -12,8 +13,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CSV_FIELD_LIMIT = 64 * 1024 * 1024
-# The user keeps this planning document in Chinese; all other documents use English.
-CHINESE_PLAN = 'ALOD_SUBPROJECT_AGENT_PLAN_20260909.md'
+# Project guides use English; agent guidance may be bilingual.
+LOCAL_ONLY_PLAN = 'ALOD_SUBPROJECT_AGENT_PLAN_20260909.md'
 PATH_PATTERNS = [
     re.compile(r'(?i)(?<![a-z0-9])[a-z]:[\\/]'),
     re.compile(r'(?<!\\)\\\\[a-zA-Z0-9_.-]+\\'),
@@ -29,6 +30,27 @@ def path_violations(text):
 
 def canonical_bytes(data):
     return data.replace(b'\r\n', b'\n')
+
+
+def permits_chinese(name):
+    path = Path(name)
+    return (path.name == 'AGENTS.md' or
+            (path.suffix == '.md' and path.parts[:2] == ('.agents', 'skills')))
+
+
+def markdown_link_violations(name, text, exists):
+    errors = []
+    for match in re.finditer(r'\[[^\]\n]+\]\(([^)\n]+)\)', text):
+        target = match.group(1).split(' "', 1)[0].strip('<>')
+        if re.match(r'^[a-zA-Z][\w+.-]*:', target) or target.startswith('#'):
+            continue
+        from urllib.parse import unquote
+        target = unquote(target.split('#', 1)[0])
+        resolved = posixpath.normpath((Path(name).parent / target).as_posix())
+        if target and not exists(resolved):
+            line = text.count('\n', 0, match.start()) + 1
+            errors.append(f'{name}:{line}: missing local Markdown target {target}')
+    return errors
 
 
 def read_audit(text, states, *, e2=False, marking=None, parameters=None):
@@ -78,10 +100,19 @@ def git(*args):
 def verify(staged=False):
     names = git('ls-files', '-z', '--cached') if staged else git('ls-files', '-z', '--cached', '--others', '--exclude-standard')
     files = sorted(set(x.decode('utf-8') for x in names.split(b'\0') if x))
+    if not staged:
+        deleted = {x.decode('utf-8') for x in git('ls-files', '-z', '--deleted').split(b'\0') if x}
+        files = [name for name in files if name not in deleted]
+    publishable_targets = set(files)
+    publishable_targets.update(parent.as_posix() for name in files for parent in Path(name).parents)
+    def exists(name):
+        return name in publishable_targets
     def read(name):
         return git('show', ':'+name) if staged else (ROOT/name).read_bytes()
     errors = []
     for name in files:
+        if name == LOCAL_ONLY_PLAN:
+            errors.append(f'{name}: operator-local planning document must not be published')
         try:
             content = read(name).decode('utf-8-sig')
         except UnicodeDecodeError:
@@ -96,8 +127,10 @@ def verify(staged=False):
                 decoded = json.dumps(json.loads(content), ensure_ascii=False)
             except ValueError as error:
                 errors.append(f'{name}: invalid JSON ({error})')
-        if name != CHINESE_PLAN and name.endswith(('.md', '.json')) and re.search(r'[\u4e00-\u9fff]', decoded):
+        if not permits_chinese(name) and name.endswith(('.md', '.json')) and re.search(r'[\u4e00-\u9fff]', decoded):
             errors.append(f'{name}: documentation must be written in English')
+        if name.endswith('.md'):
+            errors.extend(markdown_link_violations(name, content, exists))
     manifest = json.loads(read('docs/provenance/source_manifest.json'))
     for entry in manifest['files']:
         try:

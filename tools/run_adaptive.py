@@ -16,6 +16,7 @@ from run_fixed import DEFAULT as FIXED, validate as validate_fixed, write_member
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT = dict(FIXED, checkpoint_interval_cycles=0, exact_target=-1., exact_scope="nominal", audit_mode="full", method="ALOD", cycles=1, m_ref=2, state_limit=0,
+               checkpoint_retention="all", keep_final=False,
                minimum_gap=2, reference_theta=[0.3, 0.2], ell_mode="lazy",
                ell_ratio_mode="raw", ell_threshold=0., ell_absolute_threshold=-1., enrichment_tests="kernel_lift",
                maximum_ell=4, extra_checks=[], force_promotions=[],
@@ -37,6 +38,14 @@ def validate(config):
         raise ValueError("ell_absolute_threshold must be nonnegative or -1 (disabled)")
     if type(config['exact_target']) not in (int,float) or not math.isfinite(config['exact_target']) or (config['exact_target']<=0 and config['exact_target']!=-1):raise ValueError('invalid exact target')
     if config['exact_scope'] not in ('nominal','training_max') or config['audit_mode'] not in ('full','exact'):raise ValueError('invalid exact scope or audit mode')
+    if config['checkpoint_retention'] not in ('all', 'delete_after_audit', 'periodic'):
+        raise ValueError('invalid checkpoint_retention')
+    if type(config['keep_final']) is not bool:
+        raise ValueError('invalid keep_final')
+    if config['checkpoint_retention'] != 'all' and not config['audit']:
+        raise ValueError('checkpoint retention after audit requires audit=true')
+    if config['checkpoint_retention'] == 'periodic' and (type(config['checkpoint_interval_cycles']) is not int or config['checkpoint_interval_cycles'] < 1):
+        raise ValueError('periodic retention requires a positive checkpoint_interval_cycles')
     fixed = {key: config[key] for key in FIXED}
     # The common member/schema validator has a deliberately smaller P2 limit.
     cap = config["maximum_nodes"]
@@ -82,7 +91,7 @@ def arguments(config, table):
         return str(int(value)) if type(value) is bool else str(value)
     return ["adaptive", config["problem"], f"--members={table}"] + [
         f"--{key.replace('_', '-')}={text(value)}" for key, value in config.items()
-        if key not in ("problem", "member_ids", "audit_mode")]
+        if key not in ("problem", "member_ids", "audit_mode", "checkpoint_retention", "keep_final")]
 
 
 def run(config, output, executable, timeout=3600, *, resume=None, pause_state=None, pause_phase="accepted", audit_workers=1, audit_threads=None, audit_drain_workers=None):
@@ -110,7 +119,7 @@ def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=N
         if (output/'members.txt').read_text()!=member_text(rows):raise ValueError("startup recovery member table mismatch")
         log=output/'solver.jsonl'
         if log.exists() and log.stat().st_size:
-            if not config['checkpoint_interval_cycles']:raise ValueError("nonempty numerical journal without a checkpoint")
+            if not config['checkpoint_interval_cycles'] and config['checkpoint_retention']=='all':raise ValueError("nonempty numerical journal without a checkpoint")
             from checkpoint_io import quarantine_snapshot_tail
             quarantine_snapshot_tail(output,None)
             recovery=output/'recovery';recovery.mkdir(exist_ok=True)
@@ -131,7 +140,7 @@ def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=N
         if not output.is_dir():
             raise ValueError("resume requires the original run directory and its committed journal")
         recover_journal(output/"solver.jsonl", metadata)
-        if config['checkpoint_interval_cycles']:
+        if config['checkpoint_interval_cycles'] or config['checkpoint_retention']!='all':
             from checkpoint_io import quarantine_snapshot_tail
             quarantine_snapshot_tail(output,metadata)
     elif not startup_recovery:
@@ -144,7 +153,7 @@ def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=N
     manifest = dict(config=config, table_sha256=sha(table), executable_sha256=sha(executable),
                     status="running", scope="P5 checkpointed adaptive trajectory", solver_completed=False, validation_passed=False, audit_complete=False, paper_complete=False)
     mathematical = {key:value for key,value in config.items() if key not in
-                    ('cycles','state_limit','maximum_nodes','maximum_patch_entries','maximum_dense_entries','threads','audit','audit_mode','emit_solution','checkpoint_interval_cycles')}
+                    ('cycles','state_limit','maximum_nodes','maximum_patch_entries','maximum_dense_entries','threads','audit','audit_mode','emit_solution','checkpoint_interval_cycles','checkpoint_retention','keep_final')}
     manifest['experiment_id'] = hashlib.sha256((json.dumps(mathematical,sort_keys=True)+member_text(rows)).encode()).hexdigest()[:24]
     from runtime_provenance import provenance
     manifest['provenance'] = provenance(executable)
@@ -169,7 +178,7 @@ def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=N
                 shared_endpoint=Path(socket_directory.name)/'worker.sock'
                 env['ALOD_AUDIT_SOCKET']=str(shared_endpoint)
                 env['ALOD_SHARED_AUDIT_WORKERS']=str(audit_drain_workers)
-            queue=AuditQueue(output,executable,config["member_ids"],audit_workers,audit_threads,drain_workers=audit_drain_workers,shared_endpoint=shared_endpoint,audit_mode=config["audit_mode"])
+            queue=AuditQueue(output,executable,config["member_ids"],audit_workers,audit_threads,drain_workers=audit_drain_workers,shared_endpoint=shared_endpoint,audit_mode=config["audit_mode"],config=config)
             queue.discover()
         effective = output / "effective.json"
         atomic_text(effective, json.dumps(config, indent=2)+"\n")
@@ -183,7 +192,9 @@ def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=N
             process = subprocess.Popen([str(executable.resolve()), *arguments(config, table.resolve()), *runtime],
                                        stdout=out, stderr=err, env=env)
             while process.poll() is None:
-                if queue:queue.discover()
+                if queue:
+                    queue.discover()
+                    queue.reclaim()
                 if shared_endpoint is not None and Path(str(shared_endpoint)+'.done').exists():break
                 if time.monotonic()-solver_start>timeout:raise subprocess.TimeoutExpired(process.args,timeout)
                 time.sleep(.1)
@@ -237,6 +248,10 @@ def _run(config, output, executable, timeout=3600, *, resume=None, pause_state=N
             if audit_failures:
                 manifest["status"] = "audit_failed"
             atomic_text(output/"events.jsonl", "".join(json.dumps(event,separators=(",",":"))+"\n" for event in events))
+            queue.reclaim(producer_done=True, protected={latest.name} if paused else set())
+            manifest['checkpoint'] = ((output/'checkpoints/latest').read_text().strip()
+                                      if (output/'checkpoints/latest').exists() else None)
+            manifest['retention'] = queue.retention_summary()
         manifest['audit_drain_seconds'] = time.monotonic()-audit_start if config['audit'] else 0
         manifest['audit_wall_seconds'] = time.monotonic()-start if config['audit'] else 0
         manifest['audit_workers']=audit_workers;manifest['audit_threads']=audit_threads
@@ -294,13 +309,20 @@ def main():
     parser.add_argument("--audit-workers", type=int, default=1)
     parser.add_argument("--audit-drain-workers", type=int, help="workers after solver exit; default reuses its explicit thread budget; set equal to --audit-workers to keep memory demand unchanged")
     parser.add_argument("--audit-threads", type=int, help="0 inherits runtime; omitted inherits run threads")
+    parser.add_argument("--checkpoint-retention", choices=['all','delete_after_audit','periodic'],
+                        help="override the config's retention after successful audit")
+    parser.add_argument("--keep-final", action=argparse.BooleanOptionalAction, default=None,
+                        help="retain the terminal accepted state in delete_after_audit mode")
     parser.add_argument("--pause-state", type=int)
     parser.add_argument("--pause-phase", choices=["accepted", "training", "ell"], default="accepted")
     parser.add_argument("--timeout", type=float, default=3600)
     args = parser.parse_args()
     if not math.isfinite(args.timeout) or args.timeout <= 0:
         parser.error("timeout must be positive and finite")
-    print(json.dumps(run(json.loads(args.config.read_text()), args.output, args.executable, args.timeout, resume=args.resume, pause_state=args.pause_state, pause_phase=args.pause_phase,audit_workers=args.audit_workers,audit_threads=args.audit_threads,audit_drain_workers=args.audit_drain_workers)))
+    config=json.loads(args.config.read_text())
+    if args.checkpoint_retention is not None:config['checkpoint_retention']=args.checkpoint_retention
+    if args.keep_final is not None:config['keep_final']=args.keep_final
+    print(json.dumps(run(config, args.output, args.executable, args.timeout, resume=args.resume, pause_state=args.pause_state, pause_phase=args.pause_phase,audit_workers=args.audit_workers,audit_threads=args.audit_threads,audit_drain_workers=args.audit_drain_workers)))
 
 
 if __name__ == "__main__":

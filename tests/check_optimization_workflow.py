@@ -13,7 +13,9 @@ with tempfile.TemporaryDirectory() as temporary:
     root=Path(temporary)
     for problem,k in [('E1',16),('E2',8),('E2',32),('E2',128)]:
         c=json.loads((ROOT/'configs/adaptive'/f'{problem.lower()}_main.json').read_text())
-        c.update(wavenumber=k,level=4,gap=2,ell=1,maximum_ell=2,ell_mode='fixed',
+        # This recovery comparison needs every state's checkpoint. The main
+        # production presets retain restart points only every five cycles.
+        c.update(wavenumber=k,level=4,gap=2,ell=1,maximum_ell=2,ell_mode='fixed',checkpoint_interval_cycles=0,
                  cycles=1,threads=2,member_ids=[0,1,2],training_ids=[0,1],radius=10.,rank_cap=3,extra_checks=[])
         before=root/f'{problem}-{k}-reference';after=root/f'{problem}-{k}-optimized'
         with patch.dict(os.environ,{'ALOD_REFERENCE_EXECUTION':'1'}):m=run(c,before,exe,audit_threads=2)

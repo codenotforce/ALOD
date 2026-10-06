@@ -314,7 +314,7 @@
     "CLI success/failure artifacts"
   ],
   "server": {
-    "access": "PowerShell -> ssh shuihan -> fresh isolated workspace and unique tmux sessions",
+    "access": "SSH transport to a fresh isolated validation workspace and unique tmux sessions",
     "environment": {
       "compiler": "GCC 11.4.0",
       "cmake": "3.22.1",

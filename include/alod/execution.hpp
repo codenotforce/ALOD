@@ -41,6 +41,51 @@ public:
 inline ThreadBudget thread_budget(int threads) {
     return std::make_shared<std::atomic<int>>(std::max(1, threads));
 }
+// Completion of either side returns its share to the surviving task. The
+// surviving task observes the new budget at its next parallel-region boundary.
+// A zero initial share denotes a side that was never launched.
+class ConcurrentBudgetPair {
+    struct State {
+        std::mutex mutex;
+        int total;
+        const char* label;
+        ThreadBudget budgets[2];
+        bool completed[2];
+        State(int threads,int first,const char* name):total(threads),label(name),
+            budgets{std::make_shared<std::atomic<int>>(first),
+                    std::make_shared<std::atomic<int>>(threads-first)},
+            completed{first==0,first==threads} {}
+        void finish(int side) {
+            std::lock_guard lock(mutex);
+            if(completed[side])return;
+            completed[side]=true;
+            budgets[side]->store(0);
+            if(!completed[1-side]) {
+                budgets[1-side]->store(total);
+                PhaseTimer::record("budget_return",label,PhaseTimer::current_state,0,total);
+            }
+        }
+    };
+    std::shared_ptr<State> state_;
+public:
+    class Completion {
+        std::shared_ptr<State> state_;
+        int side_;
+    public:
+        Completion(std::shared_ptr<State> state,int side):state_(std::move(state)),side_(side) {}
+        Completion(const Completion&)=delete;
+        Completion& operator=(const Completion&)=delete;
+        Completion(Completion&& other) noexcept:state_(std::move(other.state_)),side_(other.side_) {}
+        ~Completion(){finish();}
+        void finish(){if(state_){auto state=std::move(state_);state->finish(side_);}}
+    };
+    ConcurrentBudgetPair(int threads,int first,const char* label) {
+        if(threads<1||first<0||first>threads)throw std::invalid_argument("invalid concurrent thread budget");
+        state_=std::make_shared<State>(threads,first,label);
+    }
+    ThreadBudget budget(int side) const{return state_->budgets[side];}
+    Completion completion(int side) const{return Completion(state_,side);}
+};
 inline bool asynchronous_execution(int threads) {
     const char* serial = std::getenv("ALOD_ASYNC_DISABLE");
     return threads > 1 && !(serial && std::string(serial) == "1");

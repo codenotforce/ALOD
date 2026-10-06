@@ -492,7 +492,11 @@ AdditiveKernelRieszContext::Result AdditiveKernelRieszContext::apply_impl(
     // Deterministic reduction: no overlapping parallel writes or atomics.
     if(!p.gather_offsets.empty()){
         const int workers=execution_threads(p.threads);
-        #pragma omp parallel for schedule(dynamic,256) num_threads(workers)
+        #pragma omp parallel num_threads(workers)
+        {
+        #pragma omp master
+        PhaseTimer::team("riesz_scatter",workers,omp_get_num_threads());
+        #pragma omp for schedule(dynamic,256)
         for(int row=0;row<p.full_size;++row)
             for(std::size_t entry=p.gather_offsets[row];entry<p.gather_offsets[row+1];++entry){
                 const auto [k,i]=p.gather_entries[entry];
@@ -500,6 +504,7 @@ AdditiveKernelRieszContext::Result AdditiveKernelRieszContext::apply_impl(
                 if(full_estimator)result.values.row(row)+=static_cast<double>(p.groups[k]->nodes.size())*local_values[k].row(i);
                 if(!action_only)result.selected_values.row(row)+=static_cast<double>(selected_counts[k])*local_values[k].row(i);
             }
+        }
     }else{
     for (int k=0;k<static_cast<int>(p.groups.size());++k) {
         const auto &g=*p.groups[k];

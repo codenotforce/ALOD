@@ -236,8 +236,11 @@ int adaptive_main(int argc,char** argv){
         }
         const bool overlap=asynchronous_execution(input.threads);
         const int load_workers=overlap?std::min<int>(problems.size(),std::max(1,input.threads/2)):input.threads;
+        ConcurrentBudgetPair load_budgets(input.threads,
+            overlap&&config.method!="AFEM"?load_workers:0,"load_lod");
         ComplexMatrix loads;double load_seconds=0;
         auto assemble_load=[&]{
+            auto completed=load_budgets.completion(0);
             auto start=std::chrono::steady_clock::now();PhaseTimer timing("load",state);
             auto result=assemble_load_batch(reference.mesh,problems,quad,input.threads,
                 std::getenv("ALOD_REFERENCE_EXECUTION")||config.method=="AFEM"?nullptr:&source_moments,&source_reuse,members_text);
@@ -245,7 +248,10 @@ int adaptive_main(int argc,char** argv){
         };
         // Join before training, snapshots of accepted values, or mesh mutation.
         std::future<std::pair<ComplexMatrix,double>> pending_load;
-        if(overlap&&config.method!="AFEM")pending_load=background_task(thread_budget(load_workers),assemble_load);
+        // Declare after the future so exception unwinding returns the share
+        // before joining, including failures while publishing the initial state.
+        auto construction_completed=load_budgets.completion(1);
+        if(overlap&&config.method!="AFEM")pending_load=background_task(load_budgets.budget(0),assemble_load);
         else {auto result=assemble_load();loads=std::move(result.first);load_seconds=result.second;}
         if(!was_resumed)snapshot(CheckpointPhase::BeforeTraining,events.buffer.str(),check,{},{},{},{},"");
 
@@ -258,7 +264,7 @@ int adaptive_main(int argc,char** argv){
                 ComplexVector residual=ops.system*values.col(j)-loads.col(j),rhs=loads.col(j);for(int n:ops.dirichlet_nodes){residual[n]=0;rhs[n]=0;}pg=std::max(pg,residual.norm()/std::max(1e-30,rhs.norm()));}
             coarse_mass=strong;
         }else for(;;){
-            auto construction_scope=std::make_unique<ExecutionScope>(thread_budget(pending_load.valid()?input.threads-load_workers:input.threads));
+            auto construction_scope=std::make_unique<ExecutionScope>(pending_load.valid()?load_budgets.budget(1):thread_budget(input.threads));
             phase_start=std::chrono::steady_clock::now();
             {PhaseTimer timing("lod_construct",state);
             if(space)space=std::make_unique<LodSpace>(*space,ell);
@@ -268,10 +274,13 @@ int adaptive_main(int argc,char** argv){
             }
             if(riesz->reference_identity()!=space->reference_identity())throw std::runtime_error("ell-only Riesz cache identity mismatch");
             E=space->energy();prepare_seconds+=phase_time();
+            // If construction wins, let the remaining load work reclaim the
+            // full budget before joining it. Load completion does the reverse.
+            construction_scope.reset();
+            construction_completed.finish();
             if(pending_load.valid()){
                 PhaseTimer wait("load_wait",state);auto result=pending_load.get();loads=std::move(result.first);load_seconds=result.second;
             }
-            construction_scope.reset();
             LocalizationEigenConfig eig;eig.relative_tolerance=input.tolerance;eig.maximum_iterations=input.iterations;eig.dense_cross_check_max_dimension=input.dense;
             eig.eigenvalue_relative_residual=config.policy.solution_scaled;
             std::string warm_transport="cold";
@@ -283,15 +292,18 @@ int adaptive_main(int argc,char** argv){
             // Theta depends on the immutable LOD basis and kernel factors, not on
             // the solution or greedy dictionary. Only its decision must wait for eta.
             const bool overlap_theta=check&&overlap;
-            auto theta_budget=thread_budget(overlap_theta?std::max(1,input.threads/2):input.threads);
-            ExecutionScope foreground(thread_budget(overlap_theta?input.threads-theta_budget->load():input.threads));
+            ConcurrentBudgetPair theta_budgets(input.threads,
+                overlap_theta?std::max(1,input.threads/2):0,"theta_training");
+            auto foreground=std::make_unique<ExecutionScope>(theta_budgets.budget(1));
             auto compute_theta=[&,eig]{
+                auto completed=theta_budgets.completion(0);
                 auto start=std::chrono::steady_clock::now();PhaseTimer timing("theta",state);
                 auto result=localization_theta(*space,*riesz,eig);
                 return std::make_pair(std::move(result),std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count());
             };
             std::future<std::pair<LocalizationResult,double>> pending_theta;
-            if(overlap_theta)pending_theta=background_task(theta_budget,compute_theta);
+            auto foreground_completed=theta_budgets.completion(1);
+            if(overlap_theta)pending_theta=background_task(theta_budgets.budget(0),compute_theta);
             phase_start=std::chrono::steady_clock::now();
             {PhaseTimer timing("training_or_lod_solve",state);
             if(input.problem=="E2"){
@@ -311,10 +323,11 @@ int adaptive_main(int argc,char** argv){
             }
             training_seconds+=phase_time();phase_start=std::chrono::steady_clock::now();
             {PhaseTimer timing("riesz_estimate",state);auto estimate=riesz->estimate(loads,values,input.theta);eta=estimate.eta;coarse_mass=estimate.element_eta_squared;}estimate_seconds+=phase_time();phase_start=std::chrono::steady_clock::now();
+            foreground.reset();
+            foreground_completed.finish();
             if(!check)break;
             // Return the foreground team before waiting. Subsequent Riesz calls
             // reclaim the full budget; no second set of patch factors is built.
-            theta_budget->store(input.threads);
             auto measured=[&]{if(!pending_theta.valid())return compute_theta();PhaseTimer wait("theta_wait",state);return pending_theta.get();}();
             auto localization=std::move(measured.first);theta_seconds+=measured.second;accepted_theta=localization.theta;theta_ell=ell;
             warm_full=ComplexMatrix::Zero(H.nodes.size(),localization.warm_start.block.cols());

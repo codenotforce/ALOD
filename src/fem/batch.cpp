@@ -11,9 +11,14 @@
 #include <chrono>
 namespace alod {
 namespace {
-template<class F> void parallel(int n,int threads,F f){if(threads<1)throw std::invalid_argument("batch threads must be positive");threads=execution_threads(threads);if(n==0)return;if(n==1){f(0);return;}threads=std::min(n,threads);std::exception_ptr failure;std::mutex mutex;
-#pragma omp parallel for schedule(static) num_threads(threads)
+template<class F> void parallel(int n,int threads,F f){if(threads<1)throw std::invalid_argument("batch threads must be positive");threads=execution_threads(threads);if(n==0)return;if(n==1){PhaseTimer::team("batch",1,1);f(0);return;}threads=std::min(n,threads);std::exception_ptr failure;std::mutex mutex;
+#pragma omp parallel num_threads(threads)
+    {
+#pragma omp master
+    PhaseTimer::team("batch",threads,omp_get_num_threads());
+#pragma omp for schedule(static)
     for(int i=0;i<n;++i){try{f(i);}catch(...){std::lock_guard<std::mutex> lock(mutex);if(!failure)failure=std::current_exception();}}
+    }
     if(failure)std::rethrow_exception(failure);
 }
 // Only share points when every quadrature context is exactly identical.

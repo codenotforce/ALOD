@@ -7,6 +7,15 @@ import subprocess
 from adaptive_config import with_compatibility_defaults
 
 
+def sync_directory(path):
+    if os.name != 'nt':
+        descriptor = os.open(path, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(descriptor)
+        finally:
+            os.close(descriptor)
+
+
 def atomic_text(path, text):
     path = Path(path)
     temp = path.with_name(path.name + ".tmp")
@@ -15,6 +24,7 @@ def atomic_text(path, text):
         stream.flush()
         os.fsync(stream.fileno())
     temp.replace(path)
+    sync_directory(path.parent)
 
 
 def digest(path):
@@ -83,7 +93,8 @@ def validate_resume_config(old, new):
     old, new = with_compatibility_defaults(old), with_compatibility_defaults(new)
     if set(old)!=set(new):raise ValueError("resume configuration fields differ")
     increases = {"cycles", "state_limit", "maximum_nodes", "maximum_patch_entries", "maximum_dense_entries"}
-    operational = {"audit_mode", "audit", "emit_solution", "threads", "checkpoint_interval_cycles"}
+    operational = {"audit_mode", "audit", "emit_solution", "threads", "checkpoint_interval_cycles",
+                   "checkpoint_retention", "keep_final"}
     for key in old:
         if key in operational:
             continue
