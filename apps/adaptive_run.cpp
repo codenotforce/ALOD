@@ -60,7 +60,7 @@ Input parse(int argc,char** argv){
     if(in.pause_phase!="accepted"&&in.pause_phase!="training"&&in.pause_phase!="ell")throw std::invalid_argument("invalid checkpoint pause phase");
     if(in.pause_state>=0&&in.checkpoint_dir.empty())throw std::invalid_argument("pause requires checkpoint-dir");
     in.gap=integer("minimum-gap",0,8);in.rank=integer("rank-cap",1,24);in.inherit=integer("inherit",0,1);
-    in.audit=integer("audit",0,1);in.emit=integer("emit-solution",0,1);in.policy.maximum=integer("maximum-ell",in.fixed.ell,4);
+    in.audit=integer("audit",0,1);in.emit=integer("emit-solution",0,1);in.policy.maximum=integer("maximum-ell",in.fixed.ell,5);
     auto entry=numbers(opts.at("maximum-patch-entries"));if(entry.size()!=1||entry[0]!=std::floor(entry[0])||entry[0]<1||entry[0]>64000000000.)throw std::invalid_argument("invalid maximum-patch-entries");in.patch_entries=static_cast<std::size_t>(entry[0]);in.dense_entries=integer("maximum-dense-entries",1,1000000000);
     auto radius=numbers(opts.at("radius"));if(radius.size()!=1||radius[0]<0)throw std::invalid_argument("invalid radius");in.radius=radius[0];
     in.ref_theta=numbers(opts.at("reference-theta"));if(in.ref_theta.size()!=static_cast<std::size_t>(in.m))throw std::invalid_argument("reference-theta length must equal m_ref");

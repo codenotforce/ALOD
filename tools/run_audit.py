@@ -47,7 +47,7 @@ def audit(checkpoint, output, executable, *, member_ids=None, batch_size=8, fres
     if audit_mode not in ("full","exact"):raise ValueError("invalid audit mode")
     if audit_mode=="exact" and (fresh or refinement_steps):raise ValueError("exact-only audit cannot request reference/fresh diagnostics")
     setup_start=time.monotonic()
-    if type(ell_override) is not int or not 0<=ell_override<=4 or type(quadrature_boost) is not int or not 0<=quadrature_boost<=8:
+    if type(ell_override) is not int or not 0<=ell_override<=5 or type(quadrature_boost) is not int or not 0<=quadrature_boost<=8:
         raise ValueError("invalid diagnostic override")
     if type(refinement_steps) is not int or not 0<=refinement_steps<=3: raise ValueError("invalid refinement steps")
     if type(reuse_basis) is not bool:raise ValueError("reuse_basis must be boolean")

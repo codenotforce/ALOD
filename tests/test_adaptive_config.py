@@ -13,6 +13,13 @@ class AdaptiveConfigTests(unittest.TestCase):
         for path in (ROOT / "configs/adaptive").glob("*.json"):
             validate(json.loads(path.read_text()))
 
+    def test_ell_five(self):
+        validate(dict(DEFAULT, ell=5, maximum_ell=5))
+        validate(dict(DEFAULT, ell=2, maximum_ell=5))
+        for changes in (dict(ell=6, maximum_ell=6), dict(maximum_ell=6)):
+            with self.assertRaises(ValueError):
+                validate(dict(DEFAULT, **changes))
+
     def test_reject_bad_contracts(self):
         for changes in [dict(m_ref=3), dict(reference_theta=[.3, 0]), dict(ell_mode="unknown"),
                         dict(method="AFEM"), dict(training_ids=[16]), dict(extra_checks=[True]),

@@ -42,7 +42,7 @@ inline Input parse(int argc,char** argv) {
     in.riesz_policy=options.at("riesz-patches");
     in.wavenumber=real("wavenumber");if(in.wavenumber<=0)throw std::invalid_argument("wavenumber must be positive");
     in.theta=real("theta");in.tolerance=real("ritz-tolerance");in.iterations=integer("ritz-iterations");in.dense=integer("dense-threshold");
-    if(in.level<0||in.level>12||in.gap<1||in.gap>8||in.ell<1||in.ell>4||in.cap<1||in.cap>4000000
+    if(in.level<0||in.level>12||in.gap<1||in.gap>8||in.ell<1||in.ell>5||in.cap<1||in.cap>4000000
         ||in.threads<0||(graded!=0&&graded!=1)||(in.policy!="area"&&in.policy!="arithmetic")
         ||(in.riesz_policy!="n2"&&in.riesz_policy!="archive")||in.theta<=0||in.theta>1||in.tolerance<=0||in.iterations<1||in.dense<0)
         throw std::invalid_argument("fixed-state option out of range");

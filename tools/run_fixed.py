@@ -25,7 +25,7 @@ def validate(config):
         raise ValueError("invalid Riesz patch policy")
     if type(config["graded"]) is not bool:
         raise ValueError("graded must be boolean")
-    for key, lo, hi in [("level", 0, 12), ("gap", 1, 8), ("ell", 1, 4), ("threads", 0, 2147483647),
+    for key, lo, hi in [("level", 0, 12), ("gap", 1, 8), ("ell", 1, 5), ("threads", 0, 2147483647),
                         ("maximum_nodes", 1, 200000), ("ritz_iterations", 1, 10000), ("dense_threshold", 0, 512)]:
         if type(config[key]) is not int or not lo <= config[key] <= hi:
             raise ValueError(f"invalid {key}")

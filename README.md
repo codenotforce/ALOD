@@ -1,7 +1,7 @@
 # ALOD
 
 ALOD is a C++20 implementation of adaptive two-sided localized orthogonal
-decomposition for the E1/E2 Helmholtz problems, with AFEM/UFEM/SLOD baselines,
+decomposition for the E1/E2 Helmholtz problems, with AFEM/UFEM/LOD baselines (`SLOD` in code),
 regional enrichment, family marking, numerical audits and checkpoint recovery.
 E3 uses the E1 family at five wavenumbers.
 
@@ -13,7 +13,7 @@ E3 uses the E1 family at five wavenumbers.
 | [Algorithm](docs/algorithm.md) | Current mathematics, adaptive state, estimators and paper/archive differences |
 | [Configuration](docs/configuration.md) | Configuration fields, presets, operational switches and defaults |
 | [Runtime](docs/runtime.md) | Concurrent audits, thread budgets, checkpoint publication, retention and recovery |
-| [Experiments](docs/experiments.md) | Current E1/E2/E3 protocol, frozen results and historical comparisons |
+| [Experiments](docs/experiments.md) | Version 7 experiment scope, repository E1/E2/E3 recipes and frozen records |
 | [Scientific workflow](docs/scientific_workflow.md) | Diagnostics, error metrics, figures, tables and portable delivery |
 | [Validation](docs/validation.md) | Tests, provenance rules, benchmarks and evidence limits |
 
@@ -58,6 +58,12 @@ See the runtime guide before choosing checkpoint cleanup or audit concurrency.
 
 ### Experiment definitions
 
+The version 7 manuscript (`../LOD_paper/ALOD/version7/arxiv.tex` and
+`main.tex`) has two experiments: **A reentrant corner** (repository E2) and
+**Wavenumber dependence** (E3, using the E1 problem). E1 remains a supported
+problem and historical experiment. The definitions below use the current
+paper symbols; checked-in presets and RHS tables retain their own provenance.
+
 E1 and E2 are manufactured Helmholtz problems,
 $-\Delta u_\mu-k^2u_\mu=f_\mu$, with sources and boundary data derived from
 the specified exact solution $u_\mu$. The parameter $\mu$ identifies a
@@ -68,11 +74,11 @@ Galerkin solution and the ALOD reconstruction.
 
 $$
 u_\mu(x,y)=x^2(1-x)^2\sin(\pi y)
-\exp\!\left(-80\bigl[(x-z_{x,\mu})^2+(y-z_{y,\mu})^2\bigr]\right)
+\exp\!\left(-80\bigl[(x-\mu_x)^2+(y-\mu_y)^2\bigr]\right)
 e^{\mathrm i kx}.
 $$
 
-The packet centre $z_\mu$ varies near the nominal centre $(3/4,1/2)$.
+The packet center $(\mu_x,\mu_y)$ varies near the reference center $(3/4,1/2)$.
 The top/bottom edges are Dirichlet, the left edge is Neumann and the right
 edge is impedance. The main family preset uses $k=16$ without regional
 enrichment. Use [e1_main.json](configs/adaptive/e1_main.json) and the
@@ -80,35 +86,35 @@ enrichment. Use [e1_main.json](configs/adaptive/e1_main.json) and the
 
 **E2: corner singularity with localized oscillations.** On the L-shaped domain
 $\Omega=(-1,1)^2\setminus([0,1]\times[-1,0])$, let
-$w(x,y)=(1-x^2)^2(1-y^2)^2$ and define
+$b_\partial(x,y)=(1-x^2)^2(1-y^2)^2$ and define
 
 $$
 \begin{aligned}
-u_\mu(x,y)&=c_\mu w(x,y)r^{2/3}\sin(2\vartheta/3)\\
-&\quad+\alpha_\mu p_{z_\mu}(x,y)
-e^{\mathrm i[k(x-z_{x,\mu})+\varphi_\mu]},\\
-p_z(x,y)&=\frac{xy\,w(x,y)}{z_xz_y\,w(z_x,z_y)}
-e^{-80[(x-z_x)^2+(y-z_y)^2]}.
+u_\mu(x,y)&=\mu_c b_\partial(x,y)\varrho^{2/3}\sin(2\theta/3)\\
+&\quad+\mu_\alpha A_\mu(x,y)
+e^{\mathrm i[k(x-\mu_x)+\mu_\varphi]},\\
+A_\mu(x,y)&=\frac{xy\,b_\partial(x,y)}{\mu_x\mu_y\,b_\partial(\mu_x,\mu_y)}
+e^{-80[(x-\mu_x)^2+(y-\mu_y)^2]}.
 \end{aligned}
 $$
 
-Here $(r,\vartheta)$ are polar coordinates about the reentrant corner,
-with $0\leq\vartheta\leq3\pi/2$. RHS cases vary the singular coefficient
-$c_\mu$, packet centre $z_\mu$, amplitude $\alpha_\mu$ and phase
-$\varphi_\mu$. The nominal case has $(c,\alpha,\varphi)=(1,0.5,0)$
-and $z=(-0.5,0.5)$. The reentrant edges are Dirichlet and the outer edges
+Here $(\varrho,\theta)$ are polar coordinates about the reentrant corner,
+with $0<\theta<3\pi/2$. The parameter is
+$\mu=(\mu_c,\mu_\alpha,\mu_x,\mu_y,\mu_\varphi)$, and the reference
+parameter is $\mu_{\rm ref}=(1,1/2,-1/2,1/2,0)$.
+The reentrant edges are Dirichlet and the outer edges
 are impedance. The main preset uses $k=16$ and regional enrichment in
 $D=\Omega\cap B_{0.6}(0)$. Use
 [e2_main.json](configs/adaptive/e2_main.json) and the
 [E2 RHS table](data/rhs/rhs_e2.json).
 
-**E3: wavenumber scaling of the E1 nominal problem.** Solve the E1 nominal
-RHS case (ID 0, centre $(3/4,1/2)$) separately at
+**E3: Wavenumber dependence.** Solve the E1 reference RHS case
+(ID 0, fixed center $\mu_0=(3/4,1/2)$) separately at
 $k\in\{8,16,32,64,128\}$, using the `e3_k*.json` presets in
 [configs/adaptive](configs/adaptive/). Each wavenumber defines its own
-Helmholtz operator. These presets target nominal relative exact energy error
-$\|u_0-U_0\|_k/\|u_0\|_k\leq0.01$, with $U_0$ the nominal ALOD
-reconstruction and
+Helmholtz operator. These presets target relative energy error
+$E=E_{\mu_0}=\|u_k-U_k\|_k/\|u_k\|_k\leq0.01$, with $U_k$ the ALOD
+reconstruction at that wavenumber and
 $\|v\|_k^2=\|\nabla v\|_{L^2(\Omega)}^2+k^2\|v\|_{L^2(\Omega)}^2$.
 Initial meshes and stopping limits are set per preset.
 

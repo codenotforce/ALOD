@@ -11,13 +11,15 @@ for operational effects.
 
 Baseline presets live in `configs/smoke/` and `configs/full/`; fixed probes in
 `configs/p2/`; adaptive/main/control/E3 presets in `configs/adaptive/`.
-Campaign generators freeze copies. Editing a repository preset does not mutate
+Repository presets and generators retain their recorded experiment scope;
+they are not automatically synchronized with the version 7 manuscript settings
+in [experiments](experiments.md). Campaign generators freeze copies. Editing a repository preset does not mutate
 an existing campaign or its numerical history.
 
 | Field | Contract |
 |---|---|
 | `problem`, `wavenumber` | E1/E2 and positive finite k; omitted wavenumber is 16 |
-| `level`, `gap`, `ell`, `graded` | Coarse NVB level 0..12, reference gap 1..8, ell 1..4, boolean graded probe |
+| `level`, `gap`, `ell`, `graded` | Coarse NVB level 0..12, reference gap 1..8, ell 1..5, boolean graded probe |
 | `interpolation`, `riesz_patches` | `area`/`arithmetic`, `n2`/`archive`; inspect presets explicitly |
 | `member_ids`, `training_ids` | Nonempty distinct existing IDs; training subset must be included and have train role |
 | `theta` | Coarse marking fraction in (0,1] |
@@ -28,7 +30,7 @@ an existing campaign or its numerical history.
 The fixed-state defaults in `tools/run_fixed.py` are level=2, gap=3, ell=1,
 area/n2, threads=0, theta=0.15, tolerance=1e-9 and 16 training cases.
 Formal E1/E2 tables have IDs 0..47: 16 train, 24 test, eight shift; ID 0 is
-nominal. Adaptive configurations must include ID 0. Diagnostic E2 pure cases
+the reference case (literal code label `nominal`). Adaptive configurations must include ID 0. Diagnostic E2 pure cases
 48/49 are separate from the formal table.
 
 ## Adaptive additions
@@ -38,8 +40,8 @@ nominal. Adaptive configurations must include ID 0. Diagnostic E2 pure cases
 | `method` | ALOD/AFEM; AFEM requires `m_ref=1` |
 | `cycles`, `m_ref`, `reference_theta` | Cycles 0..1000, sweeps 1..16, exactly one positive fraction <=1 per sweep |
 | `state_limit`, `minimum_gap` | Accepted-state cap 0..10001 (zero uses horizon); reference reserve 0..8 |
-| `ell_mode`, `maximum_ell`, `extra_checks` | lazy/every/fixed; cap between initial ell and 4; distinct state IDs 0..10000 |
-| `ell_ratio_mode`, `ell_threshold` | raw/solution_scaled; nonnegative finite relative threshold |
+| `ell_mode`, `maximum_ell`, `extra_checks` | lazy/every/fixed; cap between initial ell and 5; distinct state IDs 0..10000 |
+| `ell_ratio_mode`, `ell_threshold` | raw/solution_scaled; the latter uses the paper's \(q_\ell\); nonnegative finite relative threshold |
 | `ell_absolute_threshold` | Nonnegative finite manual scalar; -1 disables the absolute gate |
 | `force_promotions` | Explicit E2 ALOD diagnostic states; forbidden in fixed mode; production uses empty list |
 | `enrichment_tests` | kernel_lift/adjoint; changing this changes mathematics |
@@ -67,7 +69,8 @@ compatibility defaults as today's production policy.
 initial_level (0..24), states (1..10000 including state zero), theta (0,1],
 target (nonnegative exact relative energy error; zero disables), maximum_nodes
 (4..2000000000), threads and boolean emit_solution. Only reference_gap (1..8,
-default 4) and wavenumber (default 16) may be omitted. SLOD adds a conservative
+default 4) and wavenumber (default 16) may be omitted. `SLOD` is the paper's
+LOD baseline, not the distinct super-localized LOD method. SLOD adds a conservative
 reference allocation guard. `run.json` now records the child thread environment;
 legacy `BLAS_threads` is null because actual BLAS team size is not measured.
 Unset environment values mean runtime defaults, not one thread.

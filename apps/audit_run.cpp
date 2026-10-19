@@ -42,7 +42,7 @@ int audit_main(int argc,char** argv,AuditWorkerState* worker,std::ostream* outpu
     int retrain=integer("retrain-shared",0,1),deepening=integer("reference-levels",0,3),two_level=integer("two-level",0,1);
     int refinement_steps=integer("refinement-steps",0,3);
     if(refinement_steps && input.problem!="E1")throw std::invalid_argument("refinement diagnostic is E1 only");
-    int ell_override=integer("ell-override",0,4),quadrature_boost=integer("quadrature-boost",0,8);
+    int ell_override=integer("ell-override",0,5),quadrature_boost=integer("quadrature-boost",0,8);
     if(ell_override && ((snapshot.phi.cols()!=0&&!retrain&&!drop_enrichment) || options["method"]!="ALOD"))
         throw std::invalid_argument("ell override requires rank-zero or shared retraining on an ALOD checkpoint");
     if(exact_only&&(fresh||refinement_steps))throw std::invalid_argument("exact audit does not compute reference/fresh diagnostics");

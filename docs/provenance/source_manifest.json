@@ -52,10 +52,11 @@
       "origin_scope": "legacy",
       "origin": "results/E2-regional-adaptiveell-inherit-controls-20260909/deployment/source/src/helmholtz/operators.cpp",
       "origin_sha256": "35c4f1ba9dc60b248be7e04a219f5a630e954718d8dab1be63583f8d115d296f",
-      "sha256": "345103b3ff9af52e8071bb3b64c5b67281390ecb17b57e6fe7d291190f006358",
+      "sha256": "da5229a0efbb71552d14a8ab4fe8a41dba05d3382d29adfcd9682146b59879a5",
       "snapshot": "E2-production",
-      "modification": "Line endings normalized; numerical implementation unchanged. Reusable quadrature storage with geometric growth, parameter-only normalization, or joint exact evaluation; numerical formulas and quadrature policies unchanged.",
-      "copyright": "Inherited; no repository license found. See NOTICE.md."
+      "modification": "Line endings normalized; numerical implementation unchanged. Reusable quadrature storage with geometric growth, parameter-only normalization, or joint exact evaluation; numerical formulas and quadrature policies unchanged. Reviewed 2026-10-19: Single-load and batched FEM solves use 64-bit SuiteSparse_long UMFPACK indices; check symbolic analysis and report UMFPACK failures before throwing. PDE assembly and solver selection are unchanged.",
+      "copyright": "Inherited; no repository license found. See NOTICE.md.",
+      "previous_sha256": "345103b3ff9af52e8071bb3b64c5b67281390ecb17b57e6fe7d291190f006358"
     },
     {
       "path": "src/fem/manufactured.cpp",

@@ -38,7 +38,7 @@ def run(checkpoint, output, executable, names, *, ells=(2,3), ranks=(1,2,4), rad
         reason=None
         if name in ('fresh','pure','rank','radius') and (problem!='E2' or not lod):reason='Requires E2 ALOD.'
         if name in ('ell','rank-zero','two-level','reference','localization') and not lod:reason='Requires an ALOD checkpoint.'
-        if name=='two-level' and meta['ell']>=4:reason='The supported oversampling maximum is four.'
+        if name=='two-level' and meta['ell']>=5:reason='The supported oversampling maximum is five.'
         if name=='residual' and (problem!='E1' or not lod):reason='Requires E1.'
         if reason:report['skipped'].append(dict(name=name,reason=reason));continue
         jobs={

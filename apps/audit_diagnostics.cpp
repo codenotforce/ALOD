@@ -34,7 +34,7 @@ void deepen_reference(std::unique_ptr<LodSpace>& space, Checkpoint& snapshot,
 }
 
 double two_level_corrector(const LodSpace& space, int ell) {
-    if (ell >= 4) throw std::invalid_argument("two-level diagnostic needs ell < 4");
+    if (ell >= 5) throw std::invalid_argument("two-level diagnostic needs ell < 5");
     LodSpace other(space, ell + 1);
     ComplexMatrix difference = ComplexMatrix(other.trial() - space.trial());
     double square = std::real(

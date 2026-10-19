@@ -42,6 +42,16 @@ staged checks validated 330 text files, all 64 required imported hashes and the
 canonical audit rows. Local Markdown targets and `git diff --check` passed.
 These local checks did not restart production or rerun the full E1/E2/E3 campaigns.
 
+October 19 pre-publication verification rebuilt all default Release targets in
+local WSL with GCC 11.4, Eigen 3.4 and SuiteSparse 5.10. The full CTest run passed
+60 of 61 tests, including the new ell=5 checkpoint/audit/restart and 64-bit
+UMFPACK single/batched FEM checks. Its only failure was repository integrity:
+the verification command placed its own log outside the ignored local-output
+directory. After moving that log into the ignored directory and correcting the
+command, the failed test passed on rerun. Python tooling discovery passed all
+47 tests. The reviewed FEM source hash was updated with its preceding and origin
+identities retained. These bounded local checks did not rerun production.
+
 Publication review found no absolute local paths in maintained Markdown/JSON,
 no recognized credential signatures or generated binaries in the candidate
 inventory. One local SSH alias was removed from historical access metadata;

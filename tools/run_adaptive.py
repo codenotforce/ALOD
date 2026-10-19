@@ -55,7 +55,7 @@ def validate(config):
     rows = validate_fixed(fixed)
     for key, lo, hi in [("cycles", 0, 1000), ("checkpoint_interval_cycles", 0, 1000), ("m_ref", 1, 16), ("state_limit", 0, 10001),
                         ("minimum_gap", 0, 8), ("rank_cap", 1, 24),
-                        ("maximum_ell", config["ell"], 4),
+                        ("maximum_ell", config["ell"], 5),
                         ("maximum_patch_entries", 1, 64000000000),
                         ("maximum_dense_entries", 1, 1000000000)]:
         if type(config[key]) is not int or not lo <= config[key] <= hi:

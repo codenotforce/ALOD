@@ -176,7 +176,7 @@ Checkpoint load_checkpoint(const std::filesystem::path& file,std::uint64_t cap){
     }
     s.raw_kernel=r.dense();s.phi=r.dense();s.values=r.dense();s.warm_full=r.dense();s.coarse_marks=r.ints();s.reference_marks=r.ints();s.computed_ids=r.ints();if(has_basis)s.lod_trial=r.sparse_complex();if(has_reduced)s.lod_reduced=r.sparse_complex();
     auto checksum=r.hash;if(r.u()!=checksum||r.remaining)throw std::runtime_error("checkpoint checksum or trailing-data mismatch");
-    if(phase<0||phase>2||s.cursor.state_id<0||s.ell<1||s.ell>4||s.P_node.rows()!=s.fine.mesh.nodes.size()||s.P_node.cols()!=s.coarse.mesh.nodes.size()||s.P_elem.rows()!=s.fine.mesh.elems.size()||s.P_elem.cols()!=s.coarse.mesh.elems.size()||s.P_dg.rows()!=3*s.fine.mesh.elems.size()||s.P_dg.cols()!=3*s.coarse.mesh.elems.size())throw std::runtime_error("checkpoint state dimensions invalid");
+    if(phase<0||phase>2||s.cursor.state_id<0||s.ell<1||s.ell>5||s.P_node.rows()!=s.fine.mesh.nodes.size()||s.P_node.cols()!=s.coarse.mesh.nodes.size()||s.P_elem.rows()!=s.fine.mesh.elems.size()||s.P_elem.cols()!=s.coarse.mesh.elems.size()||s.P_dg.rows()!=3*s.fine.mesh.elems.size()||s.P_dg.cols()!=3*s.coarse.mesh.elems.size())throw std::runtime_error("checkpoint state dimensions invalid");
     const auto nh=s.fine.mesh.nodes.size(),nH=s.coarse.mesh.nodes.size();
     if(has_basis&&(phase!=0||s.lod_trial.rows()!=nh||s.lod_trial.cols()!=nH-lod2d::helmholtz::dirichlet_nodes(s.coarse.mesh).size()))throw std::runtime_error("checkpoint LOD basis contract invalid");
     if(has_reduced&&(s.lod_reduced.rows()!=s.lod_trial.cols()||s.lod_reduced.cols()!=s.lod_trial.cols()))throw std::runtime_error("checkpoint reduced operator dimensions invalid");

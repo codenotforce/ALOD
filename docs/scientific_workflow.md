@@ -4,6 +4,25 @@ This guide covers diagnostics and paper data. [Configuration](configuration.md)
 defines controls; [runtime](runtime.md) defines the retained inputs they need.
 Frozen scientific spaces and new diagnostic spaces must be labelled separately.
 
+## Manuscript version and current terminology
+
+The version 7 paper sources are `../LOD_paper/ALOD/version7/arxiv.tex` and
+`main.tex`. They contain the corner and wavenumber experiments only, while
+the delivery inventory and scoped exporters below retain their original
+version-4/September roles and windows, including E1. They must not be described
+as a complete version-7 reproduction pipeline. Preserve their historical
+inputs and outputs; updating this guide does not change exporter behavior.
+
+Use reference load, test load and LOD in explanations; preserve literal
+`nominal`, `E_ref`, `SLOD` and other code fields. Version 7's corner error is
+\(E_{\mu_{\rm ref}}\); Wavenumber dependence uses
+\(E=E_{\mu_0}=\|u_k-U_k\|_k/\|u_k\|_k\).
+The manuscript's corner tail windows are the last 10 ALOD cycles, 10 AFEM
+states, 8 UFEM states and 4 LOD states. Fixed-mesh controls and independent
+single-load/family-aware trajectories have the separate scopes in
+[experiments](experiments.md); Per-load fresh is a diagnostic, not frozen
+shared-space reuse.
+
 ## Exact-error termination
 
 Adaptive configurations accept these additional fields:
@@ -16,11 +35,11 @@ Adaptive configurations accept these additional fields:
 }
 ```
 
-`exact_target` is a positive relative energy-error target, or `-1` to disable it. `exact_scope` is `nominal` or `training_max`; the latter requires every frozen training member to satisfy the target. Held-out members do not enter stopping or marking. A near-zero exact norm is an error, not successful termination. The check runs on each accepted candidate using the manufactured exact solution; it does not solve a reference FEM system or wait for asynchronous audits.
+`exact_target` is a positive relative energy-error target, or `-1` to disable it. `exact_scope` is `nominal` or `training_max`; the latter requires every frozen training member to satisfy the target. Test loads do not enter stopping or marking. A near-zero exact norm is an error, not successful termination. The check runs on each accepted candidate using the manufactured exact solution; it does not solve a reference FEM system or wait for asynchronous audits.
 
 The accepted transaction records `exact_target_ratio` and `target_reached`. A target-terminal checkpoint remains terminal on resume, including when the outer horizon is increased. Changing the target or its member scope is a new mathematical experiment. `termination_reason`, `target_reached` and `complete_horizon` distinguish a reached target from an exhausted horizon. Existing node, cycle and state limits remain active: an experiment can finish its configured horizon without reaching its target. The final scheduled localization policy is unchanged; an unexpected error crossing does not introduce an extra localization promotion.
 
-E3 presets now request the one-percent nominal target and exact-only asynchronous audits. Their existing horizons and resource ceilings remain bounds, not guarantees of reaching one percent.
+E3 presets request the one-percent reference-load target and exact-only asynchronous audits. Their existing horizons and resource ceilings remain bounds, not guarantees of reaching one percent.
 
 ## Exact-only audits
 
@@ -63,7 +82,7 @@ Audits solve additional RHS cases in the frozen space without retraining;
 `--fresh` deliberately trains from empty at the same mesh/ell, and E2 `--pure`
 adds the two pure-component cases. These diagnostics never feed adaptation.
 
-## One-command version 4 delivery
+## Historical version 4 delivery
 
 The plot renderer now preserves the tuned parameters of
 `generate_kernel_lift_figures.py` (E1/E2) and `plot_results.py` (E3).
@@ -112,7 +131,7 @@ python tools/paper_delivery.py --canonical results/paper-delivery/data/runs.json
 
 Imports validate state continuity, unique state/member audits, frozen member coverage, finite positive errors and mesh connectivity. The original historical file hashes are retained, while host paths are excluded by a whitelist. Imported results remain labelled historical; they are not speed or accuracy evidence for the new executable. Resource-stopped E3 endpoints are explicitly distinguished from one-percent crossings. Tail windows and displayed E2 endpoints follow the reviewed manuscript/export conventions and are recorded in the report.
 
-The supplied manuscript has a reproducible inconsistency: its E1 family-control prose describes the first state with online dimension at least 2000, but the published values are log-budget interpolation at 2000. Delivery therefore includes both `e1-family-control` (published interpolated values) and `e1-family-first-crossing` (actual states), with an explicit scientific note. It does not silently edit the manuscript or claim the two quantities are equal.
+The historical version-4 manuscript has a reproducible inconsistency: its E1 family-control prose describes the first state with online dimension at least 2000, but the published values are log-budget interpolation at 2000. Delivery therefore includes both `e1-family-control` (published interpolated values) and `e1-family-first-crossing` (actual states), with an explicit scientific note. It does not silently edit the manuscript or claim the two quantities are equal.
 
 
 
@@ -122,7 +141,7 @@ The supplied manuscript has a reproducible inconsistency: its E1 family-control 
 current ALOD runs with explicitly historical controls, plots initial state plus
 E1/E2 cycle endpoints 1–25, and requires ALOD meshes from cycle 25. E3 retains
 its completed-cycle/first-1%-prefix selection. The separate convergence report
-fits nominal relative energy error against online DOFs on cycles 19–28 of the
+fits reference-load relative energy error against online DOFs on cycles 19–28 of the
 full 28-cycle E1/E2 runs. It does not fit the truncated figure curves.
 
 The general `paper_delivery.py` terminal tables retain their historical fitting

@@ -24,6 +24,16 @@ using FemSolveClock = std::chrono::steady_clock;
 double fem_seconds_since(const FemSolveClock::time_point start) {
     return std::chrono::duration<double>(FemSolveClock::now() - start).count();
 }
+#if defined(LOD2D_HAVE_UMFPACK)
+// Factor workspaces can exceed the 32-bit limit before the input matrix does.
+using UmfpackMatrix = Eigen::SparseMatrix<Complex, Eigen::ColMajor, SuiteSparse_long>;
+static_assert(sizeof(UmfpackMatrix::StorageIndex) >= 8);
+void report_umfpack_failure(Eigen::UmfPackLU<UmfpackMatrix>& solver) {
+    solver.umfpackControl()[UMFPACK_PRL] = 3;
+    solver.printUmfpackStatus();
+    solver.printUmfpackInfo();
+}
+#endif
 } // namespace
 
 const char *helmholtz_fem_solver_kind_name(const HelmholtzFemSolverKind kind) {
@@ -295,21 +305,30 @@ ComplexVector solve_helmholtz_fem(
             throw std::runtime_error("Helmholtz sparse LU solve failed");
     } else if (solver_kind == HelmholtzFemSolverKind::Umfpack) {
 #if defined(LOD2D_HAVE_UMFPACK)
-        Eigen::UmfPackLU<ComplexSparseMatrix> solver;
+        const UmfpackMatrix umfpack_matrix = reduced;
+        Eigen::UmfPackLU<UmfpackMatrix> solver;
         const FemSolveClock::time_point analysis_start = FemSolveClock::now();
-        solver.analyzePattern(reduced);
+        solver.analyzePattern(umfpack_matrix);
         if (timings) timings->analysis_seconds = fem_seconds_since(analysis_start);
+        if (solver.info() != Eigen::Success) {
+            report_umfpack_failure(solver);
+            throw std::runtime_error("Helmholtz UMFPACK symbolic analysis failed");
+        }
         const FemSolveClock::time_point factorization_start = FemSolveClock::now();
-        solver.factorize(reduced);
+        solver.factorize(umfpack_matrix);
         if (timings)
             timings->factorization_seconds = fem_seconds_since(factorization_start);
-        if (solver.info() != Eigen::Success)
+        if (solver.info() != Eigen::Success) {
+            report_umfpack_failure(solver);
             throw std::runtime_error("Helmholtz UMFPACK factorization failed");
+        }
         const FemSolveClock::time_point solve_start = FemSolveClock::now();
         reduced_solution = solver.solve(reduced_load);
         if (timings) timings->solve_seconds = fem_seconds_since(solve_start);
-        if (solver.info() != Eigen::Success || !reduced_solution.allFinite())
+        if (solver.info() != Eigen::Success || !reduced_solution.allFinite()) {
+            report_umfpack_failure(solver);
             throw std::runtime_error("Helmholtz UMFPACK solve failed");
+        }
 #else
         throw std::runtime_error("Helmholtz UMFPACK support was not compiled");
 #endif
@@ -391,22 +410,31 @@ ComplexMatrix solve_helmholtz_fem_batch(
             throw std::runtime_error("Helmholtz sparse LU block solve failed");
     } else if (solver_kind == HelmholtzFemSolverKind::Umfpack) {
 #if defined(LOD2D_HAVE_UMFPACK)
-        Eigen::UmfPackLU<ComplexSparseMatrix> solver;
+        const UmfpackMatrix umfpack_matrix = reduced;
+        Eigen::UmfPackLU<UmfpackMatrix> solver;
         const FemSolveClock::time_point analysis_start = FemSolveClock::now();
-        solver.analyzePattern(reduced);
+        solver.analyzePattern(umfpack_matrix);
         if (timings) timings->analysis_seconds = fem_seconds_since(analysis_start);
+        if (solver.info() != Eigen::Success) {
+            report_umfpack_failure(solver);
+            throw std::runtime_error("Helmholtz UMFPACK block symbolic analysis failed");
+        }
         const FemSolveClock::time_point factorization_start = FemSolveClock::now();
-        solver.factorize(reduced);
+        solver.factorize(umfpack_matrix);
         if (timings)
             timings->factorization_seconds = fem_seconds_since(factorization_start);
-        if (solver.info() != Eigen::Success)
+        if (solver.info() != Eigen::Success) {
+            report_umfpack_failure(solver);
             throw std::runtime_error(
                 "Helmholtz UMFPACK block factorization failed");
+        }
         const FemSolveClock::time_point solve_start = FemSolveClock::now();
         reduced_solutions = solver.solve(reduced_loads);
         if (timings) timings->solve_seconds = fem_seconds_since(solve_start);
-        if (solver.info() != Eigen::Success || !reduced_solutions.allFinite())
+        if (solver.info() != Eigen::Success || !reduced_solutions.allFinite()) {
+            report_umfpack_failure(solver);
             throw std::runtime_error("Helmholtz UMFPACK block solve failed");
+        }
 #else
         throw std::runtime_error("Helmholtz UMFPACK support was not compiled");
 #endif
