@@ -1,7 +1,9 @@
 # Algorithm and mathematical contracts
 
-This guide uses the version 7 `arxiv.tex`/`main.tex` notation and describes
-current implementation policies and explicit archive compatibility. Read [configuration](configuration.md) for selectable policies
+This guide follows the notation in the repository
+[mathematical reference](../.agents/skills/alod-terminology/references/mathematical-notation.md)
+and describes current implementation policies and archive compatibility.
+Read [configuration](configuration.md) for selectable policies
 and [experiments](experiments.md) for frozen run scope.
 
 ## Problem, spaces and solutions

@@ -4,8 +4,9 @@ When explaining ALOD algorithms, numerical data, experiment results, or storage,
 read and apply [alod-terminology](.agents/skills/alod-terminology/SKILL.md).
 Keep specialized mathematical, algorithmic and project terms in English within
 Chinese explanatory prose, especially right-hand-side case, adaptive state,
-audit snapshot and checkpoint. Prefer the version 7 `arxiv.tex` and `main.tex`
-paper's mathematical notation and define objects with equations when useful.
+audit snapshot and checkpoint. Prefer the version 7 paper's mathematical
+notation documented in the skill's references, and define objects with equations
+when useful.
 Keep exact solutions, fine-grid Galerkin solutions and ALOD reconstructions
 distinct. Check the skill's references when explaining mathematical definitions
 or code/paper correspondence; distinguish current code from frozen experiments.

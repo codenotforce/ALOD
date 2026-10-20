@@ -13,7 +13,7 @@ E3 uses the E1 family at five wavenumbers.
 | [Algorithm](docs/algorithm.md) | Current mathematics, adaptive state, estimators and paper/archive differences |
 | [Configuration](docs/configuration.md) | Configuration fields, presets, operational switches and defaults |
 | [Runtime](docs/runtime.md) | Concurrent audits, thread budgets, checkpoint publication, retention and recovery |
-| [Experiments](docs/experiments.md) | Version 7 experiment scope, repository E1/E2/E3 recipes and frozen records |
+| [Experiments](docs/experiments.md) | Paper experiment scope, repository E1/E2/E3 recipes and frozen records |
 | [Scientific workflow](docs/scientific_workflow.md) | Diagnostics, error metrics, figures, tables and portable delivery |
 | [Validation](docs/validation.md) | Tests, provenance rules, benchmarks and evidence limits |
 
@@ -57,12 +57,6 @@ See the runtime guide before choosing checkpoint cleanup or audit concurrency.
 ## Instructions
 
 ### Experiment definitions
-
-The version 7 manuscript (`../LOD_paper/ALOD/version7/arxiv.tex` and
-`main.tex`) has two experiments: **A reentrant corner** (repository E2) and
-**Wavenumber dependence** (E3, using the E1 problem). E1 remains a supported
-problem and historical experiment. The definitions below use the current
-paper symbols; checked-in presets and RHS tables retain their own provenance.
 
 E1 and E2 are manufactured Helmholtz problems,
 $-\Delta u_\mu-k^2u_\mu=f_\mu$, with sources and boundary data derived from

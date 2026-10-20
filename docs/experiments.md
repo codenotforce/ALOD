@@ -1,13 +1,12 @@
 # Experiments and frozen evidence
 
-This guide distinguishes the version 7 manuscript experiments, checked-in
+This guide distinguishes the recorded paper experiments, checked-in
 campaign recipes, and frozen historical records. See [configuration](configuration.md)
 for fields and [runtime](runtime.md) for audit/restart/retention behavior.
 
-## Version 7 manuscript scope
+## Paper experiment scope
 
-The checked sources are `../LOD_paper/ALOD/version7/arxiv.tex` and `main.tex`;
-their numerical sections agree. The paper uses descriptive experiment titles:
+The paper experiment labels correspond to these repository problem identifiers:
 **A reentrant corner** (repository/server E2) and **Wavenumber dependence**
 (E3, using the E1 problem). E1 remains supported in the code and historical
 records, but is not a separate experiment in this manuscript.
@@ -126,9 +125,8 @@ Audits do not drive adaptation. E2 optional pure cases 48/49 use coefficients
 `tools/make_kappa_campaign.py` is historical tooling that reads mutable current
 presets while retaining old metadata; it is not a frozen replay tool. Use the
 production generator for new runs. The [P0 guide](provenance/p0/README.md)
-preserves acceptance context. The original planning document is operator-local
-and is not required to run or validate a public checkout.
-Machine-readable contracts and source identities remain under `provenance/`.
+preserves acceptance context. Machine-readable contracts and source identities
+remain under `provenance/`.
 Historical curves/fixtures must not be regenerated to hide a failed comparison.
 
 ## Results and reproducibility

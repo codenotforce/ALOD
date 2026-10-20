@@ -1,6 +1,6 @@
 # Implementation correspondence and operational terminology
 
-Manuscript notation and experiment scope were reviewed on 2026-10-19 against both `../LOD_paper/ALOD/version7/arxiv.tex` and `main.tex`; their mathematical bodies agree. The source map and paper/code differences below were checked against the current working tree. Existing storage observations and frozen production records retain their dated provenance; no server experiment was rerun or reaudited for this documentation update. Repository paths are relative to its root.
+Notation and experiment scope follow the self-contained [mathematical reference](mathematical-notation.md), reviewed against the version 7 manuscript on 2026-10-19. The source map and paper/code differences were checked against the working tree on that date. Existing storage observations and frozen production records retain their dated provenance; no server experiment was rerun or reaudited for that documentation review. Repository paths are relative to its root.
 
 Contents: source map; coordinate representations; version 7 symbol mapping; paper experiments and historical identifiers; code/paper differences; audit metrics; serialization and retention.
 
@@ -68,7 +68,7 @@ Use these symbols in new explanations without renaming code fields or changing f
 | Base solution and spaces | \(U_{H,\ell,\mu},X_{H,\ell},Y_{H,\ell}\) | Older \(U_\mu^0,X^0,Y^0\) |
 | Compressed ALOD solution | \(U_{\mu,r}:=U_\mu(\mathcal E_r)\) | Stored fine-coordinate solution columns; \(r=\dim\mathcal E_r\) |
 | Regional direction block length | \(s\) | Older \(s_{\rm AS}\); inspect the actual block/budget option |
-| Primal / adjoint correctors | \(\mathcal C_\infty,\mathcal C_\ell,\mathcal C_\ell^*\) | Older \(\mathcal Q\); source macros `\Qir`/`\Qlr` now expand to \(\mathcal C\) |
+| Primal / adjoint correctors | \(\mathcal C_\infty,\mathcal C_\ell,\mathcal C_\ell^*\) | Older \(\mathcal Q\) notation |
 | Energy form / resolution scale | \(b\), \(\chi\) | Older \(b_k\), \(\chi_{\rm res}\); the energy norm still has subscript \(k\) |
 | Balance indicator | \(q_\ell=d_{\mu_{\rm ref}}\Theta_\ell/\eta_{H,\mu_{\rm ref}}\) | Older \(\widetilde q_\ell\); `ell_ratio_mode=solution_scaled` |
 | Energy projection / orthogonal complement | \(P_Z\), \(Z^\perp\), defined with \(b\) | Older \(P_Z^k\), \(Z^{\perp_k}\); distinct from the proof's Ritz projections |

@@ -1,6 +1,6 @@
 # Version 7 mathematical notation
 
-Reviewed on 2026-10-19 against both complete version 7 sources, `../LOD_paper/ALOD/version7/main.tex` (SHA-256 `ea0fc85d9739001c81e065b6c7f8f65cb9973c1a7e3de1ce396f4c952ca6cae7`) and `../LOD_paper/ALOD/version7/arxiv.tex` (SHA-256 `1febb1ed15177b1833efb4df60b743ee4e2fdbf173bc90ef48daa11e5c4eefbf`). Their mathematical and experiment bodies agree; document class and bibliography packaging differ. This reference records definitions, not a guarantee about future manuscript or code revisions. Use equation labels rather than unstable line numbers. Experiment scope and code differences are in [implementation correspondence](implementation-correspondence.md).
+These self-contained definitions follow the version 7 manuscript notation reviewed on 2026-10-19. They do not require access to manuscript source files. Named equation labels below are identifiers for comparisons with a user-supplied manuscript, not repository file links. This reference records definitions, not a guarantee about future manuscript or code revisions. Experiment scope and code differences are in [implementation correspondence](implementation-correspondence.md).
 
 Contents: variational problem; meshes and LOD; residual and localization; enrichment and POD; stability and best approximation; refinement and errors; adaptive states.
 
@@ -60,7 +60,7 @@ The ideal correctors satisfy
 a(\mathcal C_\infty v,w)=a(v,w),\qquad
 a(w,\mathcal C_\infty^*v)=a(w,v)\qquad(w\in W_h).
 \]
-The source macros `\Qir`, `\Qirs`, `\Qlr`, `\Qlrs` expand to the corresponding \(\mathcal C\) symbols. Element correctors \(\mathcal C_{T,\ell},\mathcal C_{T,\ell}^*\) use the restricted form \(a_T\); summing them gives \(\mathcal C_\ell,\mathcal C_\ell^*\). Set
+Element correctors \(\mathcal C_{T,\ell},\mathcal C_{T,\ell}^*\) use the restricted form \(a_T\); summing them gives \(\mathcal C_\ell,\mathcal C_\ell^*\). Set
 \[
 T_\ell=I-\mathcal C_\ell,\quad T_\ell^*=I-\mathcal C_\ell^*,\quad
 X_{H,\ell}=T_\ell V_H,\quad Y_{H,\ell}=T_\ell^*V_H.

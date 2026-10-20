@@ -1,6 +1,6 @@
 ---
 name: alod-terminology
-description: Explain this ALOD project using English technical terms, Chinese explanatory prose and the version 7 arxiv.tex/main.tex paper's mathematical notation. Use for algorithms, right-hand-side families, enrichment, adaptivity, experiments, error analysis, audits, checkpoints, and storage.
+description: Explain this ALOD project using English technical terms, Chinese explanatory prose and the version 7 paper's mathematical notation. Use for algorithms, right-hand-side families, enrichment, adaptivity, experiments, error analysis, audits, checkpoints, and storage.
 ---
 
 # ALOD terminology and mathematical explanations
@@ -9,9 +9,11 @@ Use the version 7 paper's mathematical objects and notation when explaining this
 
 ## Sources and scope
 
-Locate the repository root containing `include/alod/checkpoint.hpp` and `apps/fixed_support.hpp`. Source paths below are relative to that root. The manuscript sources are `../LOD_paper/ALOD/version7/arxiv.tex` and `../LOD_paper/ALOD/version7/main.tex`. Both were checked: their mathematical and experiment bodies agree; `main.tex` uses review mode and BibTeX, while `arxiv.tex` embeds its bibliography. Neither is an obsolete source. Read TeX macro definitions before interpreting notation: `\Qir` and `\Qlr` now expand to `\mathcal C_\infty` and `\mathcal C_\ell`. If later copies diverge, identify the source and difference rather than silently combining them.
+Locate the repository root containing `include/alod/checkpoint.hpp` and `apps/fixed_support.hpp`. Paths in this skill are relative to that root unless they are Markdown links, which are relative to their containing file.
 
-For mathematics read [mathematical notation](references/mathematical-notation.md); for code fields, experiments, audits or storage read [implementation correspondence](references/implementation-correspondence.md). These references remain usable if the sibling manuscript is absent. Verify mutable details against current source or the particular run's frozen configuration.
+Use the repository's [mathematical notation](references/mathematical-notation.md) for definitions, and [implementation correspondence](references/implementation-correspondence.md) for code fields, experiments, audits and storage. These references document the reviewed version 7 notation and are self-contained. If the user supplies a manuscript, inspect that supplied source for the requested comparison; do not assume manuscript files exist in the checkout or a sibling directory. Keep public documentation independent of private checkouts and unpublished local files.
+
+Verify mutable implementation details against current source or the particular run's frozen configuration.
 
 Version 7 has two experiments, **A reentrant corner** and **Wavenumber dependence**. Repository and server identifiers E1/E2/E3 are retained: E2 corresponds to the corner experiment and E3 to the wavenumber study; E1 remains a code problem and historical experiment, not a third experiment in the current paper. Manuscript settings do not update checked-in presets, deployment files or frozen results. Keep those sources distinct.
 

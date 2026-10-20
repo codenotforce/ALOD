@@ -4,14 +4,13 @@ This guide covers diagnostics and paper data. [Configuration](configuration.md)
 defines controls; [runtime](runtime.md) defines the retained inputs they need.
 Frozen scientific spaces and new diagnostic spaces must be labelled separately.
 
-## Manuscript version and current terminology
+## Reporting conventions
 
-The version 7 paper sources are `../LOD_paper/ALOD/version7/arxiv.tex` and
-`main.tex`. They contain the corner and wavenumber experiments only, while
-the delivery inventory and scoped exporters below retain their original
-version-4/September roles and windows, including E1. They must not be described
-as a complete version-7 reproduction pipeline. Preserve their historical
-inputs and outputs; updating this guide does not change exporter behavior.
+Current paper reporting covers the corner and wavenumber experiments.
+The delivery inventory and scoped exporters below retain their historical
+version-4/September roles and windows, including E1. They are not a complete
+reproduction pipeline for the current paper experiment scope. Preserve their
+historical inputs and outputs; updating this guide does not change exporter behavior.
 
 Use reference load, test load and LOD in explanations; preserve literal
 `nominal`, `E_ref`, `SLOD` and other code fields. Version 7's corner error is
@@ -84,8 +83,8 @@ adds the two pure-component cases. These diagnostics never feed adaptation.
 
 ## Historical version 4 delivery
 
-The plot renderer now preserves the tuned parameters of
-`generate_kernel_lift_figures.py` (E1/E2) and `plot_results.py` (E3).
+The plot renderer in [tools/paper/figures.py](../tools/paper/figures.py)
+preserves the historical E1/E2 and E3 plotting parameters.
 E3 writes `kappa_error_dof.pdf` and `.png`. Its ALOD curve now uses the same
 initial-state plus completed-H-step convention as E1/E2. The one-percent cutoff
 is evaluated on all accepted states before filtering; AFEM/LOD keep every point

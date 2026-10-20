@@ -27,7 +27,7 @@ does not run the Python audit scheduler or post-audit state reclamation.
 | `apps/adaptive_run.cpp` | Controller, accepted state, within-state overlap and publication |
 | `apps/audit_run.*`, `apps/shared_audit.*` | Numerical audit context, shared service and immutable state transfer |
 | `apps/adaptive_*.hpp`, `apps/fixed_support.hpp` | CLI support, state/member identities and application helpers |
-| `src/mesh/`, `include/alod/mesh.hpp` | NVB refinement, boundary tags, stable identities and ancestry |
+| `src/mesh/`, `include/mesh/`, `include/alod/mesh_state.hpp` | NVB refinement, boundary tags, stable identities and ancestry |
 | `src/fem/`, `src/helmholtz/`, `src/problems/` | P1 operators, quadrature, strong residuals and RHS families |
 | `src/lod/`, `include/alod/lod.hpp` | Interpolation, local correctors, two-sided spaces and reduced PG solves |
 | `src/estimator/`, `include/alod/estimator.hpp` | Constrained local Riesz solves, family marking and defect actions |

@@ -127,11 +127,11 @@ AMD EPYC 9554: 64 physical cores/128 logical CPUs; 32 requested threads,
 level 10/gap 4/ell 2, rank cap 8 and three repetitions. Discrete decisions
 matched, numeric gates passed and actual 32-worker teams were observed; CPU
 activity averaged roughly 1600–1900%. This excludes production-scale audits/I/O
-and shows no material E3 improvement. The server evidence lives under
-`$SERVER_PROJECT_ROOT/thread-budget-20261006-1503`, including `compute32/report.json`,
-`benchmark32-v2/report.json` and `benchmark-binaries.sha256`. Binary identities
-precede the final exception-only guard-lifetime adjustment; six relevant final
-server CTests subsequently passed. Existing production was not restarted.
+and shows no material E3 improvement. These are historical observations;
+the raw server benchmark package is not distributed with this repository.
+The measurements precede the final exception-only guard-lifetime adjustment;
+six relevant final server CTests subsequently passed. Existing production was
+not restarted.
 
 Other manual tools are `tools/benchmark_async.py` (drain),
 `tools/benchmark_spaces.py` (space phases), `tools/profile_fixed.py` (fixed-state)

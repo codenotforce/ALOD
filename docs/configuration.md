@@ -12,7 +12,7 @@ for operational effects.
 Baseline presets live in `configs/smoke/` and `configs/full/`; fixed probes in
 `configs/p2/`; adaptive/main/control/E3 presets in `configs/adaptive/`.
 Repository presets and generators retain their recorded experiment scope;
-they are not automatically synchronized with the version 7 manuscript settings
+they are not automatically synchronized with the paper experiment settings
 in [experiments](experiments.md). Campaign generators freeze copies. Editing a repository preset does not mutate
 an existing campaign or its numerical history.
 
